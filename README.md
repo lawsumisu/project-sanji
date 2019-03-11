@@ -8,10 +8,11 @@ You can find a download for that version [here](https://mugenarchive.com/forums/
 The optimal way to design characters is with Fighter Factory Studio. Download it [here](http://fighterfactory.virtualltek.com/download).
 
 ## FAQ and Commonly Found Issues
-- [When attempting to load a character in MUGEN, I get `Error loading <char>.sff`.](faq-error-loading-sff)
+- [When loading a character in MUGEN, I get `Error loading <char>.sff`.](#when-loading-a-character-in-mugen-i-get-error-loading-charsff)
 
-### <a name="faq-error-loading-sff"></a>When attempting to load a character in MUGEN, I get `Error loading <char>.sff`.
+### When loading a character in MUGEN, I get `Error loading <char>.sff`.
 In order for MUGEN to be able to load a character's SFF file, the following requirements must be met:
-    1. All the [required Hit Sprites](https://mugenarchive.com/docs/1.1/spr.html) have been added
-    1. The SFF file is saved in a format that matches the version of MUGEN that you are using. To modify this in FFS, in the `Sprites` section, click on the `Version` text at the bottom center of the screen.
+
+1. All the [required Hit Sprites](https://mugenarchive.com/docs/1.1/spr.html) have been added.
+1. The SFF file is saved in a format that matches the version of MUGEN that you are using. To modify this in FFS, in the `Sprites` section, click on the `Version` text at the bottom center of the screen.
     From there you should be able to save your SFF to the correct version (ideally should be 1.1).
