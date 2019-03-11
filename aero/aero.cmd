@@ -368,9 +368,10 @@ time = 1
 
 ; Don't remove the following line. It's required by the CMD standard.
 [Statedef -1]
-[State -1, Base Run Light]
+[State -1, Standing Light]
 type = ChangeState
-value = 400
-trigger1 = command = "QCF_x"
+value = 200
+triggerall = command = "a"
+triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
