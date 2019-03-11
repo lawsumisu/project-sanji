@@ -8,7 +8,7 @@ You can find a download for that version [here](https://mugenarchive.com/forums/
 The optimal way to design characters is with Fighter Factory Studio. Download it [here](http://fighterfactory.virtualltek.com/download).
 
 ## FAQ and Commonly Found Issues
-- [When loading a character in MUGEN, I get `Error loading <char>.sff`.](#when-loading-a-character-in-mugen-i-get-error-loading-sff)
+- [When loading a character in MUGEN, I get `Error loading <char>.sff`.](#when-loading-a-character-in-mugen-i-get-error-loading-charsff)
 
 ### When loading a character in MUGEN, I get `Error loading <char>.sff`.
 In order for MUGEN to be able to load a character's SFF file, the following requirements must be met:
