@@ -368,10 +368,30 @@ time = 1
 
 ; Don't remove the following line. It's required by the CMD standard.
 [Statedef -1]
-[State -1, Standing Light]
+[State -1, 8th Note]
 type = ChangeState
 value = 200
-triggerall = command = "a"
+triggerall = command = "x"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
+
+[State -1, Quarter Note]
+type = ChangeState
+value = 210
+triggerall = command = "y"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 200 || stateno = 201
+trigger2 = MoveContact
+
+[State -1, Half Note]
+type = ChangeState
+value = 220
+triggerall = command = "b"
+triggerall = command != "holddown"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = stateno = 210 || stateno = 211
+trigger2 = MoveContact
