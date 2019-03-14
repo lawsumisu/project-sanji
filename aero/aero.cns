@@ -83,6 +83,13 @@ down.friction.threshold    = .2	;If the player's speed drops below this threshol
 ; Up to 100 victory quotes can be specified per language (victory0 - victory99)
 victory1 = "Some victory text."
 
+; Variables
+; 1 ('ticks-per-beat'):	How many frames correspond to an 8th note
+; 2 ('measure-time'):	How many frames are left in Measure Time
+; 3 ('note-time'):		How many frames are left before a new note can be executed
+; 4 ('beats-per-note):	How many beats this note corresponds to
+; 5 ('ticks-played): 	Total ticks that have passed corresponding to notes being executed
+
 ;-------------------------------------------------------------------------
 ; 8th Note Jab
 [Statedef 200]
@@ -114,7 +121,7 @@ sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 hitsound = S5, 5                  ;Sound to play on hit
 guardsound = S6, 0                ;Sound to play on guard
 ground.type = High               ;Type: High, Low, Trip (def: Normal)
-ground.slidetime = 5             ;Time that the opponent slides back
+ground.slidetime = 0             ;Time that the opponent slides back
 ground.hittime  = 10             ;Time opponent is in hit state
 ground.velocity = -1.3             ;Velocity at which opponent is pushed
 airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
@@ -123,10 +130,10 @@ air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
 ;Y-velocity at which opponent is pushed
 air.hittime = 12                 ;Time before opponent regains control in air
 
-[State 200, Increment Variable '8th-note-counter']
-type = VarAdd
+[State 200, Set Variable 'beats-per-note']
+type = VarSet
 trigger1 = 1
-v = 1
+v = 4
 value = 1
 persistent = 0
 
@@ -140,14 +147,6 @@ type = ChangeState
 trigger1 = AnimTime = 0
 value = 0
 ctrl = 1
-
-[State 200, Cancel to 16th Note Jab]
-type = ChangeState
-triggerall = command = "x"
-triggerall = command != "holddown"
-trigger1 = AnimElem = 3, >= 0	; At least 0 ticks have passed since in animElem #3.
-ignorehitpause = 1
-value = 201
 
 ;16th Note Jab
 [Statedef 201]
@@ -179,7 +178,7 @@ sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 hitsound = S5, 5                  ;Sound to play on hit
 guardsound = S6, 0                ;Sound to play on guard
 ground.type = High               ;Type: High, Low, Trip (def: Normal)
-ground.slidetime = 5             ;Time that the opponent slides back
+ground.slidetime = 0             ;Time that the opponent slides back
 ground.hittime  = 12             ;Time opponent is in hit state
 ground.velocity = -1.3            ;Velocity at which opponent is pushed
 airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
@@ -193,19 +192,18 @@ type = PlaySnd
 trigger1 = Time = 1
 value = 0, 0
 
+[State 201, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 1
+persistent = 0
+
 [State 201, Return to Idle State]
 type = ChangeState
 trigger1 = AnimTime = 0
 value = 0
 ctrl = 1
-
-[State 201, Cancel to 8th Note Jab]
-type = ChangeState
-triggerall = command = "x"
-triggerall = command != "holddown"
-trigger1 = AnimElem = 4, >= 0	; At least 0 ticks have passed since in animElem #5.
-trigger1 = var(1) < 2			; Can only cancel back into 8th note when 2 or less 8th note jabs have been executed
-value = 200
 
 ;-------------------------------------------------------------------------
 ; Quarter Note Blow
@@ -231,7 +229,7 @@ guardflag = MA                   ;Flags on how move is to be guarded against
 hitflag = MAF                    ;Flags of conditions that move can hit
 priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
 ;Hit/Miss/Dodge type (Def: Hit)
-pausetime = 4, 4                 ;Time attacker pauses, time opponent shakes
+pausetime = 0, 4                 ;Time attacker pauses, time opponent shakes
 sparkno = 0                      ;Spark anim no (Def: set above)
 sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 ;Y-offset for the spark rel. to p1
@@ -252,19 +250,18 @@ type = PlaySnd
 trigger1 = Time = 1
 value = 0, 1
 
+[State 210, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 2
+persistent = 0
+
 [State 210, Return to Idle State]
 type = ChangeState
 trigger1 = AnimTime = 0
 value = 0
 ctrl = 1
-
-[State 210, Cancel to Eighth Note Blow]
-type = ChangeState
-triggerall = command = "y"
-triggerall = command != "holddown"
-trigger1 = AnimElem = 5, <= 9; [0, 8] have passed since in animElem #4
-trigger1 = AnimElem = 5, >= 0
-value = 211
 
 ; Eighth Note Blow
 [Statedef 211]
@@ -289,7 +286,7 @@ guardflag = MA                   ;Flags on how move is to be guarded against
 hitflag = MAF                    ;Flags of conditions that move can hit
 priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
 ;Hit/Miss/Dodge type (Def: Hit)
-pausetime = 4, 4                 ;Time attacker pauses, time opponent shakes
+pausetime = 0, 4                 ;Time attacker pauses, time opponent shakes
 sparkno = 0                      ;Spark anim no (Def: set above)
 sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 ;Y-offset for the spark rel. to p1
@@ -310,6 +307,13 @@ air.hittime = 12                 ;Time before opponent regains control in air
 type = PlaySnd
 trigger1 = Time = 1
 value = 0, 1
+
+[State 211, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 2
+persistent = 0
 
 [State 211, Return to Idle State]
 type = ChangeState
@@ -340,7 +344,7 @@ guardflag = MA                   ;Flags on how move is to be guarded against
 hitflag = MAF                    ;Flags of conditions that move can hit
 priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
 ;Hit/Miss/Dodge type (Def: Hit)
-pausetime = 4, 4                 ;Time attacker pauses, time opponent shakes
+pausetime = 0, 10                 ;Time attacker pauses, time opponent shakes
 sparkno = 0                      ;Spark anim no (Def: set above)
 sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 ;Y-offset for the spark rel. to p1
@@ -361,6 +365,13 @@ type = PlaySnd
 trigger1 = Time = 1
 value = 0, 2
 
+[State 211, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 4
+persistent = 0
+
 [State 220, Return to Idle State]
 type = ChangeState
 trigger1 = AnimTime = 0
@@ -370,8 +381,71 @@ ctrl = 1
 [Statedef -2]
 
 ; This is where global variables can get reset 
-[State -2, Reset Variable '8th-note-counter']
+[State -2, Set Variable 'ticks-per-beat']
 type = VarSet
-trigger1 = StateNo != 200 && StateNo != 201
+trigger1 = 1
 v = 1
+value = 8
+persistent = 0
+
+[State -2, Set Variable 'measure-time']
+type = VarSet
+trigger1 = stateno >= 200 && stateno <= 250
+trigger1 = Time = 1
+trigger1 = Var(2) = 0
+v = 2
+value = Var(1) * 8
+
+[State -2, Set Variable 'note-time']
+type = VarSet
+trigger1 = stateno >= 200 && stateno <= 250
+trigger1 = Time = 1
+v = 3
+value = Var(3) % Var(1) + (Var(1) * Var(4))
+
+[State -2, Add To Variable 'ticks-played']
+type = VarAdd
+trigger1 = stateno >= 200 && stateno <= 250
+trigger1 = Time = 1
+v = 5
+value = Var(1) * Var(4)
+
+[State -2, Reset Variable 'measure-time']
+type = VarSet
+trigger1 = ctrl = 1
+trigger1 = Var(3) <= -Var(1)
+v = 2
 value = 0
+
+[State -2, Reset Variable 'note-time']
+type = VarSet
+trigger1 = ctrl = 1
+trigger1 = Var(2) = 0
+v = 3
+value = 0
+
+[State -2, Reset Variable 'ticks-played']
+type = VarSet
+trigger1 = ctrl = 1
+trigger1 = Var(2) = 0
+v = 5
+value = 0
+
+[State -2, Decrement Variable 'measure-time']
+type = VarAdd
+trigger1 = Var(2) > 0
+v = 2
+value = -1
+
+[State -2, Decrement Variable 'note-time']
+type = VarAdd
+trigger1 = Var(2) > 0 ; If in 'Measure Time'
+v = 3
+value = -1
+
+[State -2, Debug Log]
+type = DisplayToClipboard
+trigger1 = 1
+text = "Ticks per Beat = %d, Beats per Note = %d, Measure Time = %d, Note Time = %d, Ticks Played %d"
+params = var(1), var(4), var(2), var(3), var(5)
+ignorehitpause = 1

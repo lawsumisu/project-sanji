@@ -368,23 +368,46 @@ time = 1
 
 ; Don't remove the following line. It's required by the CMD standard.
 [Statedef -1]
-[State -1, 8th Note]
+[State -1, 8th Note Mid Jab]
 type = ChangeState
 value = 200
 triggerall = command = "x"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
+trigger2 = stateno >= 200 && stateno <= 250 && stateno != 200
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
+trigger2 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
 
-[State -1, Quarter Note]
+[State -1, 8th Note High Jab]
+type = ChangeState
+value = 201
+triggerall = command = "x"
+triggerall = command != "holddown"
+triggerall = stateno = 200
+trigger1 = statetype = S
+trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
+trigger1 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+
+[State -1, Quarter Note Right Blow]
 type = ChangeState
 value = 210
 triggerall = command = "y"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
-trigger2 = stateno = 200 || stateno = 201
-trigger2 = MoveContact
+trigger2 = stateno >= 200 && stateno <= 250 && stateno != 210
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
+trigger2 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+
+[State -1, Quarter Note Left Blow]
+type = ChangeState
+value = 211
+triggerall = command = "y"
+triggerall = command != "holddown"
+trigger1 = stateno = 210
+trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
+trigger1 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
 
 [State -1, Half Note]
 type = ChangeState
@@ -393,5 +416,6 @@ triggerall = command = "b"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
-trigger2 = stateno = 210 || stateno = 211
-trigger2 = MoveContact
+trigger2 = stateno >= 200 && stateno <= 250 && stateno != 220
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
+trigger2 = Var(5) + 4 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
