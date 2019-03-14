@@ -17,7 +17,7 @@ st       = aero.cns          ; States
 stcommon = common1.cns       ; Common states (from data or motif)
 sprite   = aero.sff          ; Sprite
 anim     = aero.air          ; Animation
-sound    = aero.snd          ; Sound
+sound    = aero2.snd          ; Sound
 ai       = aero.ai           ; AI hints data (not used)
 pal1 	 = aero.act
 

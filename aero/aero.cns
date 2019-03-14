@@ -107,11 +107,11 @@ guardflag = MA                   ;Flags on how move is to be guarded against
 hitflag = MAF                    ;Flags of conditions that move can hit
 priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
 ;Hit/Miss/Dodge type (Def: Hit)
-pausetime = 4, 4                 ;Time attacker pauses, time opponent shakes
+pausetime = 0, 0                 ;Time attacker pauses, time opponent shakes
 sparkno = 0                      ;Spark anim no (Def: set above)
 sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 ;Y-offset for the spark rel. to p1
-hitsound = S5, 0                  ;Sound to play on hit
+hitsound = S5, 5                  ;Sound to play on hit
 guardsound = S6, 0                ;Sound to play on guard
 ground.type = High               ;Type: High, Low, Trip (def: Normal)
 ground.slidetime = 5             ;Time that the opponent slides back
@@ -146,6 +146,7 @@ type = ChangeState
 triggerall = command = "x"
 triggerall = command != "holddown"
 trigger1 = AnimElem = 3, >= 0	; At least 0 ticks have passed since in animElem #3.
+ignorehitpause = 1
 value = 201
 
 ;16th Note Jab
@@ -171,16 +172,16 @@ guardflag = MA                   ;Flags on how move is to be guarded against
 hitflag = MAF                    ;Flags of conditions that move can hit
 priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
 ;Hit/Miss/Dodge type (Def: Hit)
-pausetime = 4, 4                 ;Time attacker pauses, time opponent shakes
+pausetime = 0,0                ;Time attacker pauses, time opponent shakes
 sparkno = 0                      ;Spark anim no (Def: set above)
 sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 ;Y-offset for the spark rel. to p1
-hitsound = S5, 0                  ;Sound to play on hit
+hitsound = S5, 5                  ;Sound to play on hit
 guardsound = S6, 0                ;Sound to play on guard
 ground.type = High               ;Type: High, Low, Trip (def: Normal)
 ground.slidetime = 5             ;Time that the opponent slides back
 ground.hittime  = 12             ;Time opponent is in hit state
-ground.velocity = -1.8            ;Velocity at which opponent is pushed
+ground.velocity = -1.3            ;Velocity at which opponent is pushed
 airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
 air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
 air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
@@ -234,12 +235,12 @@ pausetime = 4, 4                 ;Time attacker pauses, time opponent shakes
 sparkno = 0                      ;Spark anim no (Def: set above)
 sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 ;Y-offset for the spark rel. to p1
-hitsound = S5, 0                  ;Sound to play on hit
-guardsound = S6, 0                ;Sound to play on guard
+hitsound = S5, 3                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
 ground.type = High               ;Type: High, Low, Trip (def: Normal)
 ground.slidetime = 5             ;Time that the opponent slides back
 ground.hittime  = 15             ;Time opponent is in hit state
-ground.velocity = -1.3             ;Velocity at which opponent is pushed
+ground.velocity = -1.5             ;Velocity at which opponent is pushed
 airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
 air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
 air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
@@ -249,7 +250,7 @@ air.hittime = 12                 ;Time before opponent regains control in air
 [State 210, PlaySnd]
 type = PlaySnd
 trigger1 = Time = 1
-value = 0, 0
+value = 0, 1
 
 [State 210, Return to Idle State]
 type = ChangeState
@@ -292,12 +293,12 @@ pausetime = 4, 4                 ;Time attacker pauses, time opponent shakes
 sparkno = 0                      ;Spark anim no (Def: set above)
 sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 ;Y-offset for the spark rel. to p1
-hitsound = S5, 0                  ;Sound to play on hit
-guardsound = S6, 0                ;Sound to play on guard
+hitsound = S5, 3                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
 ground.type = High               ;Type: High, Low, Trip (def: Normal)
 ground.slidetime = 5             ;Time that the opponent slides back
 ground.hittime  = 15             ;Time opponent is in hit state
-ground.velocity = -1.3             ;Velocity at which opponent is pushed
+ground.velocity = -1.5             ;Velocity at which opponent is pushed
 airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
 air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
 air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
@@ -308,7 +309,7 @@ air.hittime = 12                 ;Time before opponent regains control in air
 [State 211, PlaySnd]
 type = PlaySnd
 trigger1 = Time = 1
-value = 0, 0
+value = 0, 1
 
 [State 211, Return to Idle State]
 type = ChangeState
@@ -343,12 +344,12 @@ pausetime = 4, 4                 ;Time attacker pauses, time opponent shakes
 sparkno = 0                      ;Spark anim no (Def: set above)
 sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
 ;Y-offset for the spark rel. to p1
-hitsound = S5, 0                  ;Sound to play on hit
-guardsound = S6, 0                ;Sound to play on guard
+hitsound = S5, 4                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
 ground.type = High               ;Type: High, Low, Trip (def: Normal)
-ground.slidetime = 10             ;Time that the opponent slides back
+ground.slidetime = 20             ;Time that the opponent slides back
 ground.hittime  = 20             ;Time opponent is in hit state
-ground.velocity = -1.3             ;Velocity at which opponent is pushed
+ground.velocity = -2.3             ;Velocity at which opponent is pushed
 airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
 air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
 air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
@@ -358,7 +359,7 @@ air.hittime = 12                 ;Time before opponent regains control in air
 [State 220, PlaySnd]
 type = PlaySnd
 trigger1 = Time = 1
-value = 0, 0
+value = 0, 2
 
 [State 220, Return to Idle State]
 type = ChangeState
