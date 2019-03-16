@@ -376,8 +376,8 @@ triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
 trigger2 = stateno >= 200 && stateno <= 250 && stateno != 200
-trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
-trigger2 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger2 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, 8th Note High Jab]
 type = ChangeState
@@ -386,8 +386,8 @@ triggerall = command = "x"
 triggerall = command != "holddown"
 triggerall = stateno = 200
 trigger1 = statetype = S
-trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
-trigger1 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger1 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Dotted Quarter Note Right Hook]
 type = ChangeState
@@ -396,8 +396,9 @@ triggerall = command = "y" && command = "holdfwd"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
-trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
-trigger2 = Var(5) + 3 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+trigger2 = stateno >= 200 && stateno <= 250 && stateno != 210 && stateno != 212
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger2 = Var(5) + 3 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Dotted Quarter Note Left Upper]
 type = ChangeState
@@ -405,8 +406,8 @@ value = 213
 triggerall = command = "y" && command = "holdfwd"
 triggerall = command != "holddown"
 trigger1 = stateno = 210 || stateno = 212
-trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
-trigger1 = Var(5) + 3 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger1 = Var(5) + 3 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Quarter Note Right Blow]
 type = ChangeState
@@ -415,9 +416,9 @@ triggerall = command = "y"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
-trigger2 = stateno >= 200 && stateno <= 250 && stateno != 210
-trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
-trigger2 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+trigger2 = stateno >= 200 && stateno <= 250 && stateno != 210 && stateno != 212
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger2 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Quarter Note Left Blow]
 type = ChangeState
@@ -425,8 +426,8 @@ value = 211
 triggerall = command = "y"
 triggerall = command != "holddown"
 trigger1 = stateno = 210 || stateno = 212
-trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
-trigger1 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger1 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Half Note]
 type = ChangeState
@@ -436,5 +437,5 @@ triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
 trigger2 = stateno >= 200 && stateno <= 250 && stateno != 220
-trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in measure time
-trigger2 = Var(5) + 4 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining measure time
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger2 = Var(5) + 4 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time

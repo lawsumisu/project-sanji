@@ -85,8 +85,8 @@ victory1 = "Some victory text."
 
 ; Variables
 ; 1 ('ticks-per-beat'):	How many frames correspond to an 8th note
-; 2 ('measure-time'):	How many frames are left in Measure Time
-; 3 ('note-time'):		How many frames are left before a new note can be executed
+; 2 ('common-time'):	How many frames are left in Common Time
+; 3 ('note-time'):		How many frames are left before a new note can be executed during Common Time
 ; 4 ('beats-per-note):	How many beats this note corresponds to
 ; 5 ('ticks-played): 	Total ticks that have passed corresponding to notes being executed
 
@@ -504,7 +504,7 @@ v = 1
 value = 8
 persistent = 0
 
-[State -2, Set Variable 'measure-time']
+[State -2, Set Variable 'common-time']
 type = VarSet
 trigger1 = stateno >= 200 && stateno <= 250
 trigger1 = Time = 1
@@ -526,7 +526,7 @@ trigger1 = Time = 1
 v = 5
 value = Var(1) * Var(4)
 
-[State -2, Reset Variable 'measure-time']
+[State -2, Reset Variable 'common-time']
 type = VarSet
 trigger1 = ctrl = 1
 trigger1 = Var(3) <= -Var(1)
@@ -547,7 +547,7 @@ trigger1 = Var(2) = 0
 v = 5
 value = 0
 
-[State -2, Decrement Variable 'measure-time']
+[State -2, Decrement Variable 'common-time']
 type = VarAdd
 trigger1 = Var(2) > 0
 v = 2
@@ -555,13 +555,13 @@ value = -1
 
 [State -2, Decrement Variable 'note-time']
 type = VarAdd
-trigger1 = Var(2) > 0 ; If in 'Measure Time'
+trigger1 = Var(2) > 0 ; If in 'Common Time'
 v = 3
 value = -1
 
 [State -2, Debug Log]
 type = DisplayToClipboard
 trigger1 = 1
-text = "Ticks per Beat = %d, Beats per Note = %d, Measure Time = %d, Note Time = %d, Ticks Played %d"
+text = "Ticks per Beat = %d, Beats per Note = %d, Ticks left in Common Time = %d, Note Time = %d, Ticks Played %d"
 params = var(1), var(4), var(2), var(3), var(5)
 ignorehitpause = 1
