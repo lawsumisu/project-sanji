@@ -368,6 +368,16 @@ time = 1
 
 ; Don't remove the following line. It's required by the CMD standard.
 [Statedef -1]
+
+[State -1, Common Time (Light)]
+type = ChangeState
+value = 400
+triggerall = command = "QCF_x"
+trigger1 = statetype = S
+trigger1 = ctrl
+trigger2 = MoveContact > 4
+trigger2 = stateno >= 200 && stateno <= 250
+
 [State -1, 8th Note Mid Jab]
 type = ChangeState
 value = 200
@@ -375,7 +385,7 @@ triggerall = command = "x"
 triggerall = command != "holddown"
 trigger1 = statetype = S
 trigger1 = ctrl
-trigger2 = stateno >= 200 && stateno <= 250 && stateno != 200
+trigger2 = stateno >= 200 && stateno <= 450 && stateno != 200
 trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
 trigger2 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
@@ -385,57 +395,79 @@ value = 201
 triggerall = command = "x"
 triggerall = command != "holddown"
 triggerall = stateno = 200
-trigger1 = statetype = S
-trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
-trigger1 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
+triggerall = statetype = S
+trigger1 = Var(2) = 0 && Var(5) = 0
+trigger1 = MoveContact > 2
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger2 = Var(5) + 1 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Dotted Quarter Note Right Hook]
 type = ChangeState
 value = 212
 triggerall = command = "y" && command = "holdfwd"
 triggerall = command != "holddown"
-trigger1 = statetype = S
+triggerall = statetype = S
 trigger1 = ctrl
-trigger2 = stateno >= 200 && stateno <= 250 && stateno != 210 && stateno != 212
-trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
-trigger2 = Var(5) + 3 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
+trigger2 = stateno >= 200 && stateno < 210
+trigger2 = Var(2) = 0 && Var(5) = 0
+trigger2 = MoveContact > 2
+trigger3 = stateno >= 200 && stateno <= 450 && stateno != 210 && stateno != 212
+trigger3 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger3 = Var(5) + 3 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Dotted Quarter Note Left Upper]
 type = ChangeState
 value = 213
 triggerall = command = "y" && command = "holdfwd"
 triggerall = command != "holddown"
-trigger1 = stateno = 210 || stateno = 212
-trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
-trigger1 = Var(5) + 3 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
+triggerall = stateno = 210 || stateno = 212 || stateno = 400
+trigger1 = Var(2) = 0 && Var(5) = 0
+trigger1 = MoveContact > 4
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger2 = Var(5) + 3 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Quarter Note Right Blow]
 type = ChangeState
 value = 210
 triggerall = command = "y"
 triggerall = command != "holddown"
-trigger1 = statetype = S
+triggerall = statetype = S
 trigger1 = ctrl
-trigger2 = stateno >= 200 && stateno <= 250 && stateno != 210 && stateno != 212
-trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
-trigger2 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
+trigger2 = stateno >= 200 && stateno < 210
+trigger2 = Var(2) = 0 && Var(5) = 0
+trigger2 = MoveContact > 4
+trigger3 = stateno >= 200 && stateno <= 450 && stateno != 210 && stateno != 212 && stateno != 400
+trigger3 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger3 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Quarter Note Left Blow]
 type = ChangeState
 value = 211
 triggerall = command = "y"
 triggerall = command != "holddown"
-trigger1 = stateno = 210 || stateno = 212
-trigger1 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
-trigger1 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
+triggerall = stateno = 210 || stateno = 212 || stateno = 400
+trigger1 = Var(2) = 0 && Var(5) = 0
+trigger1 = MoveContact > 4
+trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger2 = Var(5) + 2 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
 
 [State -1, Half Note]
 type = ChangeState
 value = 220
 triggerall = command = "b"
 triggerall = command != "holddown"
-trigger1 = statetype = S
+triggerall = statetype = S
 trigger1 = ctrl
-trigger2 = stateno >= 200 && stateno <= 250 && stateno != 220
-trigger2 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
-trigger2 = Var(5) + 4 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
+trigger2 = stateno >= 210 && stateno < 220
+trigger2 = Var(2) = 0 && Var(5) = 0
+trigger2 = MoveContact > 4
+trigger3 = stateno >= 200 && stateno <= 450 && stateno != 220
+trigger3 = Var(3) <= 0 && Var(2) > 0 			;Previous note has finished executing, and still in common time
+trigger3 = Var(5) + 4 * Var(1) <= Var(1) * 8 	;Playing this note can still be performed in the remaining common time
+
+[State -1, Common Time (Finisher)]
+type = ChangeState
+value = 401
+trigger1 = stateno >= 200 && stateno <= 450 && stateno != 401
+trigger1 = AnimTime = 0
+trigger1 = Var(5) > 0
