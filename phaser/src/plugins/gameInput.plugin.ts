@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import * as _ from 'lodash';
+import { RingBuffer } from 'src/utilities/ringBuffer/ringBuffer.util';
 
 const keyCodes = Phaser.Input.Keyboard.KeyCodes;
 
@@ -8,6 +9,10 @@ export enum GameInput {
   RIGHT = 'RIGHT',
   UP = 'UP',
   DOWN = 'DOWN',
+  UP_LEFT = 'UP_LEFT',
+  UP_RIGHT = 'UP_RIGHT',
+  DOWN_LEFT = 'DOWN_LEFT',
+  DOWN_RIGHT = 'DOWN_RIGHT',
   INPUT1 = 'INPUT1',
   INPUT2 = 'INPUT2',
   INPUT3 = 'INPUT3',
@@ -52,7 +57,7 @@ function getGamepadConfig(key: GamepadConfig['key']): GamepadConfig {
 }
 
 type InputMap = {
-  [key in GameInput]: InputConfig[];
+  [key in GameInput]?: Array<InputConfig | Array<GameInput>>;
 };
 
 /**
@@ -64,24 +69,27 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
     [GameInput.UP]: [getKeyboardConfig(keyCodes.UP), getGamepadConfig('up')],
     [GameInput.RIGHT]: [getKeyboardConfig(keyCodes.RIGHT), getGamepadConfig('right')],
     [GameInput.LEFT]: [getKeyboardConfig(keyCodes.LEFT), getGamepadConfig('left')],
-    [GameInput.INPUT1]: [
-      getKeyboardConfig(keyCodes.A),
-      getGamepadConfig('A'),
-      getGamepadConfig('X')
-    ],
-    [GameInput.INPUT2]: [
-      getKeyboardConfig(keyCodes.S),
-      getGamepadConfig('B'),
-      getGamepadConfig('Y')
-    ],
+    [GameInput.INPUT1]: [getKeyboardConfig(keyCodes.A), getGamepadConfig('A'), getGamepadConfig('X')],
+    [GameInput.INPUT2]: [getKeyboardConfig(keyCodes.S), getGamepadConfig('B'), getGamepadConfig('Y')],
     [GameInput.INPUT3]: [getKeyboardConfig(keyCodes.W), getGamepadConfig('L1')],
     [GameInput.INPUT4]: [getKeyboardConfig(keyCodes.E), getGamepadConfig('R1')],
     [GameInput.INPUT5]: [],
     [GameInput.INPUT6]: []
   };
 
+  private static inputStringMap = {
+    [GameInput.DOWN]: '↓',
+    [GameInput.UP]: '↑',
+    [GameInput.RIGHT]: '→',
+    [GameInput.LEFT]: '←',
+    [GameInput.UP_RIGHT]: '↗',
+    [GameInput.UP_LEFT]: '↖',
+    [GameInput.DOWN_RIGHT]: '↘',
+    [GameInput.DOWN_LEFT]: '↙',
+  };
+
   private inputMap: InputMap;
-  private inputState: { [key in GameInput]: { isDown: boolean; duration: number } };
+  private inputBuffer: RingBuffer<Set<GameInput>>;
 
   public boot(): void {
     this.systems.events
@@ -91,14 +99,12 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   }
 
   /**
-   * Returns if the input was pressed within the last n frames (default 1).
+   * Returns if the input was pressed this frame.
    * @param {GameInput} input
-   * @param {number} duration
    * @returns {boolean}
    */
-  public isInputPressed(input: GameInput, duration: number = 1): boolean {
-    const state = this.inputState[input];
-    return state.isDown && state.duration <= duration;
+  public isInputPressed(input: GameInput): boolean {
+    return this.inputBuffer.at(-1).has(input) && !this.inputBuffer.at(-2).has(input);
   }
 
   /**
@@ -107,39 +113,21 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
    * @returns {boolean}
    */
   public isInputReleased(input: GameInput): boolean {
-    const state = this.inputState[input];
-    return !state.isDown && state.duration === 1;
+    return !this.inputBuffer.at(-1).has(input) && this.inputBuffer.at(-2).has(input);
   }
 
   /**
-   * Returns true if the input has been down for at least n frames (default 1)
+   * Returns true if the input is currently held down this frame.
    * @param {GameInput} input
-   * @param {number} duration
    * @returns {boolean}
    */
-  public isInputDown(input: GameInput, duration: number = 1): boolean {
-    const state = this.inputState[input];
-    return state.isDown && state.duration >= duration;
+  public isInputDown(input: GameInput): boolean {
+    return this.inputBuffer.at(-1).has(input);
   }
 
-  /**
-   * Returns true if the input is not down for at least n frames (default 1)
-   * @param {GameInput} input
-   * @param {number} duration
-   * @returns {boolean}
-   */
-  public isInputUp(input: GameInput, duration: number = 1): boolean {
-    const state = this.inputState[input];
-    return !state.isDown && state.duration >= duration;
-  }
-
-  /**
-   * Return number of frames this input has been up or down.
-   * @param {GameInput} input
-   * @returns {number}
-   */
-  public getDuration(input: GameInput): number {
-    return this.inputState[input].duration;
+  public toString(): string {
+    const inputs = this.inputBuffer.at(-1);
+    return Array.from(inputs).map((gi: GameInput) => GameInputPlugin.inputStringMap[gi] || gi).sort().join(',');
   }
 
   private onSceneStart = (): void => {
@@ -150,27 +138,40 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   private onSceneUpdate = (): void => {
     const { gamepad, keyboard } = this.scene.input;
     const isGamePadConnected = !!gamepad.pad1;
+    const inputsThisFrame = new Set<GameInput>();
     _.forEach(this.inputMap, (configs: InputConfig[], input: GameInput) => {
-      let isDown = false;
       for (const config of configs) {
         if (
           (isKeyboard(config) && keyboard.addKey(config.key).isDown) ||
           (isGamePadConnected && isGamepad(config) && gamepad.pad1[config.key])
         ) {
-          // Found down input, so can exit early
-          isDown = true;
+          inputsThisFrame.add(input);
           break;
         }
       }
-      if (this.inputState[input].isDown !== isDown) {
-        // Input was either just pressed or just released, so reset duration
-        this.inputState[input].duration = 0;
-      }
-      this.inputState[input] = {
-        isDown,
-        duration: this.inputState[input].duration + 1
-      };
     });
+    if (inputsThisFrame.has(GameInput.UP)) {
+      if (inputsThisFrame.has(GameInput.RIGHT)) {
+        inputsThisFrame.delete(GameInput.UP);
+        inputsThisFrame.delete(GameInput.RIGHT);
+        inputsThisFrame.add(GameInput.UP_RIGHT);
+      } else if (inputsThisFrame.has(GameInput.LEFT)) {
+        inputsThisFrame.delete(GameInput.UP);
+        inputsThisFrame.delete(GameInput.LEFT);
+        inputsThisFrame.add(GameInput.UP_LEFT);
+      }
+    } else if (inputsThisFrame.has(GameInput.DOWN)) {
+      if (inputsThisFrame.has(GameInput.RIGHT)) {
+        inputsThisFrame.delete(GameInput.DOWN);
+        inputsThisFrame.delete(GameInput.RIGHT);
+        inputsThisFrame.add(GameInput.DOWN_RIGHT);
+      } else if (inputsThisFrame.has(GameInput.LEFT)) {
+        inputsThisFrame.delete(GameInput.DOWN);
+        inputsThisFrame.delete(GameInput.LEFT);
+        inputsThisFrame.add(GameInput.DOWN_LEFT);
+      }
+    }
+    this.inputBuffer.push(inputsThisFrame);
   };
 
   private onSceneDestroy = (): void => {
@@ -184,17 +185,7 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   }
 
   private clearInputs(): void {
-    this.inputState = {
-      [GameInput.DOWN]: { isDown: false, duration: 0 },
-      [GameInput.UP]: { isDown: false, duration: 0 },
-      [GameInput.RIGHT]: { isDown: false, duration: 0 },
-      [GameInput.LEFT]: { isDown: false, duration: 0 },
-      [GameInput.INPUT1]: { isDown: false, duration: 0 },
-      [GameInput.INPUT2]: { isDown: false, duration: 0 },
-      [GameInput.INPUT3]: { isDown: false, duration: 0 },
-      [GameInput.INPUT4]: { isDown: false, duration: 0 },
-      [GameInput.INPUT5]: { isDown: false, duration: 0 },
-      [GameInput.INPUT6]: { isDown: false, duration: 0 }
-    };
+    this.inputBuffer = new RingBuffer(20);
+    _.times(20, () => this.inputBuffer.push(new Set()))
   }
 }
