@@ -1,0 +1,706 @@
+
+; Constants and state file.
+
+[Data]
+life              = 1000	;Amount of life to start with
+attack            = 100	;attack power (more is stronger)
+defence           = 100	;defensive power (more is stronger)
+fall.defence_up   = 50	;Percentage to increase defense everytime player is knocked down
+liedown.time      = 60	;Time which player lies down for, before getting up
+airjuggle         = 15	;Number of points for juggling
+sparkno           = 2	;Default hit spark number for HitDefs
+guard.sparkno     = 40	;Default guard spark number
+KO.echo           = 0	;1 to enable echo on KO
+;Variables with this index and above will not have their values
+;reset to 0 between rounds or matches. There are 60 int variables,
+;indexed from 0 to 59, and 40 float variables, indexed from 0 to 39.
+;If omitted, then it defaults to 60 and 40 for integer and float
+;variables repectively, meaning that none are persistent, i.e. all
+;are reset. If you want your variables to persist between matches,
+;you need to override state 5900 from common1.cns.
+IntPersistIndex   = 60
+FloatPersistIndex = 40
+
+[Size]
+xscale            = 1	;Horizontal scaling factor.
+yscale            = 1	;Vertical scaling factor.
+ground.back       = 32	;Player width from center to back while grounded
+ground.front      = 18	;Player width from center to front while grounded
+air.back          = 48	;Player width (back, air)
+air.front         = 48	;Player width (front, air)
+height            = 95	;Height of player (for opponent to jump over)
+attack.dist       = 640	;Default attack distance
+proj.attack.dist  = 360	;Default attack distance for projectiles
+proj.doscale      = 0	;Set to 1 to scale projectiles too
+head.pos          = -20, -360	;Approximate position of head
+mid.pos           = -20, -240	;Approximate position of midsection
+shadowoffset      = 0	;Number of pixels to vertically offset the shadow
+draw.offset       = 0,0	;Player drawing offset in pixels (x, y). Recommended 0,0
+
+[Velocity]
+walk.fwd          = 2.4		;Walk forward
+walk.back         = -2.0		; Walk backward
+run.fwd           = 18.4, 0		;Run forward (x, y)
+run.back          = -18,-15.2		;Hop backward (x, y)
+jump.neu          = 0,-33.6		;Neutral jumping velocity (x, y)
+jump.back         = -10.2,-33.6	;Jump back Speed (x, y)
+jump.fwd          = 10,-33.6		;Jump forward Speed (x, y)
+runjump.back      = -10.2,-32.4	;Running jump speeds (opt)
+runjump.fwd       = 16,-32.4		;.
+airjump.neu       = 0,-32.4		;.
+airjump.back      = -10.2		;Air jump speeds (opt)
+airjump.fwd       = 10		;.
+air.gethit.groundrecover   = -.6,-14	;Velocity for ground recovery state (x, y) **MUGEN 1.0**
+air.gethit.airrecover.mul  = .5,.2	;Multiplier for air recovery velocity (x, y) **MUGEN 1.0**
+air.gethit.airrecover.add  = 0,-18	;Velocity offset for air recovery (x, y) **MUGEN 1.0**
+air.gethit.airrecover.back = -4	;Extra x-velocity for holding back during air recovery **MUGEN 1.0**
+air.gethit.airrecover.fwd  = 0		;Extra x-velocity for holding forward during air recovery **MUGEN 1.0**
+air.gethit.airrecover.up   = -8	;Extra y-velocity for holding up during air recovery **MUGEN 1.0**
+air.gethit.airrecover.down = 6		;Extra y-velocity for holding down during air recovery **MUGEN 1.0**
+
+[Movement]
+airjump.num                = 1		;Number of air jumps allowed (opt)
+airjump.height             = 140	;Minimum distance from ground before you can air jump (opt)
+yaccel                     = 1.76	;Vertical acceleration
+stand.friction             = .85	;Friction coefficient when standing
+crouch.friction            = .82	;Friction coefficient when crouching
+stand.friction.threshold   = 8		;If player's speed drops below this threshold while standing, stop his movement **MUGEN 1.0**
+crouch.friction.threshold  = .2	;If player's speed drops below this threshold while crouching, stop his movement **MUGEN 1.0**
+air.gethit.groundlevel     = 100	;Y-position at which a falling player is considered to hit the ground **MUGEN 1.0**
+air.gethit.groundrecover.ground.threshold = -80	;Y-position below which falling player can use the recovery command **MUGEN 1.0**
+air.gethit.groundrecover.groundlevel      = 40	;Y-position at which player in the ground recovery state touches the ground **MUGEN 1.0**
+air.gethit.airrecover.threshold           = -4	;Y-velocity above which player may use the air recovery command **MUGEN 1.0**
+air.gethit.airrecover.yaccel              = 1.4	;Vertical acceleration for player in the air recovery state **MUGEN 1.0**
+air.gethit.trip.groundlevel               = 60	;Y-position at which player in the tripped state touches the ground **MUGEN 1.0**
+down.bounce.offset         = 0, 80	;Offset for player bouncing off the ground (x, y) **MUGEN 1.0**
+down.bounce.yaccel         = 1.6	;Vertical acceleration for player bouncing off the ground **MUGEN 1.0**
+down.bounce.groundlevel    = 48	;Y-position at which player bouncing off the ground touches the ground again **MUGEN 1.0**
+down.friction.threshold    = .2	;If the player's speed drops below this threshold while lying down, stop his movement **MUGEN 1.0**
+
+;Default language victory quotes **MUGEN 1.0**
+;The default language victory quotes must be implemented in English.
+[Quotes]
+; Up to 100 victory quotes can be specified per language (victory0 - victory99)
+victory1 = "Some victory text."
+
+; Variables
+; 1 ('ticks-per-beat'):	How many frames correspond to an 8th note
+; 2 ('common-time'):	How many frames are left in Common Time
+; 3 ('note-time'):		How many frames are left before a new note can be executed during Common Time
+; 4 ('beats-per-note):	How many beats this note corresponds to
+; 5 ('ticks-played): 	Total ticks that have passed corresponding to notes being executed
+
+;-------------------------------------------------------------------------
+; 8th Note Jab
+[Statedef 200]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 0,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 200                       ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 200, HitDef]
+type = HitDef
+trigger1 = AnimElem = 2
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 20, 0                   ;Damage that move inflicts, guard damage
+animtype = Light                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 1 * Var(5) * .0625                  ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 5                  ;Sound to play on hit
+guardsound = S6, 0                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 0             ;Time that the opponent slides back
+ground.hittime  = 10             ;Time opponent is in hit state
+ground.velocity = -1.3             ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+[State 200, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 1
+persistent = 0
+
+[State 200, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0, 0
+
+[State 200, Return to Idle State]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;16th Note Jab
+[Statedef 201]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 0,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 201                       ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 201, HitDef]
+type = HitDef
+trigger1 = AnimElem = 2
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 10, 0                   ;Damage that move inflicts, guard damage
+animtype = Light                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 1 * Var(5) * .0625                  ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 5                  ;Sound to play on hit
+guardsound = S6, 0                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 0             ;Time that the opponent slides back
+ground.hittime  = 12             ;Time opponent is in hit state
+ground.velocity = -1.3            ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+[State 201, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0, 0
+
+[State 201, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 1
+persistent = 0
+
+[State 201, Return to Idle State]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;-------------------------------------------------------------------------
+; Quarter Note Blow
+[Statedef 210]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 0,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 210                       ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 210, HitDef]
+type = HitDef
+trigger1 = AnimElem = 3
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 20, 0                   ;Damage that move inflicts, guard damage
+animtype = Medium                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 4 * Var(5) * .0625                   ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 3                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 5             ;Time that the opponent slides back
+ground.hittime  = 15             ;Time opponent is in hit state
+ground.velocity = -1.5             ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+[State 210, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0, 1
+
+[State 210, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 2
+persistent = 0
+
+[State 210, Return to Idle State]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+; Eighth Note Blow
+[Statedef 211]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 0,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 211                       ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 211, HitDef]
+type = HitDef
+trigger1 = AnimElem = 2
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 20, 0                   ;Damage that move inflicts, guard damage
+animtype = Medium                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 4 * Var(5) * .0625                   ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 3                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 5             ;Time that the opponent slides back
+ground.hittime  = 15             ;Time opponent is in hit state
+ground.velocity = -1.5             ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+
+[State 211, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0, 1
+
+[State 211, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 2
+persistent = 0
+
+[State 211, Return to Idle State]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;-------------------------------------------------------------------------
+; Dotted Quarter Note Right Hook
+[Statedef 212]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 0,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 212                       ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 212, HitDef]
+type = HitDef
+trigger1 = AnimElem = 3
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 20, 0                   ;Damage that move inflicts, guard damage
+animtype = Medium                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 4 * Var(5) * .0625                  ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 3                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 5             ;Time that the opponent slides back
+ground.hittime  = 15             ;Time opponent is in hit state
+ground.velocity = -1.5             ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+[State 212, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0, 1
+
+[State 212, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 3
+persistent = 0
+
+[State 212, Return to Idle State]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;-------------------------------------------------------------------------
+; Dotted Quarter Note Left Upper
+[Statedef 213]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 0,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 213                      ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 213, HitDef]
+type = HitDef
+trigger1 = AnimElem = 3
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 20, 0                   ;Damage that move inflicts, guard damage
+animtype = Medium                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 4 * Var(5) * .0625                  ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 3                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 5             ;Time that the opponent slides back
+ground.hittime  = 15             ;Time opponent is in hit state
+ground.velocity = -1.5             ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+[State 213, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0, 1
+
+[State 213, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 3
+persistent = 0
+
+[State 213, Return to Idle State]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+; Half Note Straight
+[Statedef 220]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 0,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 220                       ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 220, HitDef]
+type = HitDef
+trigger1 = AnimElem = 3
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 40, 0                   ;Damage that move inflicts, guard damage
+animtype = Hard                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 10 * Var(5) * .0625                 ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 4                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 20             ;Time that the opponent slides back
+ground.hittime  = 20             ;Time opponent is in hit state
+ground.velocity = -2.3             ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+[State 220, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0, 2
+
+[State 220, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 4
+persistent = 0
+
+[State 220, Return to Idle State]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+;Common Time (Light)
+[Statedef 400]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 10,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 400                     ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 400, Set Variable 'common-time']
+type = VarSet
+trigger1 = AnimElem = 7, = 0
+v = 2
+value = Var(1) * 8
+
+[State 400, Set Variable 'beats-per-note']
+type = VarSet
+trigger1 = 1
+v = 4
+value = 1
+persistent = 0
+
+[State 400, Set Variable 'note-time']
+type = VarSet
+trigger1 = AnimElem = 7, = 0
+v = 3
+value = Var(1) * Var(4)
+
+[State 400, Add To Variable 'ticks-played']
+type = VarAdd
+trigger1 = AnimElem = 7, = 0
+v = 5
+value = Var(1) * Var(4)
+
+[State 400, HitDef]
+type = HitDef
+trigger1 = AnimElem = 3
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 20, 0                   ;Damage that move inflicts, guard damage
+animtype = Medium                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 4                 ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 3                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 5             ;Time that the opponent slides back
+ground.hittime  = 20             ;Time opponent is in hit state
+ground.velocity = -1.5             ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+[State 400, PlaySnd]
+type = PlaySnd
+trigger1 = AnimElem = 7, = 0
+value = 0, 1
+
+[State 400, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 1, 10
+
+
+;Common Time (Finisher)
+[Statedef 401]
+type    = S                      ;State-type: S-stand, C-crouch, A-air, L-liedown
+movetype= A                      ;Move-type: A-attack, I-idle, H-gethit
+physics = S                      ;Physics: S-stand, C-crouch, A-air
+juggle  = 1                      ;Number of air juggle points move takes
+;Commonly-used controllers:
+velset = 0,0                     ;Set velocity (x,y) (Def: no change)
+ctrl = 0                         ;Set ctrl (Def: no change)
+anim = 401                     ;Change animation (Def: no change)
+poweradd = 20                    ;Power to add (Def: 0)
+sprpriority = 2                  ;Set layering priority to 2 (in front)
+
+[State 401, HitDef]
+type = HitDef
+trigger1 = AnimElem = 3
+attr = S, NA                     ;Attribute: Standing, Normal Attack
+damage = 20, 0                   ;Damage that move inflicts, guard damage
+animtype = Hard                 ;Animation type: Light, Medium, Heavy, Back (def: Light)
+guardflag = MA                   ;Flags on how move is to be guarded against
+hitflag = MAF                    ;Flags of conditions that move can hit
+priority = 3, Hit                ;Attack priority: 0 (least) to 7 (most), 4 default
+;Hit/Miss/Dodge type (Def: Hit)
+pausetime = 0, 4                 ;Time attacker pauses, time opponent shakes
+sparkno = 0                      ;Spark anim no (Def: set above)
+sparkxy = -10, -76               ;X-offset for the "hit spark" rel. to p2,
+;Y-offset for the spark rel. to p1
+hitsound = S5, 3                  ;Sound to play on hit
+guardsound = S6, 1                ;Sound to play on guard
+ground.type = High               ;Type: High, Low, Trip (def: Normal)
+ground.slidetime = 5             ;Time that the opponent slides back
+ground.hittime  = 15             ;Time opponent is in hit state
+ground.velocity = -1.5, -8             ;Velocity at which opponent is pushed
+airguard.velocity = -1.9,-.8     ;Guard velocity in air (def: (air.xvel*1.5, air.yvel/2))
+air.type = High                  ;Type: High, Low, Trip (def: same as ground.type)
+air.velocity = -1.4,-3           ;X-velocity at which opponent is pushed,
+;Y-velocity at which opponent is pushed
+air.hittime = 12                 ;Time before opponent regains control in air
+
+[State 401, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 0, 2
+
+[State 401, PlaySnd]
+type = PlaySnd
+trigger1 = Time = 1
+value = 1, 9
+
+[State 401, Return to Idle State]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+[Statedef -2]
+
+; This is where global variables can get reset 
+[State -2, Set Variable 'ticks-per-beat']
+type = VarSet
+trigger1 = 1
+v = 1
+value = 8
+persistent = 0
+
+[State -2, Set Variable 'note-time']
+type = VarSet
+triggerall = Time = 1
+trigger1 = Var(2) > 0		;Is in 'Common Time'
+trigger1 = stateno >= 200 && stateno <= 250
+v = 3
+value = Var(3) % Var(1) + (Var(1) * Var(4))
+
+[State -2, Increment Variable 'ticks-played']
+type = VarAdd
+triggerall = Time = 1
+triggerall = Var(2) > 0
+trigger1 = stateno >= 200 && stateno <= 250
+v = 5
+value = Var(1) * Var(4)
+
+[State -2, Reset Variable 'common-time']
+type = VarSet
+trigger1 = ctrl = 1
+trigger1 = Var(3) <= -Var(1)
+trigger2 = stateno = 401
+v = 2
+value = 0
+
+[State -2, Reset Variable 'note-time']
+type = VarSet
+trigger1 = ctrl = 1
+trigger1 = Var(2) = 0
+v = 3
+value = 0
+
+[State -2, Reset Variable 'ticks-played']
+type = VarSet
+trigger1 = ctrl = 1
+trigger1 = Var(2) = 0
+v = 5
+value = 0
+
+[State -2, Decrement Variable 'common-time']
+type = VarAdd
+trigger1 = Var(2) > 0
+v = 2
+value = -1
+
+[State -2, Decrement Variable 'note-time']
+type = VarAdd
+trigger1 = Var(2) > 0 ; If in 'Common Time'
+v = 3
+value = -1
+
+[State -2, Play Note Count Snd '2']
+type = PlaySnd
+triggerall = Var(2) > 0; If in 'Common Time'
+triggerall = stateno >= 200 && stateno <= 250
+trigger1 = 8 * Var(1) - Var(2) = 2 * Var(1)
+value = 1, 11
+
+[State -2, Play Note Count Snd '3']
+type = PlaySnd
+triggerall = Var(2) > 0; If in 'Common Time'
+triggerall = stateno >= 200 && stateno <= 250
+trigger1 = 8 * Var(1) - Var(2) = 4 * Var(1)
+value = 1, 12
+
+[State -2, Debug Log]
+type = DisplayToClipboard
+trigger1 = 1
+text = "Ticks per Beat = %d, Beats per Note = %d, Ticks left in Common Time = %d, Note Time = %d, Ticks Played %d, Current Beat %d"
+params = var(1), var(4), var(2), var(3), var(5), (8 - Var(2) / Var(1))/2
+ignorehitpause = 1
