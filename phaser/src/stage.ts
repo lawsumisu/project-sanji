@@ -1,10 +1,16 @@
 import * as Phaser from 'phaser';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
+import { Player } from 'src/player';
 
 export class Stage extends Phaser.Scene {
-  // TODO
-  p1Sprite: Phaser.GameObjects.Sprite;
+  p1: Player;
+
+  constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
+    super(config);
+    this.p1 = new Player(this);
+  }
+
 
   public preload(): void {
     this.load.multiatlas('vanessa', 'assets/vanessa.json', 'assets');
@@ -12,15 +18,12 @@ export class Stage extends Phaser.Scene {
 
   public create(): void {
     this.cameras.main.setBounds(0, 0, 1500, 1200);
-
-    // TODO create player object
-    this.p1Sprite = this.add.sprite(100, 100, 'vanessa', 'idle/11.png');
-    this.addAnimation('idle', 6, 'idle', 10);
-    this.p1Sprite.anims.play('idle');
+    this.p1.create();
   }
 
   public update(time: number, delta: number): void {
     this.draw();
+    this.p1.update({ time, delta: delta / 1000 })
   }
 
   public get debug(): DebugDrawPlugin {
@@ -33,16 +36,5 @@ export class Stage extends Phaser.Scene {
 
   private draw(): void {
     // TODO
-  }
-
-  private addAnimation(key: string, count: number, prefix: string, frameRate: number, repeat: number = -1): void {
-    const frames = this.p1Sprite.anims.animationManager.generateFrameNames('vanessa', {
-      start: 1,
-      end: count,
-      zeroPad: 2,
-      prefix: `${prefix}/`,
-      suffix: '.png'
-    });
-    this.p1Sprite.anims.animationManager.create({ key, frames, frameRate, repeat });
   }
 }
