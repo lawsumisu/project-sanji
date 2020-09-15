@@ -10,8 +10,7 @@ export class Stage extends Phaser.Scene {
   }
 
   public create(): void {
-    this.cameras.main.setBounds(0, 0, 1500, 600);
-    this.cameras.main.setZoom(1.5);
+    this.cameras.main.setBounds(0, 0, 1500, 1200);
   }
 
   public update(time: number, delta: number): void {

@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import * as _ from 'lodash';
-import { RingBuffer } from 'src/utilities/ringBuffer/ringBuffer.util';
+import { RingBuffer } from '@lawsumisu/common-utilities';
 
 const keyCodes = Phaser.Input.Keyboard.KeyCodes;
 
