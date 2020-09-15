@@ -1,0 +1,6 @@
+# JetBrains Rider
+.idea/
+
+dist/
+node_modules/
+.npmrc
