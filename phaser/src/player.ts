@@ -1,9 +1,11 @@
-import { addAnimation } from 'src/utilitiesPF/animation.util';
 import { Stage } from 'src/stage';
 import { StateDefinition, StateManager } from 'src/state';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { GameInput, GameInputPlugin } from 'src/plugins/gameInput.plugin';
 import * as _ from 'lodash';
+import { addAnimationsByDefinition } from 'src/characters';
+import aero from 'src/characters/aero/frameData';
+import { playAnimation } from 'src/utilitiesPF/animation.util';
 
 enum CommonState {
   IDLE = 'IDLE',
@@ -13,8 +15,12 @@ enum CommonState {
   CROUCH = 'CROUCH'
 }
 
+interface CommonStateConfig {
+  animation?: string;
+}
+
 export class Player {
-  protected stateManager: StateManager<CommonState>;
+  protected stateManager: StateManager<CommonState, CommonStateConfig>;
 
   private sprite: Phaser.GameObjects.Sprite;
   private stage: Stage;
@@ -23,9 +29,11 @@ export class Player {
 
   private velocity: Vector2 = Vector2.ZERO;
   private position: Vector2 = new Vector2(100, 100);
+  private direction: -1 | 1 = 1;
 
-  private states: { [key in CommonState]?: StateDefinition } = {
+  private states: { [key in CommonState]?: StateDefinition<CommonStateConfig> } = {
     [CommonState.IDLE]: {
+      animation: 'IDLE',
       update: () => {
       }
     },
@@ -35,7 +43,20 @@ export class Player {
           this.velocity.x = 0;
           this.stateManager.setState(CommonState.IDLE);
         } else {
-          this.velocity.x = this.walkSpeed * (this.input.isInputDown(GameInput.LEFT) ? -1 : 1);
+          const walkDirection = this.input.isInputDown(GameInput.RIGHT) ? 1 : -1;
+          const animation = walkDirection === this.direction ? 'WALK_FWD' : 'WALK_BACK';
+          const d = walkDirection === this.direction ? 1 : -1;
+            playAnimation(this.sprite, animation);
+          this.velocity.x = this.walkSpeed * this.direction * d;
+        }
+      }
+    },
+    [CommonState.CROUCH]: {
+      animation: 'CROUCH',
+      update: () => {
+        this.velocity.x = 0;
+        if (!_.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], this.input.isInputDown)) {
+          this.stateManager.setState(CommonState.IDLE);
         }
       }
     }
@@ -43,9 +64,14 @@ export class Player {
 
   constructor(stage: Stage) {
     this.stage = stage;
-    this.stateManager = new StateManager<CommonState>();
+    this.stateManager = new StateManager<CommonState, CommonStateConfig>();
+    this.stateManager.onAfterTransition((config: CommonStateConfig) => {
+      if (config.animation) {
+        playAnimation(this.sprite, config.animation, true);
+      }
+    });
 
-    _.forEach(this.states, (value: StateDefinition, key: CommonState) => {
+    _.forEach(this.states, (value: StateDefinition<CommonStateConfig>, key: CommonState) => {
       this.stateManager.addState(key, value);
     });
   }
@@ -53,8 +79,7 @@ export class Player {
   public create() {
     // TODO load create values from file.
     this.sprite = this.stage.add.sprite(100, 100, 'vanessa', 'idle/11.png');
-    addAnimation(this.sprite, 'idle', 'vanessa', 6, 'idle', 10);
-    this.sprite.anims.play('idle');
+    addAnimationsByDefinition(this.sprite, aero);
     this.stateManager.setState(CommonState.IDLE);
   }
 
@@ -66,7 +91,9 @@ export class Player {
 
   private updateState(): void {
     let state = this.stateManager.current.key;
-    if (
+    if (_.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], this.input.isInputDown)) {
+      state = CommonState.CROUCH;
+    } else if (
       state === CommonState.IDLE &&
       (this.input.isInputDown(GameInput.RIGHT) || this.input.isInputDown(GameInput.LEFT))
     ) {

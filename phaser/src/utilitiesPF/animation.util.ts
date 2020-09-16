@@ -1,10 +1,6 @@
 import * as Phaser from 'phaser';
 import * as _ from 'lodash';
-
-export interface AnimationFrameConfig {
-  index: number;
-  prefix: string;
-}
+import { AnimationFrameConfig } from 'src/characters';
 
 export function addAnimation(
   sprite: Phaser.GameObjects.Sprite,
@@ -34,18 +30,22 @@ export function addAnimationByFrames(
   frameRate: number,
   repeat: number
 ): void {
-  const frames: Phaser.Types.Animations.AnimationFrame[] = frameData
+  const frames: Phaser.Types.Animations.AnimationFrame[] = _.chain(frameData)
     .map((frame: number | AnimationFrameConfig) => {
-      return _.isNumber(frame) ? { index: frame, prefix: defaultPrefix } : frame;
+      return _.isNumber(frame) ? { index: frame } : frame;
     })
     .map((config: AnimationFrameConfig) => {
-      const frameString = `${config.index}`.padStart(2, '0');
-      const prefix = config.prefix || defaultPrefix;
-      return {
-        key: assetKey,
-        frame: `${prefix}/${frameString}.png`
-      };
-    });
+      const { index, endIndex = index, prefix = defaultPrefix, loop = 1 } = config;
+      return _.flatten(Array(loop).fill(_.range(index, endIndex + 1))).map((i: number) => {
+        const frameString = `${i}`.padStart(2, '0');
+        return {
+          key: assetKey,
+          frame: `${prefix}/${frameString}.png`
+        }
+      });
+    })
+    .flatten()
+    .value();
   sprite.anims.animationManager.create({ key, frames, frameRate, repeat });
 }
 

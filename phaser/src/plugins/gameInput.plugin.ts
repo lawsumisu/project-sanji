@@ -121,9 +121,9 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
    * @param {GameInput} input
    * @returns {boolean}
    */
-  public isInputDown(input: GameInput): boolean {
+  public isInputDown = (input: GameInput): boolean => {
     return this.inputBuffer.at(-1).has(input);
-  }
+  };
 
   public toString(): string {
     const inputs = this.inputBuffer.at(-1);
