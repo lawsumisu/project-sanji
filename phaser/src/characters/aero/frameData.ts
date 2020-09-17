@@ -36,6 +36,31 @@ const frameData: FrameDefinitionMap = {
       frameRate: 13,
       repeat: -1,
     }
+  },
+  RUN: {
+    animDef: {
+      frames: 6,
+      assetKey: 'vanessa',
+      prefix: 'run',
+      frameRate: 15,
+      repeat: -1,
+    }
+  },
+  JUMP: {
+    animDef: {
+      frames: 5,
+      assetKey: 'vanessa',
+      prefix: 'jump',
+      frameRate: 15,
+    }
+  },
+  FALL: {
+    animDef: {
+      frames: 5,
+      assetKey: 'vanessa',
+      prefix: 'fall',
+      frameRate: 15,
+    }
   }
 };
 

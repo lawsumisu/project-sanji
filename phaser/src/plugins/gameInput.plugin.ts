@@ -180,6 +180,8 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
         inputsThisFrame.add(GameInput.DOWN_LEFT);
       }
     }
+    if (inputsThisFrame.has(GameInput.UP_LEFT)) {
+    }
     this.inputBuffer.push(inputsThisFrame);
   };
 
