@@ -69,10 +69,10 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
     [GameInput.UP]: [getKeyboardConfig(keyCodes.UP), getGamepadConfig('up')],
     [GameInput.RIGHT]: [getKeyboardConfig(keyCodes.RIGHT), getGamepadConfig('right')],
     [GameInput.LEFT]: [getKeyboardConfig(keyCodes.LEFT), getGamepadConfig('left')],
-    [GameInput.INPUT1]: [getKeyboardConfig(keyCodes.A), getGamepadConfig('A'), getGamepadConfig('X')],
-    [GameInput.INPUT2]: [getKeyboardConfig(keyCodes.S), getGamepadConfig('B'), getGamepadConfig('Y')],
-    [GameInput.INPUT3]: [getKeyboardConfig(keyCodes.W), getGamepadConfig('L1')],
-    [GameInput.INPUT4]: [getKeyboardConfig(keyCodes.E), getGamepadConfig('R1')],
+    [GameInput.INPUT1]: [getKeyboardConfig(keyCodes.A), getGamepadConfig('A')],
+    [GameInput.INPUT2]: [getKeyboardConfig(keyCodes.S), getGamepadConfig('B')],
+    [GameInput.INPUT3]: [getKeyboardConfig(keyCodes.W), getGamepadConfig('X')],
+    [GameInput.INPUT4]: [getKeyboardConfig(keyCodes.E), getGamepadConfig('Y')],
     [GameInput.INPUT5]: [],
     [GameInput.INPUT6]: []
   };
@@ -88,6 +88,8 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
     [GameInput.DOWN_LEFT]: '↙',
   };
 
+  public readonly bufferLength = 100;
+
   private inputMap: InputMap;
   private inputBuffer: RingBuffer<Set<GameInput>>;
 
@@ -99,31 +101,38 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   }
 
   /**
-   * Returns if the input was pressed this frame.
+   * Returns if the input was pressed i frames ago (0 for current frame).
    * @param {GameInput} input
+   * @param {number} i: number of frames ago
    * @returns {boolean}
    */
-  public isInputPressed(input: GameInput): boolean {
-    return this.inputBuffer.at(-1).has(input) && !this.inputBuffer.at(-2).has(input);
-  }
+  public isInputPressed = (input: GameInput, i = 0): boolean => {
+    return this.inputBuffer.at(-(i + 1)).has(input) && !this.inputBuffer.at(-(i + 2)).has(input);
+  };
 
   /**
    * Returns true if the input was released this frame.
    * @param {GameInput} input
+   * @param {number} i: number of frames ago
    * @returns {boolean}
    */
-  public isInputReleased(input: GameInput): boolean {
-    return !this.inputBuffer.at(-1).has(input) && this.inputBuffer.at(-2).has(input);
-  }
+  public isInputReleased = (input: GameInput, i = 0): boolean => {
+    return !this.inputBuffer.at(-(i + 1)).has(input) && this.inputBuffer.at(-(i + 2)).has(input);
+  };
 
   /**
-   * Returns true if the input is currently held down this frame.
+   * Returns true if the input is currently held down i frames ago (0 for current frame).
    * @param {GameInput} input
+   * @param {number} i: number of frames ago
    * @returns {boolean}
    */
-  public isInputDown = (input: GameInput): boolean => {
-    return this.inputBuffer.at(-1).has(input);
+  public isInputDown = (input: GameInput, i = 0): boolean => {
+    return this.inputBuffer.at(-(i + 1)).has(input);
   };
+
+  public getInputs(i = 0): Set<GameInput> {
+    return new Set(this.inputBuffer.at(-(i + 1)));
+  }
 
   public toString(): string {
     const inputs = this.inputBuffer.at(-1);
@@ -185,7 +194,7 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   }
 
   private clearInputs(): void {
-    this.inputBuffer = new RingBuffer(20);
-    _.times(20, () => this.inputBuffer.push(new Set()))
+    this.inputBuffer = new RingBuffer(this.bufferLength);
+    _.times(this.bufferLength, () => this.inputBuffer.push(new Set()))
   }
 }

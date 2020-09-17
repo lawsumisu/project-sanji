@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 import { addAnimationsByDefinition } from 'src/characters';
 import aero from 'src/characters/aero/frameData';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
+import { Command } from 'src/characters/command';
 
 enum CommonState {
   IDLE = 'IDLE',
@@ -90,6 +91,11 @@ export class Player {
   }
 
   private updateState(): void {
+    const cmd = new Command('6~6236a', 30, this.stage.gameInput);
+    const t = cmd.isExecuted();
+    if (t) {
+      console.log('hadoken');
+    }
     let state = this.stateManager.current.key;
     if (_.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], this.input.isInputDown)) {
       state = CommonState.CROUCH;

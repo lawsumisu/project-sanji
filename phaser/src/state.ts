@@ -69,7 +69,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       if (this.currentState.update) {
         this.currentState.update(this.tick);
       }
-      console.log(this.currentState.key);
+      // console.log(this.currentState.key);
     }
   }
 
