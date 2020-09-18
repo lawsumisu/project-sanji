@@ -60,6 +60,8 @@ type InputMap = {
   [key in GameInput]?: Array<InputConfig | Array<GameInput>>;
 };
 
+export let GI: GameInputPlugin;
+
 /**
  * A plugin that allows mapping between device inputs and relevant game inputs.
  */
@@ -142,6 +144,7 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   private onSceneStart = (): void => {
     this.setupInputMap();
     this.clearInputs();
+    GI = this;
   };
 
   private onSceneUpdate = (): void => {

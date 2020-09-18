@@ -1,4 +1,5 @@
-import { GameInput, GameInputPlugin } from 'src/plugins/gameInput.plugin';
+import { GameInput } from 'src/plugins/gameInput.plugin';
+import { PS } from 'src/global';
 
 enum CommandInputType {
   DOWN = 'DOWN',
@@ -7,9 +8,67 @@ enum CommandInputType {
 }
 
 interface CommandInput {
+  input: SimpleInput | JunctiveInput;
+  strict?: boolean;
+}
+
+class SimpleInput {
   input: GameInput;
   type: CommandInputType;
-  strict?: boolean;
+
+  constructor(input: GameInput, type: CommandInputType) {
+    this.input = input;
+    this.type = type;
+  }
+
+  public checkInput(historyIndex: number = 0): boolean {
+    switch (this.type) {
+      case CommandInputType.DOWN:
+        return PS.gameInput.isInputDown(this.input, historyIndex);
+      case CommandInputType.PRESS:
+        return PS.gameInput.isInputPressed(this.input, historyIndex);
+      case CommandInputType.RELEASE:
+        return PS.gameInput.isInputReleased(this.input, historyIndex);
+    }
+  }
+
+  public checkInputIgnoringType(historyIndex = 0): boolean {
+    return (
+      PS.gameInput.isInputDown(this.input, historyIndex) || PS.gameInput.isInputReleased(this.input, historyIndex)
+    );
+  }
+}
+
+class JunctiveInput {
+  input1: JunctiveInput | SimpleInput;
+  input2: JunctiveInput | SimpleInput;
+  isAnd: boolean;
+
+  constructor(input1: JunctiveInput | SimpleInput, input2: JunctiveInput | SimpleInput, isAnd = false) {
+    this.input1 = input1;
+    this.input2 = input2;
+    this.isAnd = isAnd;
+  }
+
+  public checkInput(historyIndex: number = 0): boolean {
+    const c1 = this.input1.checkInput(historyIndex);
+    if (c1 && !this.isAnd) {
+      return true;
+    } else {
+      const c2 = this.input2.checkInput(historyIndex);
+      return this.isAnd ? c1 && c2 : c2;
+    }
+  }
+
+  public checkInputIgnoringType(historyIndex: number = 0): boolean {
+    const c1 = this.input1.checkInputIgnoringType(historyIndex);
+    if (c1 && this.isAnd) {
+      return true;
+    } else {
+      const c2 = this.input2.checkInputIgnoringType(historyIndex);
+      return this.isAnd ? c1 && c2 : c2;
+    }
+  }
 }
 
 export class Command {
@@ -19,46 +78,46 @@ export class Command {
     3: GameInput.DOWN_RIGHT,
     4: GameInput.LEFT,
     6: GameInput.RIGHT,
+    7: GameInput.UP_LEFT,
+    8: GameInput.UP,
+    9: GameInput.UP_RIGHT,
     a: GameInput.INPUT3,
     b: GameInput.INPUT4,
     c: GameInput.INPUT2,
-    d: GameInput.INPUT1,
+    d: GameInput.INPUT1
   };
 
   private readonly inputs: CommandInput[];
   private readonly inputTime: number;
 
-  private readonly gameInput: GameInputPlugin;
-
-  constructor(cmd: string, inputTime: number, gameInput: GameInputPlugin) {
+  constructor(cmd: string, inputTime: number) {
     this.inputs = Command.parse(cmd);
     this.inputTime = inputTime;
-    this.gameInput = gameInput;
   }
 
   public isExecuted(): boolean {
     let i = this.inputs.length - 1;
-    if (!this.checkInput(this.inputs[i])) {
+    if (!this.inputs[i].input.checkInput()) {
       return false;
     } else if (this.inputs.length === 1) {
       return true;
     } else {
-      return this.isExecutedRecursive(1, i - 1, Math.min(this.inputTime, this.gameInput.bufferLength));
+      return this.isExecutedRecursive(1, i - 1, Math.min(this.inputTime, PS.gameInput.bufferLength));
     }
   }
 
   private isExecutedRecursive(historyIndex: number, inputIndex: number, executionTime: number): boolean {
     for (let j = historyIndex; j < executionTime; j++) {
-      const input = this.inputs[inputIndex];
-      if (input.strict) {
+      const commandInput = this.inputs[inputIndex];
+      if (commandInput.strict) {
         // If strict case, then fail early if any inputs other than the one being checked for have been inputted.
-        if (this.gameInput.getInputs(j).size === 0) {
+        if (PS.gameInput.getInputs(j).size === 0) {
           continue;
-        } else if (!this.checkInputIgnoringType(input, j)) {
+        } else if (!commandInput.input.checkInputIgnoringType(j)) {
           return false;
         }
       }
-      if (this.checkInput(input, j)) {
+      if (commandInput.input.checkInput(j)) {
         if (inputIndex === 0) {
           return true;
         } else {
@@ -69,23 +128,8 @@ export class Command {
     return false;
   }
 
-  private checkInput(commandInput: CommandInput, index = 0): boolean {
-    switch (commandInput.type) {
-      case CommandInputType.DOWN:
-        return this.gameInput.isInputDown(commandInput.input, index);
-      case CommandInputType.PRESS:
-        return this.gameInput.isInputPressed(commandInput.input, index);
-      case CommandInputType.RELEASE:
-        return this.gameInput.isInputReleased(commandInput.input, index);
-    }
-  }
-
-  private checkInputIgnoringType(commandInput: CommandInput, index = 0): boolean {
-    return this.gameInput.isInputDown(commandInput.input, index) || this.gameInput.isInputReleased(commandInput.input, index);
-  }
-
   private static parse(cmd: string): CommandInput[] {
-    const regex = /[a-d1-9]~?/g;
+    const regex = /\(?[a-d1-9]([|+]\(*[a-d1-9]\)*)*\)?~?/g;
     const matches = cmd.match(regex);
     if (matches) {
       return matches.map(Command.parseInput);
@@ -95,16 +139,21 @@ export class Command {
   }
 
   private static parseInput(input: string): CommandInput {
-    let strict;
-    let gi: GameInput = GameInput.INPUT1;
-    for (let i = 0; i < input.length; i++) {
-      const c = input[i];
-      if (c.match(/[a-d1-9]/)) {
-        gi = Command.commandToGameInputMap[c];
-      } else {
-        strict = c === '~';
-      }
-    }
-    return { input: gi, type: CommandInputType.PRESS, strict }
+    let strict = input.endsWith('~');
+    const parsedInput = input
+      .replace('~', '')
+      .split('|')
+      .map((c: string) => Command.commandToGameInputMap[c])
+      .reduce((accumulator: JunctiveInput | SimpleInput, value: GameInput) => {
+        const si = new SimpleInput(value, CommandInputType.PRESS);
+        if (accumulator === null) {
+          return si;
+        } else {
+          return new JunctiveInput(accumulator, si);
+        }
+      }, null);
+
+    console.log(parsedInput);
+    return {input: parsedInput!, strict};
   }
 }

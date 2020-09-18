@@ -36,6 +36,11 @@ export class Player {
   private position: Vector2 = new Vector2(200, 200);
   private direction: -1 | 1 = 1;
 
+  private commands = {
+    JUMP: new Command('7|8|9', 1),
+    RUN: new Command('6~6', 10),
+  };
+
   private states: { [key in CommonState]?: StateDefinition<CommonStateConfig> } = {
     [CommonState.IDLE]: {
       animation: 'IDLE',
@@ -123,17 +128,11 @@ export class Player {
   }
 
   private updateState(): void {
-    const runCommand = new Command('6~6', 15, this.stage.gameInput);
     let state = this.stateManager.current.key;
-    if (runCommand.isExecuted()) {
+    if (this.commands.RUN.isExecuted()) {
       state = CommonState.RUN;
     } else {
-      if (
-        _.some([GameInput.UP_LEFT, GameInput.UP_RIGHT, GameInput.UP], (gi: GameInput) =>
-          this.input.isInputPressed(gi)
-        ) &&
-        [CommonState.IDLE, CommonState.WALK].includes(state)
-      ) {
+      if (this.commands.JUMP.isExecuted() && [CommonState.IDLE, CommonState.WALK].includes(state)) {
         state = CommonState.JUMP;
       } else if (
         _.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], (gi: GameInput) =>

@@ -31,7 +31,7 @@ export class Stage extends Phaser.Scene {
   }
 
   public get gameInput(): GameInputPlugin {
-    return (<any>this.sys).gameInput;
+    return (<any>this.sys).GI;
   }
 
   private draw(): void {
