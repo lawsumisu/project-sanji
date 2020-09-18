@@ -129,7 +129,7 @@ export class Command {
   }
 
   private static parse(cmd: string): CommandInput[] {
-    const regex = /\(?[a-d1-9]([|+]\(*[a-d1-9]\)*)*\)?~?/g;
+    const regex = /\(?\*?[a-d1-9]([|+]\(*\*?[a-d1-9]\)*)*\)?~?/g;
     const matches = cmd.match(regex);
     if (matches) {
       return matches.map(Command.parseInput);
@@ -143,17 +143,18 @@ export class Command {
     const parsedInput = input
       .replace('~', '')
       .split('|')
-      .map((c: string) => Command.commandToGameInputMap[c])
-      .reduce((accumulator: JunctiveInput | SimpleInput, value: GameInput) => {
-        const si = new SimpleInput(value, CommandInputType.PRESS);
+      .map((simpleInput: string) => {
+        const type = simpleInput.startsWith('*') ? CommandInputType.DOWN : CommandInputType.PRESS;
+        const input = Command.commandToGameInputMap[simpleInput.replace('*', '')];
+        return new SimpleInput(input, type);
+      })
+      .reduce((accumulator: JunctiveInput | SimpleInput, simpleInput: SimpleInput) => {
         if (accumulator === null) {
-          return si;
+          return simpleInput;
         } else {
-          return new JunctiveInput(accumulator, si);
+          return new JunctiveInput(accumulator, simpleInput);
         }
       }, null);
-
-    console.log(parsedInput);
     return {input: parsedInput!, strict};
   }
 }

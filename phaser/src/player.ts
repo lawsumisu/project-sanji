@@ -17,6 +17,13 @@ enum CommonState {
   RUN = 'RUN'
 }
 
+enum CommonCommand {
+  WALK = 'WALK',
+  JUMP = 'JUMP',
+  CROUCH = 'CROUCH',
+  RUN = 'RUN'
+}
+
 interface CommonStateConfig {
   animation?: string;
 }
@@ -36,10 +43,35 @@ export class Player {
   private position: Vector2 = new Vector2(200, 200);
   private direction: -1 | 1 = 1;
 
-  private commands = {
+  private commands: { [key in CommonCommand]: Command } = {
     JUMP: new Command('7|8|9', 1),
     RUN: new Command('6~6', 10),
+    CROUCH: new Command('*1|*2|*3', 1),
+    WALK: new Command('*4|*6', 1),
   };
+
+  private commandList: Array<{name: CommonCommand; trigger?: () => boolean; state: CommonState}> = [
+    {
+      name: CommonCommand.RUN,
+      trigger: () => !this.isAirborne,
+      state: CommonState.RUN
+    },
+    {
+      name: CommonCommand.JUMP,
+      trigger: () => !this.isAirborne,
+      state: CommonState.JUMP,
+    },
+    {
+      name: CommonCommand.CROUCH,
+      trigger: () => !this.isAirborne,
+      state: CommonState.CROUCH,
+    },
+    {
+      name: CommonCommand.WALK,
+      trigger: () => this.stateManager.current.key === CommonState.IDLE,
+      state: CommonState.WALK,
+    }
+  ];
 
   private states: { [key in CommonState]?: StateDefinition<CommonStateConfig> } = {
     [CommonState.IDLE]: {
@@ -65,7 +97,11 @@ export class Player {
       animation: 'CROUCH',
       update: () => {
         this.velocity.x = 0;
-        if (!_.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], this.input.isInputDown)) {
+        if (
+          !_.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], (gi: GameInput) =>
+            this.input.isInputDown(gi)
+          )
+        ) {
           this.stateManager.setState(CommonState.IDLE);
         }
       }
@@ -128,26 +164,13 @@ export class Player {
   }
 
   private updateState(): void {
-    let state = this.stateManager.current.key;
-    if (this.commands.RUN.isExecuted()) {
-      state = CommonState.RUN;
-    } else {
-      if (this.commands.JUMP.isExecuted() && [CommonState.IDLE, CommonState.WALK].includes(state)) {
-        state = CommonState.JUMP;
-      } else if (
-        _.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], (gi: GameInput) =>
-          this.input.isInputDown(gi)
-        )
-      ) {
-        state = CommonState.CROUCH;
-      } else if (
-        state === CommonState.IDLE &&
-        (this.input.isInputDown(GameInput.RIGHT) || this.input.isInputDown(GameInput.LEFT))
-      ) {
-        state = CommonState.WALK;
+    for (const command of this.commandList) {
+      const { name, trigger = () => true, state } = command;
+      if (this.commands[name].isExecuted() && trigger()) {
+        this.stateManager.setState(state);
+        break
       }
     }
-    this.stateManager.setState(state);
     this.stateManager.update();
   }
 
@@ -158,7 +181,7 @@ export class Player {
   }
 
   public updateKinematics(delta: number): void {
-    if ([CommonState.JUMP, CommonState.FALL].includes(this.stateManager.current.key)) {
+    if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
     }
     this.position = this.position.add(this.velocity.scale(delta));
@@ -174,5 +197,9 @@ export class Player {
 
   private get input(): GameInputPlugin {
     return this.stage.gameInput;
+  }
+
+  private get isAirborne(): boolean {
+    return [CommonState.JUMP, CommonState.FALL].includes(this.stateManager.current.key);
   }
 }
