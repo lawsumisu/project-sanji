@@ -3,7 +3,7 @@ import { Direction } from "src/frame";
 
 export type StateDefinition<C = {}, F extends string = string> = C & {
   frameKey?: F;
-  update?: (tick: number) => void;
+  update?: (tick: number, stateTemporaryValues: object) => void;
 };
 
 type State<K extends string, C, F extends string> = StateDefinition<C, F> & {
@@ -23,11 +23,12 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   private states: { [key in K]?: StateDefinition<C, F> } = {};
   private getAnimInfo: (() => AnimInfo) | null = null;
   private currentState: State<K, C, F>;
+  private stateTemporaryValues = {};
 
   public update(): void {
     this.tick++;
     if (this.currentState.update) {
-      this.currentState.update(this.tick);
+      this.currentState.update(this.tick, this.stateTemporaryValues);
     }
   }
 
@@ -66,8 +67,9 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       };
       this.doOnAfterTransition(this.currentState);
       this.tick = 0;
+      this.stateTemporaryValues = {};
       if (this.currentState.update) {
-        this.currentState.update(this.tick);
+        this.currentState.update(this.tick, this.stateTemporaryValues);
       }
       // console.log(this.currentState.key);
     }

@@ -11,6 +11,7 @@ import { Command } from 'src/characters/command';
 enum CommonState {
   IDLE = 'IDLE',
   WALK = 'WALK',
+  DASH_BACK = 'DASH_BACK',
   JUMP = 'JUMP',
   FALL = 'FALL',
   CROUCH = 'CROUCH',
@@ -21,7 +22,8 @@ enum CommonCommand {
   WALK = 'WALK',
   JUMP = 'JUMP',
   CROUCH = 'CROUCH',
-  RUN = 'RUN'
+  RUN = 'RUN',
+  DASH_BACK = 'DASH_BACK',
 }
 
 interface CommonStateConfig {
@@ -36,6 +38,7 @@ export class Player {
 
   private walkSpeed = 200;
   private runSpeed = 350;
+  private dashSpeed = 500;
   private jumpSpeed = 400;
   private gravity = 1000;
 
@@ -43,40 +46,45 @@ export class Player {
   private position: Vector2 = new Vector2(200, 200);
   private direction: -1 | 1 = 1;
 
-  private commands: { [key in CommonCommand]: Command } = {
-    JUMP: new Command('7|8|9', 1),
-    RUN: new Command('6~6', 10),
-    CROUCH: new Command('*1|*2|*3', 1),
-    WALK: new Command('*4|*6', 1),
+  private commands: {
+    [key in CommonCommand]: { command: Command; trigger?: () => boolean; state: CommonState; priority?: number };
+  } = {
+    JUMP: {
+      command: new Command('7|8|9', 1),
+      trigger: () => !this.isAirborne,
+      state: CommonState.JUMP
+    },
+    RUN: {
+      command: new Command('6~6', 10),
+      trigger: () => !this.isAirborne,
+      state: CommonState.RUN,
+      priority: 1
+    },
+    CROUCH: {
+      command: new Command('*1|*2|*3', 1),
+      trigger: () => !this.isAirborne,
+      state: CommonState.CROUCH
+    },
+    WALK: {
+      command: new Command('*4|*6', 1),
+      trigger: () => this.stateManager.current.key === CommonState.IDLE,
+      state: CommonState.WALK
+    },
+    DASH_BACK: {
+      command: new Command('4~4', 10),
+      trigger: () => !this.isAirborne,
+      state: CommonState.DASH_BACK,
+      priority: 1,
+    }
   };
 
-  private commandList: Array<{name: CommonCommand; trigger?: () => boolean; state: CommonState}> = [
-    {
-      name: CommonCommand.RUN,
-      trigger: () => !this.isAirborne,
-      state: CommonState.RUN
-    },
-    {
-      name: CommonCommand.JUMP,
-      trigger: () => !this.isAirborne,
-      state: CommonState.JUMP,
-    },
-    {
-      name: CommonCommand.CROUCH,
-      trigger: () => !this.isAirborne,
-      state: CommonState.CROUCH,
-    },
-    {
-      name: CommonCommand.WALK,
-      trigger: () => this.stateManager.current.key === CommonState.IDLE,
-      state: CommonState.WALK,
-    }
-  ];
+  private readonly commandList: CommonCommand[];
 
   private states: { [key in CommonState]?: StateDefinition<CommonStateConfig> } = {
     [CommonState.IDLE]: {
       animation: 'IDLE',
       update: () => {
+        this.velocity.y = 0;
         this.velocity.x = 0;
       }
     },
@@ -94,8 +102,7 @@ export class Player {
       }
     },
     [CommonState.CROUCH]: {
-      animation: 'CROUCH',
-      update: () => {
+      update: (tick: number) => {
         this.velocity.x = 0;
         if (
           !_.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], (gi: GameInput) =>
@@ -103,6 +110,10 @@ export class Player {
           )
         ) {
           this.stateManager.setState(CommonState.IDLE);
+        } else if (tick === 0) {
+          playAnimation(this.sprite, 'SQUAT');
+        } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
+          playAnimation(this.sprite, 'CROUCH');
         }
       }
     },
@@ -115,16 +126,34 @@ export class Player {
         }
       }
     },
-    [CommonState.JUMP]: {
-      animation: 'JUMP',
+    [CommonState.DASH_BACK]: {
+      animation: 'DASH_BACK',
       update: (tick: number) => {
         if (tick === 0) {
-          this.velocity.y = -this.jumpSpeed;
+          this.velocity.x = this.dashSpeed * -this.direction;
+        } else if (tick < 9 && this.sprite.anims.currentFrame.index === 2) {
+          this.sprite.anims.pause();
+        } else if (tick === 10) {
+          this.sprite.anims.resume();
+          this.velocity.x = 0;
+        }
+        if (!this.sprite.anims.isPlaying && this.sprite.anims.currentFrame.index === 3) {
+          this.stateManager.setState(CommonState.IDLE);
+        }
+      }
+    },
+    [CommonState.JUMP]: {
+      update: (tick: number, stateTemporaryValues: { d: -1 | 1 }) => {
+        if (tick === 0) {
+          playAnimation(this.sprite, 'SQUAT');
           if (_.some([GameInput.UP_RIGHT, GameInput.UP_LEFT], (gi: GameInput) => this.input.isInputPressed(gi))) {
             const jumpDirection = this.input.isInputDown(GameInput.UP_RIGHT) ? 1 : -1;
-            const d = jumpDirection === this.direction ? 1 : -1;
-            this.velocity.x = this.walkSpeed * this.direction * d;
+            stateTemporaryValues.d = jumpDirection === this.direction ? 1 : -1;
           }
+        } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
+          this.velocity.y = -this.jumpSpeed;
+          this.velocity.x = this.walkSpeed * this.direction * (stateTemporaryValues.d || 0);
+          playAnimation(this.sprite, 'JUMP');
         }
         if (this.velocity.y > 0) {
           this.stateManager.setState(CommonState.FALL);
@@ -148,6 +177,11 @@ export class Player {
     _.forEach(this.states, (value: StateDefinition<CommonStateConfig>, key: CommonState) => {
       this.stateManager.addState(key, value);
     });
+    this.commandList = (_.keys(this.commands) as CommonCommand[]).sort((a: CommonCommand, b: CommonCommand) => {
+      const p1 = this.commands[a].priority || 0;
+      const p2 = this.commands[b].priority || 0;
+      return p2 - p1;
+    });
   }
 
   public create() {
@@ -164,11 +198,11 @@ export class Player {
   }
 
   private updateState(): void {
-    for (const command of this.commandList) {
-      const { name, trigger = () => true, state } = command;
-      if (this.commands[name].isExecuted() && trigger()) {
+    for (const name of this.commandList) {
+      const { command, trigger = () => true, state } = this.commands[name];
+      if (command.isExecuted() && trigger()) {
         this.stateManager.setState(state);
-        break
+        break;
       }
     }
     this.stateManager.update();
@@ -200,6 +234,7 @@ export class Player {
   }
 
   private get isAirborne(): boolean {
-    return [CommonState.JUMP, CommonState.FALL].includes(this.stateManager.current.key);
+    const state = this.stateManager.current.key;
+    return CommonState.FALL === state || (CommonState.JUMP === state && this.sprite.anims.currentAnim.key === 'JUMP');
   }
 }

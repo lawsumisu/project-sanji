@@ -28,6 +28,14 @@ const frameData: FrameDefinitionMap = {
       repeat: -1
     }
   },
+  SQUAT: {
+    animDef: {
+      frames: 2,
+      assetKey: 'vanessa',
+      prefix: 'crouch',
+      frameRate: 13,
+    }
+  },
   CROUCH: {
     animDef: {
       frames: [{ index: 3, endIndex: 12 }],
@@ -44,6 +52,14 @@ const frameData: FrameDefinitionMap = {
       prefix: 'run',
       frameRate: 15,
       repeat: -1,
+    }
+  },
+  DASH_BACK: {
+    animDef: {
+      frames: 3,
+      assetKey: 'vanessa',
+      prefix: 'dashback',
+      frameRate: 15,
     }
   },
   JUMP: {
