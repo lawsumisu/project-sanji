@@ -33,7 +33,7 @@ const frameData: FrameDefinitionMap = {
       frames: 2,
       assetKey: 'vanessa',
       prefix: 'crouch',
-      frameRate: 13,
+      frameRate: 25,
     }
   },
   CROUCH: {
@@ -41,7 +41,7 @@ const frameData: FrameDefinitionMap = {
       frames: [{ index: 3, endIndex: 12 }],
       assetKey: 'vanessa',
       prefix: 'crouch',
-      frameRate: 15,
+      frameRate: 13,
       repeat: -1,
     }
   },
@@ -75,7 +75,7 @@ const frameData: FrameDefinitionMap = {
       frames: 5,
       assetKey: 'vanessa',
       prefix: 'jump',
-      frameRate: 20,
+      frameRate: 15,
     }
   },
   FALL: {

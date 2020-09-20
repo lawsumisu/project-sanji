@@ -1,7 +1,7 @@
 import { Stage } from 'src/stage';
 import { StateDefinition, StateManager } from 'src/state';
 import { Vector2 } from '@lawsumisu/common-utilities';
-import { GameInput, GameInputPlugin } from 'src/plugins/gameInput.plugin';
+import { GameInput, InputHistory } from 'src/plugins/gameInput.plugin';
 import * as _ from 'lodash';
 import { addAnimationsByDefinition } from 'src/characters';
 import aero from 'src/characters/aero/frameData';
@@ -45,6 +45,8 @@ export class Player {
   private velocity: Vector2 = Vector2.ZERO;
   private position: Vector2 = new Vector2(200, 200);
   private direction: -1 | 1 = 1;
+
+  private playerIndex: number = 0;
 
   private commands: {
     [key in CommonCommand]: { command: Command; trigger?: () => boolean; state: CommonState; priority?: number };
@@ -235,8 +237,8 @@ export class Player {
     }
   }
 
-  private get input(): GameInputPlugin {
-    return this.stage.gameInput;
+  private get input(): InputHistory {
+    return this.stage.gameInput.for(this.playerIndex);
   }
 
   private get isAirborne(): boolean {

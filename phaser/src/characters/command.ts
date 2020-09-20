@@ -21,21 +21,21 @@ class SimpleInput {
     this.type = type;
   }
 
-  public checkInput(historyIndex: number = 0): boolean {
+  public checkInput(playerIndex: number, historyIndex = 0): boolean {
+    const history = PS.gameInput.for(playerIndex);
     switch (this.type) {
       case CommandInputType.DOWN:
-        return PS.gameInput.isInputDown(this.input, historyIndex);
+        return history.isInputDown(this.input, historyIndex);
       case CommandInputType.PRESS:
-        return PS.gameInput.isInputPressed(this.input, historyIndex);
+        return history.isInputPressed(this.input, historyIndex);
       case CommandInputType.RELEASE:
-        return PS.gameInput.isInputReleased(this.input, historyIndex);
+        return history.isInputReleased(this.input, historyIndex);
     }
   }
 
-  public checkInputIgnoringType(historyIndex = 0): boolean {
-    return (
-      PS.gameInput.isInputDown(this.input, historyIndex) || PS.gameInput.isInputReleased(this.input, historyIndex)
-    );
+  public checkInputIgnoringType(playerIndex: number, historyIndex = 0): boolean {
+    const history = PS.gameInput.for(playerIndex);
+    return history.isInputDown(this.input, historyIndex) || history.isInputReleased(this.input, historyIndex);
   }
 }
 
@@ -50,22 +50,22 @@ class JunctiveInput {
     this.isAnd = isAnd;
   }
 
-  public checkInput(historyIndex: number = 0): boolean {
-    const c1 = this.input1.checkInput(historyIndex);
+  public checkInput(playerIndex: number, historyIndex = 0): boolean {
+    const c1 = this.input1.checkInput(playerIndex, historyIndex);
     if (c1 && !this.isAnd) {
       return true;
     } else {
-      const c2 = this.input2.checkInput(historyIndex);
+      const c2 = this.input2.checkInput(playerIndex, historyIndex);
       return this.isAnd ? c1 && c2 : c2;
     }
   }
 
-  public checkInputIgnoringType(historyIndex: number = 0): boolean {
-    const c1 = this.input1.checkInputIgnoringType(historyIndex);
+  public checkInputIgnoringType(playerIndex: number, historyIndex = 0): boolean {
+    const c1 = this.input1.checkInputIgnoringType(playerIndex, historyIndex);
     if (c1 && this.isAnd) {
       return true;
     } else {
-      const c2 = this.input2.checkInputIgnoringType(historyIndex);
+      const c2 = this.input2.checkInputIgnoringType(playerIndex, historyIndex);
       return this.isAnd ? c1 && c2 : c2;
     }
   }
@@ -89,20 +89,23 @@ export class Command {
 
   private readonly inputs: CommandInput[];
   private readonly inputTime: number;
+  private readonly playerIndex: number;
 
-  constructor(cmd: string, inputTime: number) {
+  constructor(cmd: string, inputTime: number, playerIndex = 0) {
     this.inputs = Command.parse(cmd);
     this.inputTime = inputTime;
+    this.playerIndex = playerIndex;
   }
 
   public isExecuted(): boolean {
     let i = this.inputs.length - 1;
-    if (!this.inputs[i].input.checkInput()) {
+    if (!this.inputs[i].input.checkInput(this.playerIndex)) {
       return false;
     } else if (this.inputs.length === 1) {
       return true;
     } else {
-      return this.isExecutedRecursive(1, i - 1, Math.min(this.inputTime, PS.gameInput.bufferLength));
+      const executionTime = Math.min(this.inputTime, PS.gameInput.for(this.playerIndex).historyLength);
+      return this.isExecutedRecursive(1, i - 1, executionTime);
     }
   }
 
@@ -111,13 +114,13 @@ export class Command {
       const commandInput = this.inputs[inputIndex];
       if (commandInput.strict) {
         // If strict case, then fail early if any inputs other than the one being checked for have been inputted.
-        if (PS.gameInput.getInputs(j).size === 0) {
+        if (PS.gameInput.for(this.playerIndex).getInputs(j).size === 0) {
           continue;
-        } else if (!commandInput.input.checkInputIgnoringType(j)) {
+        } else if (!commandInput.input.checkInputIgnoringType(this.playerIndex, j)) {
           return false;
         }
       }
-      if (commandInput.input.checkInput(j)) {
+      if (commandInput.input.checkInput(this.playerIndex, j)) {
         if (inputIndex === 0) {
           return true;
         } else {
