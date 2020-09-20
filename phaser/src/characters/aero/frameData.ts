@@ -41,8 +41,16 @@ const frameData: FrameDefinitionMap = {
       frames: [{ index: 3, endIndex: 12 }],
       assetKey: 'vanessa',
       prefix: 'crouch',
-      frameRate: 13,
+      frameRate: 15,
       repeat: -1,
+    }
+  },
+  STAND_UP: {
+    animDef: {
+      frames: [2, 1],
+      assetKey: 'vanessa',
+      prefix: 'crouch',
+      frameRate: 15,
     }
   },
   RUN: {
@@ -67,7 +75,7 @@ const frameData: FrameDefinitionMap = {
       frames: 5,
       assetKey: 'vanessa',
       prefix: 'jump',
-      frameRate: 15,
+      frameRate: 20,
     }
   },
   FALL: {

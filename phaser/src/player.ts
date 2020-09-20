@@ -55,7 +55,7 @@ export class Player {
       state: CommonState.JUMP
     },
     RUN: {
-      command: new Command('6~6', 10),
+      command: new Command('6~6', 12),
       trigger: () => !this.isAirborne,
       state: CommonState.RUN,
       priority: 1
@@ -71,7 +71,7 @@ export class Player {
       state: CommonState.WALK
     },
     DASH_BACK: {
-      command: new Command('4~4', 10),
+      command: new Command('4~4', 12),
       trigger: () => !this.isAirborne,
       state: CommonState.DASH_BACK,
       priority: 1,
@@ -109,11 +109,14 @@ export class Player {
             this.input.isInputDown(gi)
           )
         ) {
-          this.stateManager.setState(CommonState.IDLE);
+          playAnimation(this.sprite, 'STAND_UP')
         } else if (tick === 0) {
           playAnimation(this.sprite, 'SQUAT');
         } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
           playAnimation(this.sprite, 'CROUCH');
+        }
+        if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
+          this.stateManager.setState(CommonState.IDLE);
         }
       }
     },
@@ -144,9 +147,12 @@ export class Player {
     },
     [CommonState.JUMP]: {
       update: (tick: number, stateTemporaryValues: { d: -1 | 1 }) => {
-        if (tick === 0) {
-          playAnimation(this.sprite, 'SQUAT');
-          if (_.some([GameInput.UP_RIGHT, GameInput.UP_LEFT], (gi: GameInput) => this.input.isInputPressed(gi))) {
+        if (tick <= 2) {
+          if (tick === 0) {
+            this.velocity.x = 0;
+            playAnimation(this.sprite, 'SQUAT');
+          }
+          if (_.some([GameInput.UP_RIGHT, GameInput.UP_LEFT], (gi: GameInput) => this.input.isInputDown(gi))) {
             const jumpDirection = this.input.isInputDown(GameInput.UP_RIGHT) ? 1 : -1;
             stateTemporaryValues.d = jumpDirection === this.direction ? 1 : -1;
           }
