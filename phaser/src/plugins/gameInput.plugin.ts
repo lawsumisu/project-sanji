@@ -126,19 +126,34 @@ export class InputHistory {
   }
 
   public update(input: Phaser.Input.InputPlugin): void {
-    const { gamepad, keyboard } = input;
+    const { gamepad: gamepadInput, keyboard } = input;
     const inputsThisFrame = new Set<GameInput>();
+    const gamepad = this.pad && !!gamepadInput[this.pad] && gamepadInput[this.pad];
     _.forEach(this.mapping, (configs: InputConfig[], input: GameInput) => {
       for (const config of configs) {
         if (
           (isKeyboard(config) && keyboard.addKey(config.key).isDown) ||
-          (this.pad && !!gamepad[this.pad] && isGamepad(config) && gamepad[this.pad][config.key])
+          (gamepad && isGamepad(config) && gamepad[config.key])
         ) {
           inputsThisFrame.add(input);
           break;
         }
       }
     });
+    if (gamepad) {
+      // Check for analog directional inputs
+      const [x, y] = gamepad.axes.map((axis: Phaser.Input.Gamepad.Axis) => axis.getValue());
+      if (x >= .5) {
+        inputsThisFrame.add(GameInput.RIGHT);
+      } else if (x <= -.5) {
+        inputsThisFrame.add(GameInput.LEFT);
+      }
+      if (y >= .5) {
+        inputsThisFrame.add(GameInput.DOWN);
+      } else if (y <= -.5) {
+        inputsThisFrame.add(GameInput.UP);
+      }
+    }
     if (inputsThisFrame.has(GameInput.UP)) {
       if (inputsThisFrame.has(GameInput.RIGHT)) {
         inputsThisFrame.delete(GameInput.UP);
