@@ -43,10 +43,10 @@ export class Player {
   private gravity = 1000;
 
   private velocity: Vector2 = Vector2.ZERO;
-  private position: Vector2 = new Vector2(200, 200);
+  private position: Vector2 = new Vector2(300, 300);
   private direction: -1 | 1 = 1;
 
-  private playerIndex: number = 0;
+  private readonly playerIndex: number;
 
   private commands: {
     [key in CommonCommand]: { command: Command; trigger?: () => boolean; state: CommonState; priority?: number };
@@ -173,8 +173,9 @@ export class Player {
     }
   };
 
-  constructor(stage: Stage) {
+  constructor(stage: Stage, playerIndex = 0) {
     this.stage = stage;
+    this.playerIndex = playerIndex;
     this.stateManager = new StateManager<CommonState, CommonStateConfig>();
     this.stateManager.onAfterTransition((config: CommonStateConfig) => {
       if (config.animation) {
@@ -219,7 +220,6 @@ export class Player {
   private updateSprite(): void {
     this.sprite.x = this.position.x;
     this.sprite.y = this.position.y;
-    this.sprite.anims.setTimeScale(1);
   }
 
   public updateKinematics(delta: number): void {
@@ -229,8 +229,8 @@ export class Player {
     this.position = this.position.add(this.velocity.scale(delta));
 
     // TODO handle this in a separate function?
-    if (this.position.y > 200) {
-      this.position.y = 200;
+    if (this.position.y > 300) {
+      this.position.y = 300;
       if (this.stateManager.current.key === CommonState.FALL) {
         this.stateManager.setState(CommonState.IDLE);
       }
