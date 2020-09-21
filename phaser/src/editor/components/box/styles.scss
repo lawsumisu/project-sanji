@@ -1,0 +1,13 @@
+.box {
+  position: absolute;
+  &.mod--circle {
+    border-radius: 50%;
+  }
+  &.mod--hit {
+    opacity: .5;
+    background-color: rgb(255,0,0);
+    &.mod--persistant {
+      background-color: rgb(255,200,0);
+    }
+  }
+}

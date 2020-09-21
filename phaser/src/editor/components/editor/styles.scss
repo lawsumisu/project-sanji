@@ -1,0 +1,23 @@
+.cn--frame {
+  width: 510px;
+  height: 710px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+  box-sizing: border-box;
+  flex-shrink: 0;
+
+  >div {
+    position: relative;
+  }
+
+  .editor-box {
+    &:hover {
+      cursor: pointer;
+      opacity: 0.7;
+    }
+  }
+}

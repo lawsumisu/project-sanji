@@ -1,0 +1,21 @@
+.cn--sprite-frame {
+  width: 100px;
+  height: 150px;
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  &:hover {
+    background-color: #f6f8fa;
+    cursor: pointer;
+  }
+  &.mod--selected {
+    background-color: #f1f8ff;
+    border: 1px solid #c8e1ff;
+  }
+
+  .cn--sprite {
+    position: relative;
+  }
+}

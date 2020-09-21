@@ -1,5 +1,12 @@
 import * as _ from 'lodash';
 import { addAnimation, addAnimationByFrames } from 'src/utilitiesPF/animation.util';
+
+export interface HitboxConfig {
+  x: number;
+  y: number;
+  r: number;
+}
+
 export interface AnimationFrameConfig {
   index: number;
   endIndex?: number;
@@ -15,12 +22,21 @@ export interface AnimationDefinition {
   repeat?: number;
 }
 
-export interface AnimationFrameDefinition {
+export interface HitboxDefinition {
+  tag?: string | number;
+  boxes: HitboxConfig[];
+  persistUntilFrame?: number;
+}
+
+export interface FrameDefinition {
   animDef: AnimationDefinition;
+  hitboxDef?: {
+    [key: number] : HitboxDefinition;
+  };
 }
 
 export type FrameDefinitionMap<T extends string = string> = {
-  [key in T]: AnimationFrameDefinition;
+  [key in T]: FrameDefinition;
 };
 
 export function addAnimationsByDefinition(sprite: Phaser.GameObjects.Sprite, definitionMap: FrameDefinitionMap): void {
@@ -32,4 +48,25 @@ export function addAnimationsByDefinition(sprite: Phaser.GameObjects.Sprite, def
       addAnimationByFrames(sprite, key, assetKey, frames, prefix, frameRate, repeat);
     }
   });
+}
+
+export function getSpriteIndexFromDefinition(animDef: AnimationDefinition, frameIndex: number): number {
+  const { frames } = animDef;
+  if (_.isNumber(frames)) {
+    return frameIndex + 1;
+  } else {
+    let frameIndexOffset = 0;
+    for (let i = 0; i < frames.length; i++) {
+      const config: number | AnimationFrameConfig = frames[i];
+      const mappedConfig: AnimationFrameConfig = _.isNumber(config) ? { index: config } : config;
+      const { index: start, endIndex: end = start } = mappedConfig;
+      const f = frameIndex - frameIndexOffset;
+      if (f <= end - start) {
+        return start + f;
+      } else {
+        frameIndexOffset += end - start + 1;
+      }
+    }
+    return -1;
+  }
 }
