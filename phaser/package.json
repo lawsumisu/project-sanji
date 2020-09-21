@@ -56,7 +56,6 @@
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
     "sass-loader": "^8.0.2",
-    "selfsigned": "^1.10.8",
     "sinon": "^9.0.3",
     "sinon-chai": "^3.5.0",
     "style-loader": "^1.1.3",
