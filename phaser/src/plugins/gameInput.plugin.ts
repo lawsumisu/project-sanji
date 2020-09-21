@@ -117,7 +117,7 @@ export class InputHistory {
    * @param {number} i: number of frames ago
    * @returns {boolean}
    */
-  public isInputDown = (input: GameInput, i = 0): boolean => {
+  public isInputDown(input: GameInput, i = 0): boolean {
     return this.inputHistory.at(-(i + 1)).has(input);
   };
 
@@ -191,6 +191,13 @@ export class InputHistory {
   public clear(): void {
     this.inputHistory = new RingBuffer(this.historyLength);
     _.times(this.historyLength, () => this.inputHistory.push(new Set()));
+  }
+
+  public load(inputs: Array<Set<GameInput>>) {
+    this.clear();
+    inputs.forEach((input: Set<GameInput>) => {
+      this.inputHistory.push(new Set(input));
+    })
   }
 }
 /**

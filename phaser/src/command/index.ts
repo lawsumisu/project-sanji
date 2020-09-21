@@ -1,7 +1,7 @@
 import { GameInput } from 'src/plugins/gameInput.plugin';
 import { PS } from 'src/global';
 
-enum CommandInputType {
+export enum CommandInputType {
   DOWN = 'DOWN',
   PRESS = 'PRESS',
   RELEASE = 'RELEASE'
@@ -12,7 +12,7 @@ interface CommandInput {
   strict?: boolean;
 }
 
-class SimpleInput {
+export class SimpleInput {
   input: GameInput;
   type: CommandInputType;
 

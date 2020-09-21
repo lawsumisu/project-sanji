@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import { addAnimationsByDefinition } from 'src/characters';
 import aero from 'src/characters/aero/frameData';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
-import { Command } from 'src/characters/command';
+import { Command } from 'src/command';
 
 enum CommonState {
   IDLE = 'IDLE',
