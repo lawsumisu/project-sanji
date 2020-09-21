@@ -6,9 +6,7 @@ module.exports = function(config) {
   config.set({
     frameworks: ['mocha'],
 
-    files: [
-      'src/testContext.ts'
-    ],
+    files: ['src/testContext.ts'],
     preprocessors: {
       'src/testContext.ts': ['webpack', 'sourcemap']
     },
@@ -17,6 +15,6 @@ module.exports = function(config) {
     webpackMiddleware: {
       noInfo: true
     },
-    browsers: ['ChromeHeadless'],
+    browsers: ['ChromeHeadless']
   });
 };
