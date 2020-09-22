@@ -1,8 +1,12 @@
 import * as _ from 'lodash';
-import { Direction } from "src/frame";
+import { CollisionDataMap, Direction, Hitbox, HitboxData, HurtboxData } from 'src/frame';
+import { FrameDefinition, HitboxConfig } from 'src/characters';
+import { PS } from 'src/global';
+import { StageObject } from 'src/stage/stageObject';
 
 export type StateDefinition<C = {}, F extends string = string> = C & {
   frameKey?: F;
+  hitDefinition?: (tick: number, hitData: HitboxData) => HitboxData | null;
   update?: (tick: number, stateTemporaryValues: object) => void;
 };
 
@@ -13,22 +17,40 @@ type State<K extends string, C, F extends string> = StateDefinition<C, F> & {
 interface AnimInfo {
   direction: Direction;
   index: number;
+  frameDefinition: FrameDefinition
+  frameKey: string;
 }
 
 export class StateManager<K extends string, C = {}, F extends string = string> {
   // State Management
+  private stageObject: StageObject;
   private tick = 0;
   private doOnAfterTransition = _.noop;
   private doOnEndTransition = _.noop;
   private states: { [key in K]?: StateDefinition<C, F> } = {};
-  private getAnimInfo: (() => AnimInfo) | null = null;
+  private readonly getAnimInfo: () => AnimInfo;
   private currentState: State<K, C, F>;
   private stateTemporaryValues = {};
+  private collisionData: CollisionDataMap = {
+    hitData: HitboxData.EMPTY,
+    hurtData: HurtboxData.EMPTY
+  };
+
+  constructor(stageObject: StageObject, getAnimInfo: () => AnimInfo) {
+    this.stageObject = stageObject;
+    this.getAnimInfo = getAnimInfo;
+  }
 
   public update(): void {
     this.tick++;
     if (this.currentState.update) {
       this.currentState.update(this.tick, this.stateTemporaryValues);
+    }
+    const prevHitData = this.collisionData.hitData;
+    const hitData = this.generateHitboxData(prevHitData);
+    const persist = _.isFunction(prevHitData.persist) ? prevHitData.persist() : prevHitData.persist;
+    if (!persist) {
+      this.setHitData(hitData ? hitData : HitboxData.EMPTY);
     }
   }
 
@@ -48,8 +70,8 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
     this.doOnEndTransition = fn;
   }
 
-  public addState(key: K, state: StateDefinition<C, F>): void {
-    this.states[key] = state;
+  public addState(key: K, stateDef: StateDefinition<C, F>): void {
+    this.states[key] = stateDef;
   }
 
   /**
@@ -68,6 +90,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       this.doOnAfterTransition(this.currentState);
       this.tick = 0;
       this.stateTemporaryValues = {};
+      // this.setHitData(HitboxData.EMPTY);
       if (this.currentState.update) {
         this.currentState.update(this.tick, this.stateTemporaryValues);
       }
@@ -81,5 +104,36 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
 
   public getStateDefinition(key: K): StateDefinition<C, F> {
     return { ...(this.states[key] as StateDefinition<C, F>) };
+  }
+
+  private setHitData(data: HitboxData): void {
+    PS.stage.removeHitData(this.collisionData.hitData.tag);
+    this.collisionData.hitData = data;
+    PS.stage.addHitData(data);
+  }
+
+  private generateHitboxData(hitboxData: HitboxData): HitboxData | null{
+    const { index, direction, frameDefinition, frameKey } = this.getAnimInfo();
+    if (frameDefinition.hitboxDef && frameDefinition.hitboxDef[index] && hitboxData.index !== index) {
+      const frameHitDef = frameDefinition.hitboxDef[index];
+      const persist = (): boolean => {
+        const { index: i } = this.getAnimInfo();
+        const { persistUntilFrame = index + 1 } = frameHitDef;
+        return i === index || i < persistUntilFrame;
+      };
+      const hit = { ...frameDefinition.hitboxDef.hit, ...frameHitDef.hit };
+      const tag = frameHitDef.tag ? [frameKey, frameHitDef.tag].join('-') : frameKey;
+      return new HitboxData(
+        frameHitDef.boxes.map((box: HitboxConfig) =>
+          Hitbox.generateCircular(new Phaser.Geom.Circle(box.x, box.y, box.r), hit, direction)
+        ),
+        tag,
+        this.stageObject.tag,
+        index,
+        { persist, registeredCollisions: hitboxData.registeredCollisions }
+      );
+    } else {
+      return null;
+    }
   }
 }

@@ -4,12 +4,11 @@ import { HitboxConfig } from 'src/characters';
 import { Box, Sprite } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
-import { FrameDataState, getSpriteConfig } from 'src/editor/redux/frameData';
+import { FrameDataState, getAnchorPosition, getSpriteConfig } from 'src/editor/redux/frameData';
 import { bindActionCreators, Dispatch } from 'redux';
 import { frameEditActionCreators, FrameEditState } from 'src/editor/redux/frameEdit';
 import { BoxType } from 'src/editor/components/box';
 import cx from 'classnames';
-import { Vector2 } from '@lawsumisu/common-utilities';
 
 export interface SpriteFrameProps {
   frameKey: string;
@@ -55,8 +54,7 @@ class SpriteFrame extends React.PureComponent<
 
   public render(): React.ReactNode {
     const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.props.frameIndex);
-    const { w, h } = config.sourceSize;
-    const origin = new Vector2(Math.floor(config.anchor.x * w), Math.floor(config.anchor.y * h));
+    const origin = getAnchorPosition(config);
     return (
       <div className={cx('cn--sprite-frame', this.isSelected && 'mod--selected')} onClick={this.onClick}>
         <div className="cn--sprite">

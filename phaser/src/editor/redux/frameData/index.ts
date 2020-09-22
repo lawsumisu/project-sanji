@@ -5,6 +5,7 @@ import data from 'src/assets/vanessa.json';
 import aero from 'src/characters/aero/frameData';
 import actionCreatorFactory, { isType } from 'typescript-fsa';
 import { Action } from 'redux';
+import { Vector2 } from '@lawsumisu/common-utilities';
 
 interface TextureDataMap {
   [key: string]: FrameConfigTP;
@@ -29,6 +30,12 @@ export function getSpriteConfig(frameData: FrameDataState, frameKey: string, fra
   } else {
     throw new Error(`Config for ${filename} not Found`);
   }
+}
+
+export function getAnchorPosition(config: FrameConfigTP): Vector2 {
+  const { w, h } = config.sourceSize;
+  const { x, y}  = config.spriteSourceSize;
+  return new Vector2(Math.floor(config.anchor.x * w - x), Math.floor(config.anchor.y * h - y));
 }
 
 export interface FrameDataState {

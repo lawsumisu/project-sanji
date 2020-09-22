@@ -1,4 +1,3 @@
-import { Stage } from 'src/stage';
 import { StateDefinition, StateManager } from 'src/state';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { GameInput, InputHistory } from 'src/plugins/gameInput.plugin';
@@ -7,6 +6,9 @@ import { addAnimationsByDefinition } from 'src/characters';
 import aero from 'src/characters/aero/frameData';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { Command } from 'src/command';
+import { PS } from 'src/global';
+import { StageObject } from 'src/stage/stageObject';
+import { Unit } from 'src/unit';
 
 enum CommonState {
   IDLE = 'IDLE',
@@ -23,27 +25,26 @@ enum CommonCommand {
   JUMP = 'JUMP',
   CROUCH = 'CROUCH',
   RUN = 'RUN',
-  DASH_BACK = 'DASH_BACK',
+  DASH_BACK = 'DASH_BACK'
 }
 
 interface CommonStateConfig {
   animation?: string;
 }
 
-export class Player {
+export class Player extends StageObject {
   protected stateManager: StateManager<CommonState, CommonStateConfig>;
 
   private sprite: Phaser.GameObjects.Sprite;
-  private stage: Stage;
 
-  private walkSpeed = 200;
-  private runSpeed = 350;
-  private dashSpeed = 500;
-  private jumpSpeed = 400;
-  private gravity = 1000;
+  private walkSpeed = 100;
+  private runSpeed = 175;
+  private dashSpeed = 250;
+  private jumpSpeed = 200;
+  private gravity = 500;
 
   private velocity: Vector2 = Vector2.ZERO;
-  private position: Vector2 = new Vector2(300, 300);
+  public position: Vector2 = new Vector2(300, 300);
   private direction: -1 | 1 = 1;
 
   private readonly playerIndex: number;
@@ -51,32 +52,32 @@ export class Player {
   private commands: {
     [key in CommonCommand]: { command: Command; trigger?: () => boolean; state: CommonState; priority?: number };
   } = {
-    JUMP: {
+    [CommonCommand.JUMP]: {
       command: new Command('7|8|9', 1),
       trigger: () => !this.isAirborne,
       state: CommonState.JUMP
     },
-    RUN: {
+    [CommonCommand.RUN]: {
       command: new Command('6~6', 12),
       trigger: () => !this.isAirborne,
       state: CommonState.RUN,
       priority: 1
     },
-    CROUCH: {
+    [CommonCommand.CROUCH]: {
       command: new Command('*1|*2|*3', 1),
       trigger: () => !this.isAirborne,
       state: CommonState.CROUCH
     },
-    WALK: {
+    [CommonCommand.WALK]: {
       command: new Command('*4|*6', 1),
       trigger: () => this.stateManager.current.key === CommonState.IDLE,
       state: CommonState.WALK
     },
-    DASH_BACK: {
+    [CommonCommand.DASH_BACK]: {
       command: new Command('4~4', 12),
       trigger: () => !this.isAirborne,
       state: CommonState.DASH_BACK,
-      priority: 1,
+      priority: 1
     }
   };
 
@@ -111,7 +112,7 @@ export class Player {
             this.input.isInputDown(gi)
           )
         ) {
-          playAnimation(this.sprite, 'STAND_UP')
+          playAnimation(this.sprite, 'STAND_UP');
         } else if (tick === 0) {
           playAnimation(this.sprite, 'SQUAT');
         } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
@@ -173,10 +174,18 @@ export class Player {
     }
   };
 
-  constructor(stage: Stage, playerIndex = 0) {
-    this.stage = stage;
+  constructor(playerIndex = 0) {
+    super();
     this.playerIndex = playerIndex;
-    this.stateManager = new StateManager<CommonState, CommonStateConfig>();
+    this.stateManager = new StateManager<CommonState, CommonStateConfig>(this, () => {
+      const { currentFrame, currentAnim } = this.sprite.anims;
+      return {
+        index: currentFrame.index,
+        direction: { x: !this.sprite.flipX, y: true },
+        frameDefinition: aero[currentAnim.key],
+        frameKey: currentAnim.key
+      };
+    });
     this.stateManager.onAfterTransition((config: CommonStateConfig) => {
       if (config.animation) {
         playAnimation(this.sprite, config.animation, true);
@@ -195,10 +204,14 @@ export class Player {
 
   public create() {
     // TODO load create values from file.
-    this.sprite = this.stage.add.sprite(this.position.x, this.position.y, 'vanessa', 'idle/11.png');
+    this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, 'vanessa', 'idle/11.png');
     addAnimationsByDefinition(this.sprite, aero);
     this.stateManager.setState(CommonState.IDLE);
   }
+
+  public applyHit(): void {}
+
+  public onTargetHit(): void {}
 
   public update(params: { time: number; delta: number }): void {
     this.updateState();
@@ -222,11 +235,11 @@ export class Player {
     this.sprite.y = this.position.y;
   }
 
-  public updateKinematics(delta: number): void {
+  private updateKinematics(delta: number): void {
     if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
     }
-    this.position = this.position.add(this.velocity.scale(delta));
+    this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
 
     // TODO handle this in a separate function?
     if (this.position.y > 300) {
@@ -238,7 +251,7 @@ export class Player {
   }
 
   private get input(): InputHistory {
-    return this.stage.gameInput.for(this.playerIndex);
+    return PS.stage.gameInput.for(this.playerIndex);
   }
 
   private get isAirborne(): boolean {

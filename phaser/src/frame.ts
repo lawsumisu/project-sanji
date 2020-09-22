@@ -1,5 +1,4 @@
 import * as Phaser from 'phaser';
-import { Vector2 } from '@lawsumisu/common-utilities';
 
 
 export enum ColliderType {
@@ -10,11 +9,7 @@ export enum ColliderType {
 export interface Hit {
     damage: number;
     angle: number;
-    baseKnockback: number;
-    knockbackScaling: number;
-    fixedKnockback?: boolean;
-    maxLaunchSpeed?: Vector2;
-    hitlagMultiplier?: number;
+    knockback: number;
 }
 
 export interface Direction {
@@ -69,18 +64,18 @@ export class Hitbox<T extends ColliderType = ColliderType> extends Collider<T> {
     }
 }
 
-interface FrameDataOptions {
+interface CollisionDataOptions {
     persist: boolean | (() => boolean);
 }
 
-export abstract class FrameData<C extends Collider<ColliderType>> {
+export abstract class CollisionData<C extends Collider<ColliderType>> {
     public readonly data: C[];
     public readonly tag: string;
     public readonly index: number;
     public readonly persist: boolean | (() => boolean);
     public readonly owner: string;
 
-    constructor(data: C[], tag: string, owner: string, index: number, options: Partial<FrameDataOptions> = {}) {
+    constructor(data: C[], tag: string, owner: string, index: number, options: Partial<CollisionDataOptions> = {}) {
         this.data = data;
         this.tag = tag;
         const { persist = false } = options;
@@ -94,47 +89,44 @@ export abstract class FrameData<C extends Collider<ColliderType>> {
     }
 }
 
-export class HurtboxData extends FrameData<Hurtbox> {
+export class HurtboxData extends CollisionData<Hurtbox> {
     static get EMPTY(): HurtboxData {
         return new HurtboxData([], 'empty', 'empty', 0);
     }
 }
 
-export class HitboxData extends FrameData<Hitbox> {
+export class HitboxData extends CollisionData<Hitbox> {
     static get EMPTY(): HitboxData {
         return new HitboxData([], 'empty', 'empty', 0);
     }
 
-    protected readonly _hits: Set<string> = new Set();
+    protected readonly _registeredCollisions: Set<string> = new Set();
 
     constructor(
         data: Hitbox[],
         tag: string,
         owner: string,
         index: number,
-        options: Partial<FrameDataOptions & { hits: Set<string> }> = {}
+        options: Partial<CollisionDataOptions & { registeredCollisions: Set<string> }> = {}
     ) {
         super(data, tag, owner, index, options);
-        const { hits = new Set() } = options;
-        hits.forEach((hit: string) => this._hits.add(hit));
+        this._registeredCollisions = new Set(options.registeredCollisions);
     }
 
-    public addHit(frameData: FrameData<Collider>): void {
-        this._hits.add(frameData.owner);
+    public registerCollision(collisionData: CollisionData<Collider>): void {
+        this._registeredCollisions.add(collisionData.owner);
     }
 
-    public hasHit(frameData: FrameData<Collider>): boolean {
-        return this._hits.has(frameData.owner);
+    public hasCollided(collisionData: CollisionData<Collider>): boolean {
+        return this._registeredCollisions.has(collisionData.owner);
     }
 
-    public get hits(): Set<string> {
-        const H = new Set<string>();
-        this._hits.forEach((hit: string) => H.add(hit));
-        return H;
+    public get registeredCollisions(): Set<string> {
+        return new Set(this._registeredCollisions);
     }
 }
 
-export interface FrameDataMap {
+export interface CollisionDataMap {
     hitData: HitboxData;
     hurtData: HurtboxData;
 }

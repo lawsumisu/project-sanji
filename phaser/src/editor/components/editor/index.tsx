@@ -5,7 +5,7 @@ import { Box, Sprite } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
-import { FrameDataState, getSpriteConfig } from 'src/editor/redux/frameData';
+import { FrameDataState, getAnchorPosition, getSpriteConfig } from 'src/editor/redux/frameData';
 import 'src/editor/components/editor/styles.scss';
 import { BoxType } from 'src/editor/components/box';
 import { getFrameDefinition } from 'src/editor/redux/utilities';
@@ -105,8 +105,7 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
   private get origin(): Vector2 {
     const { key, index } = this.state.selectedFrame!;
     const config = getSpriteConfig(this.props.frameData, key, index);
-    const { w, h } = config.sourceSize;
-    return new Vector2(Math.floor(config.anchor.x * w), Math.floor(config.anchor.y * h));
+    return getAnchorPosition(config);
   }
 
   private onMouseDown = (e: React.MouseEvent): void => {

@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import { addAnimation, addAnimationByFrames } from 'src/utilitiesPF/animation.util';
+import { Hit } from 'src/frame';
 
 export interface HitboxConfig {
   x: number;
@@ -23,6 +24,7 @@ export interface AnimationDefinition {
 }
 
 export interface HitboxDefinition {
+  hit?: Hit;
   tag?: string | number;
   boxes: HitboxConfig[];
   persistUntilFrame?: number;
@@ -31,6 +33,7 @@ export interface HitboxDefinition {
 export interface FrameDefinition {
   animDef: AnimationDefinition;
   hitboxDef?: {
+    hit: Hit;
     [key: number] : HitboxDefinition;
   };
 }
