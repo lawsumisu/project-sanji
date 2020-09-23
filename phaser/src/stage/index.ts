@@ -33,7 +33,6 @@ export class Stage extends Phaser.Scene {
   }
 
   private updateHits(): void {
-    this.debug.drawCircle(this.p1.position.x, this.p1.position.y, 5, { fill: { color: 0x00ffff, alpha: 0.5 } });
     _.forEach(this.hitData, (hitboxData: HitboxData) => {
       hitboxData.data.forEach((hitbox: Hitbox<ColliderType.CIRCLE>) => {
         const { x, y, radius } = this.getColliderInWorldSpace(hitbox);

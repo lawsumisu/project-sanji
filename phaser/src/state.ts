@@ -25,8 +25,8 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   // State Management
   private stageObject: StageObject;
   private tick = 0;
-  private doOnAfterTransition = _.noop;
-  private doOnEndTransition = _.noop;
+  private onAfterTransitionFn = _.noop;
+  private onBeforeTransitionFn = _.noop;
   private states: { [key in K]?: StateDefinition<C, F> } = {};
   private readonly getAnimInfo: () => AnimInfo;
   private currentState: State<K, C, F>;
@@ -42,16 +42,16 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   }
 
   public update(): void {
-    this.tick++;
     if (this.currentState.update) {
       this.currentState.update(this.tick, this.stateTemporaryValues);
     }
     const prevHitData = this.collisionData.hitData;
     const hitData = this.generateHitboxData(prevHitData);
     const persist = _.isFunction(prevHitData.persist) ? prevHitData.persist() : prevHitData.persist;
-    if (!persist) {
+    if (!_.isNil(hitData) || !persist) {
       this.setHitData(hitData ? hitData : HitboxData.EMPTY);
     }
+    this.tick++;
   }
 
   /**
@@ -59,7 +59,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
    * @param fn
    */
   public onAfterTransition(fn: (config: C) => any): void {
-    this.doOnAfterTransition = fn;
+    this.onAfterTransitionFn = fn;
   }
 
   /**
@@ -67,7 +67,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
    * @param fn
    */
   public onBeforeTransition(fn: (config: C) => void): void {
-    this.doOnEndTransition = fn;
+    this.onBeforeTransitionFn = fn;
   }
 
   public addState(key: K, stateDef: StateDefinition<C, F>): void {
@@ -81,19 +81,15 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
    */
   public setState(key: K, force?: boolean): void {
     if (!this.currentState || this.currentState.key !== key || force) {
-      this.doOnEndTransition(this.currentState);
+      this.onBeforeTransitionFn(this.currentState);
       const currentStateDef = this.getStateDefinition(key);
       this.currentState = {
         ...currentStateDef,
         key,
       };
-      this.doOnAfterTransition(this.currentState);
+      this.onAfterTransitionFn(this.currentState);
       this.tick = 0;
       this.stateTemporaryValues = {};
-      // this.setHitData(HitboxData.EMPTY);
-      if (this.currentState.update) {
-        this.currentState.update(this.tick, this.stateTemporaryValues);
-      }
       // console.log(this.currentState.key);
     }
   }
@@ -117,9 +113,9 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
     if (frameDefinition.hitboxDef && frameDefinition.hitboxDef[index] && hitboxData.index !== index) {
       const frameHitDef = frameDefinition.hitboxDef[index];
       const persist = (): boolean => {
-        const { index: i } = this.getAnimInfo();
+        const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();
         const { persistUntilFrame = index + 1 } = frameHitDef;
-        return i === index || i < persistUntilFrame;
+        return frameKey === currentFrameKey && (i === index || i < persistUntilFrame);
       };
       const hit = { ...frameDefinition.hitboxDef.hit, ...frameHitDef.hit };
       const tag = frameHitDef.tag ? [frameKey, frameHitDef.tag].join('-') : frameKey;

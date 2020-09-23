@@ -43,17 +43,6 @@ const frameData: FrameDefinitionMap = {
       prefix: 'crouch',
       frameRate: 13,
       repeat: -1
-    },
-    hitboxDef: {
-      hit: { damage: 1, angle: 0, knockback: 0 },
-      1: {
-        boxes: [
-          { x: 1, y: -63.8, r: 10 },
-          { x: -8.2, y: -51.6, r: 5 },
-          { x: 14.6, y: -41.6, r: 5.5 }
-        ],
-        persistUntilFrame: 5
-      }
     }
   },
   STAND_UP: {
@@ -95,6 +84,42 @@ const frameData: FrameDefinitionMap = {
       assetKey: 'vanessa',
       prefix: 'fall',
       frameRate: 15
+    }
+  },
+  LIGHT_JAB_1: {
+    animDef: {
+      frames: 5,
+      assetKey: 'vanessa',
+      prefix: 'attacks/lightjab1',
+      frameRate: 15
+    },
+    hitboxDef: {
+      hit: {
+        damage: 0,
+        angle: 0,
+        knockback: 0
+      },
+      1: {
+        boxes: [{ x: 38.4, y: -75.2, r: 10 }]
+      }
+    }
+  },
+  LIGHT_JAB_2: {
+    animDef: {
+      frames: 6,
+      assetKey: 'vanessa',
+      prefix: 'attacks/lightjab2',
+      frameRate: 15
+    },
+    hitboxDef: {
+      hit: {
+        damage: 0,
+        angle: 0,
+        knockback: 0
+      },
+      1: {
+        boxes: [{ x: 56.4, y: -93.6, r: 10 }]
+      }
     }
   }
 };

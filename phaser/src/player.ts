@@ -17,7 +17,9 @@ enum CommonState {
   JUMP = 'JUMP',
   FALL = 'FALL',
   CROUCH = 'CROUCH',
-  RUN = 'RUN'
+  RUN = 'RUN',
+  // Separate into specific character
+  N_LIGHT = 'N_LIGHT'
 }
 
 enum CommonCommand {
@@ -25,11 +27,12 @@ enum CommonCommand {
   JUMP = 'JUMP',
   CROUCH = 'CROUCH',
   RUN = 'RUN',
-  DASH_BACK = 'DASH_BACK'
+  DASH_BACK = 'DASH_BACK',
+  N_LIGHT = 'N_LIGHT'
 }
 
 interface CommonStateConfig {
-  animation?: string;
+  startAnimation?: string;
 }
 
 export class Player extends StageObject {
@@ -78,6 +81,12 @@ export class Player extends StageObject {
       trigger: () => !this.isAirborne,
       state: CommonState.DASH_BACK,
       priority: 1
+    },
+    [CommonCommand.N_LIGHT]: {
+      command: new Command('a', 1),
+      trigger: () => this.stateManager.current.key === CommonState.IDLE,
+      state: CommonState.N_LIGHT,
+      priority: 2
     }
   };
 
@@ -85,7 +94,7 @@ export class Player extends StageObject {
 
   private states: { [key in CommonState]?: StateDefinition<CommonStateConfig> } = {
     [CommonState.IDLE]: {
-      animation: 'IDLE',
+      startAnimation: 'IDLE',
       update: () => {
         this.velocity.y = 0;
         this.velocity.x = 0;
@@ -124,7 +133,7 @@ export class Player extends StageObject {
       }
     },
     [CommonState.RUN]: {
-      animation: 'RUN',
+      startAnimation: 'RUN',
       update: () => {
         this.velocity.x = this.runSpeed * this.direction;
         if (!this.input.isInputDown(GameInput.RIGHT)) {
@@ -133,7 +142,7 @@ export class Player extends StageObject {
       }
     },
     [CommonState.DASH_BACK]: {
-      animation: 'DASH_BACK',
+      startAnimation: 'DASH_BACK',
       update: (tick: number) => {
         if (tick === 0) {
           this.velocity.x = this.dashSpeed * -this.direction;
@@ -170,7 +179,26 @@ export class Player extends StageObject {
       }
     },
     [CommonState.FALL]: {
-      animation: 'FALL'
+      startAnimation: 'FALL'
+    },
+    [CommonState.N_LIGHT]: {
+      startAnimation: 'LIGHT_JAB_1',
+      update: (tick: number, stateTemporaryValues: { canCancel: boolean }) => {
+        this.velocity.x = 0;
+        if (tick >= 1 && this.commands[CommonCommand.N_LIGHT].command.isExecuted()) {
+          stateTemporaryValues.canCancel = true;
+        }
+        if (
+          this.sprite.anims.currentAnim.key === 'LIGHT_JAB_1' &&
+          this.sprite.anims.currentFrame.index >= 4 &&
+          stateTemporaryValues.canCancel
+        ) {
+          playAnimation(this.sprite, 'LIGHT_JAB_2');
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.stateManager.setState(CommonState.IDLE);
+        }
+      }
     }
   };
 
@@ -180,15 +208,15 @@ export class Player extends StageObject {
     this.stateManager = new StateManager<CommonState, CommonStateConfig>(this, () => {
       const { currentFrame, currentAnim } = this.sprite.anims;
       return {
-        index: currentFrame.index,
+        index: currentFrame.index - 1,
         direction: { x: !this.sprite.flipX, y: true },
         frameDefinition: aero[currentAnim.key],
         frameKey: currentAnim.key
       };
     });
     this.stateManager.onAfterTransition((config: CommonStateConfig) => {
-      if (config.animation) {
-        playAnimation(this.sprite, config.animation, true);
+      if (config.startAnimation) {
+        playAnimation(this.sprite, config.startAnimation, true);
       }
     });
 
