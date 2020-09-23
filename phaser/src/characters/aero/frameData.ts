@@ -95,7 +95,7 @@ const frameData: FrameDefinitionMap = {
     },
     hitboxDef: {
       hit: {
-        damage: 0,
+        damage: 10,
         angle: 0,
         knockback: 0
       },
@@ -113,7 +113,7 @@ const frameData: FrameDefinitionMap = {
     },
     hitboxDef: {
       hit: {
-        damage: 0,
+        damage: 10,
         angle: 0,
         knockback: 0
       },

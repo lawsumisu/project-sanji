@@ -9,6 +9,7 @@ import { Command } from 'src/command';
 import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 import { Unit } from 'src/unit';
+import { Hit } from 'src/frame';
 
 enum CommonState {
   IDLE = 'IDLE',
@@ -185,7 +186,7 @@ export class Player extends StageObject {
       startAnimation: 'LIGHT_JAB_1',
       update: (tick: number, stateTemporaryValues: { canCancel: boolean }) => {
         this.velocity.x = 0;
-        if (tick >= 1 && this.commands[CommonCommand.N_LIGHT].command.isExecuted()) {
+        if (tick >= 1 && !stateTemporaryValues.canCancel && this.commands[CommonCommand.N_LIGHT].command.isExecuted()) {
           stateTemporaryValues.canCancel = true;
         }
         if (
@@ -239,23 +240,33 @@ export class Player extends StageObject {
 
   public applyHit(): void {}
 
-  public onTargetHit(): void {}
+  public onTargetHit(_stageObject: StageObject, hit: Hit): void {
+    this.setHitlag(hit);
+  }
 
   public update(params: { time: number; delta: number }): void {
+    super.update(params);
     this.updateState();
-    this.updateKinematics(params.delta);
-    this.updateSprite();
+    if (!this.isHitlagged) {
+      this.updateKinematics(params.delta);
+      this.updateSprite();
+    }
   }
 
   private updateState(): void {
-    for (const name of this.commandList) {
-      const { command, trigger = () => true, state } = this.commands[name];
-      if (command.isExecuted() && trigger()) {
-        this.stateManager.setState(state);
-        break;
+    if (this.isHitlagged) {
+      this.sprite.anims.pause();
+    } else {
+      this.sprite.anims.resume();
+      for (const name of this.commandList) {
+        const { command, trigger = () => true, state } = this.commands[name];
+        if (command.isExecuted() && trigger()) {
+          this.stateManager.setState(state);
+          break;
+        }
       }
+      this.stateManager.update();
     }
-    this.stateManager.update();
   }
 
   private updateSprite(): void {

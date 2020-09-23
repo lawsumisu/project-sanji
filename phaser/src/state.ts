@@ -7,6 +7,7 @@ import { StageObject } from 'src/stage/stageObject';
 export type StateDefinition<C = {}, F extends string = string> = C & {
   frameKey?: F;
   hitDefinition?: (tick: number, hitData: HitboxData) => HitboxData | null;
+  hurtDefinition?: (tick: number, hurtData: HurtboxData) => HurtboxData | null;
   update?: (tick: number, stateTemporaryValues: object) => void;
 };
 
@@ -17,7 +18,7 @@ type State<K extends string, C, F extends string> = StateDefinition<C, F> & {
 interface AnimInfo {
   direction: Direction;
   index: number;
-  frameDefinition: FrameDefinition
+  frameDefinition?: FrameDefinition
   frameKey: string;
 }
 
@@ -44,6 +45,14 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   public update(): void {
     if (this.currentState.update) {
       this.currentState.update(this.tick, this.stateTemporaryValues);
+    }
+    if (this.currentState.hurtDefinition) {
+      const prevHurtData = this.collisionData.hurtData;
+      const hurtData = this.currentState.hurtDefinition(this.tick, prevHurtData);
+      const persist = _.isFunction(prevHurtData.persist) ? prevHurtData.persist() : prevHurtData.persist;
+      if (!_.isNil(hurtData) || !persist) {
+        this.setHurtData(hurtData);
+      }
     }
     const prevHitData = this.collisionData.hitData;
     const hitData = this.generateHitboxData(prevHitData);
@@ -103,14 +112,20 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   }
 
   private setHitData(data: HitboxData): void {
-    PS.stage.removeHitData(this.collisionData.hitData.tag);
+    PS.stage.removeHitboxData(this.collisionData.hitData.tag);
     this.collisionData.hitData = data;
-    PS.stage.addHitData(data);
+    PS.stage.addHitboxData(data);
+  }
+
+  private setHurtData(data: HurtboxData | null): void {
+    PS.stage.removeHurtboxData(this.collisionData.hurtData.tag);
+    this.collisionData.hurtData = data ? data : HurtboxData.EMPTY;
+    PS.stage.addHurtboxData(this.collisionData.hurtData);
   }
 
   private generateHitboxData(hitboxData: HitboxData): HitboxData | null{
     const { index, direction, frameDefinition, frameKey } = this.getAnimInfo();
-    if (frameDefinition.hitboxDef && frameDefinition.hitboxDef[index] && hitboxData.index !== index) {
+    if (frameDefinition && frameDefinition.hitboxDef && frameDefinition.hitboxDef[index] && hitboxData.index !== index) {
       const frameHitDef = frameDefinition.hitboxDef[index];
       const persist = (): boolean => {
         const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();
