@@ -20,7 +20,8 @@ enum CommonState {
   CROUCH = 'CROUCH',
   RUN = 'RUN',
   // Separate into specific character
-  N_LIGHT = 'N_LIGHT'
+  N_LIGHT = 'N_LIGHT',
+  N_LIGHT_2 = 'N_LIGHT_2'
 }
 
 enum CommonCommand {
@@ -36,8 +37,17 @@ interface CommonStateConfig {
   startAnimation?: string;
 }
 
+interface CommandTrigger {
+  command: Command;
+  trigger?: () => boolean;
+  executionTrigger?: () => boolean;
+  state: CommonState;
+  priority?: number;
+}
+
 export class Player extends StageObject {
-  protected stateManager: StateManager<CommonState, CommonStateConfig>;
+  private stateManager: StateManager<CommonState, CommonStateConfig>;
+  private nextStates: Array<{state: CommonState, executionTrigger: () => boolean }> = [];
 
   private sprite: Phaser.GameObjects.Sprite;
 
@@ -54,7 +64,7 @@ export class Player extends StageObject {
   private readonly playerIndex: number;
 
   private commands: {
-    [key in CommonCommand]: { command: Command; trigger?: () => boolean; state: CommonState; priority?: number };
+    [key in CommonCommand]: CommandTrigger | CommandTrigger[];
   } = {
     [CommonCommand.JUMP]: {
       command: new Command('7|8|9', 1),
@@ -83,12 +93,20 @@ export class Player extends StageObject {
       state: CommonState.DASH_BACK,
       priority: 1
     },
-    [CommonCommand.N_LIGHT]: {
-      command: new Command('a', 1),
-      trigger: () => this.stateManager.current.key === CommonState.IDLE,
-      state: CommonState.N_LIGHT,
-      priority: 2
-    }
+    [CommonCommand.N_LIGHT]: [
+      {
+        command: new Command('a', 1),
+        trigger: () => this.stateManager.current.key === CommonState.IDLE,
+        state: CommonState.N_LIGHT,
+        priority: 2
+      },
+      {
+        command: new Command('a', 1),
+        executionTrigger: () => this.sprite.anims.currentFrame.index >= 4,
+        trigger: () => this.sprite.anims.currentFrame.index <= 4,
+        state: CommonState.N_LIGHT_2,
+      },
+    ]
   };
 
   private readonly commandList: CommonCommand[];
@@ -184,18 +202,17 @@ export class Player extends StageObject {
     },
     [CommonState.N_LIGHT]: {
       startAnimation: 'LIGHT_JAB_1',
-      update: (tick: number, stateTemporaryValues: { canCancel: boolean }) => {
+      update: () => {
         this.velocity.x = 0;
-        if (tick >= 1 && !stateTemporaryValues.canCancel && this.commands[CommonCommand.N_LIGHT].command.isExecuted()) {
-          stateTemporaryValues.canCancel = true;
+        if (!this.sprite.anims.isPlaying) {
+          this.stateManager.setState(CommonState.IDLE);
         }
-        if (
-          this.sprite.anims.currentAnim.key === 'LIGHT_JAB_1' &&
-          this.sprite.anims.currentFrame.index >= 4 &&
-          stateTemporaryValues.canCancel
-        ) {
-          playAnimation(this.sprite, 'LIGHT_JAB_2');
-        }
+      }
+    },
+    [CommonState.N_LIGHT_2]: {
+      startAnimation: 'LIGHT_JAB_2',
+      update: () => {
+        this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.IDLE);
         }
@@ -225,8 +242,10 @@ export class Player extends StageObject {
       this.stateManager.addState(key, value);
     });
     this.commandList = (_.keys(this.commands) as CommonCommand[]).sort((a: CommonCommand, b: CommonCommand) => {
-      const p1 = this.commands[a].priority || 0;
-      const p2 = this.commands[b].priority || 0;
+      const cA = this.commands[a];
+      const cB = this.commands[b];
+      const p1 = (_.isArray(cA) ? cA[0].priority : (cA as CommandTrigger).priority) || 0;
+      const p2 = (_.isArray(cB) ? cB[0].priority : (cB as CommandTrigger).priority) || 0;
       return p2 - p1;
     });
   }
@@ -254,17 +273,45 @@ export class Player extends StageObject {
   }
 
   private updateState(): void {
+    commandListLoop: for (const name of this.commandList) {
+      if (_.isArray(this.commands[name])) {
+        const commandString = this.commands[name] as CommandTrigger[];
+        for (let i = commandString.length - 1; i >= 0; i--) {
+          const { command, trigger = () => true, executionTrigger, state } = commandString[i];
+          if (this.isNextStateBuffered(state)) {
+            break;
+          }
+          if (i >= 1) {
+            // Currently (potentially) executing this string, so check needs to change based on the current state:
+            // If state i-1 has not been entered yet, but is buffered, then only need to check if command is executed.
+            // If currently in state i-1, then need to check for command and trigger.
+            const isNextStateBuffered = this.isNextStateBuffered(commandString[i - 1].state);
+            const isCurrentState = this.stateManager.current.key === commandString[i - 1].state;
+            if (isNextStateBuffered || isCurrentState) {
+              if (command.isExecuted() && (isNextStateBuffered || (isCurrentState && trigger()))) {
+                this.queueNextState(state, executionTrigger);
+                break commandListLoop;
+              }
+            }
+          } else if (command.isExecuted() && trigger()) {
+            // Currently checking commandString[0], so not currently executing this string, so check first command like normal
+            this.queueNextState(state);
+            break commandListLoop;
+          }
+        }
+      } else {
+        const { command, trigger = () => true, state } = this.commands[name] as CommandTrigger;
+        if (command.isExecuted() && trigger()) {
+          this.queueNextState(state);
+          break;
+        }
+      }
+    }
     if (this.isHitlagged) {
       this.sprite.anims.pause();
     } else {
       this.sprite.anims.resume();
-      for (const name of this.commandList) {
-        const { command, trigger = () => true, state } = this.commands[name];
-        if (command.isExecuted() && trigger()) {
-          this.stateManager.setState(state);
-          break;
-        }
-      }
+      this.goToNextState();
       this.stateManager.update();
     }
   }
@@ -283,8 +330,30 @@ export class Player extends StageObject {
     // TODO handle this in a separate function?
     if (this.position.y > 300) {
       this.position.y = 300;
+      this.velocity.y = 0;
       if (this.stateManager.current.key === CommonState.FALL) {
         this.stateManager.setState(CommonState.IDLE);
+      }
+    }
+  }
+
+  private isNextStateBuffered(state: CommonState): boolean {
+    return !!this.nextStates.find(nextState => nextState.state === state);
+  }
+
+  private queueNextState(state: CommonState, executionTrigger: () => boolean = () => true): void {
+    if (this.stateManager.current.key !== state && !this.nextStates.find(nextState => nextState.state === state)) {
+      this.nextStates.push({ state, executionTrigger });
+    }
+  }
+
+  private goToNextState(): void {
+    if (this.nextStates.length >= 1) {
+      const [nextState, ...rest] = this.nextStates;
+      if (nextState.executionTrigger()) {
+        console.log(nextState.state, rest.map(i => i.state));
+        this.stateManager.setState(nextState.state);
+        this.nextStates = rest;
       }
     }
   }
