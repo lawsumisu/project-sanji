@@ -2,11 +2,25 @@ import * as _ from 'lodash';
 import { addAnimation, addAnimationByFrames } from 'src/utilitiesPF/animation.util';
 import { Hit } from 'src/frame';
 
-export interface HitboxConfig {
+export interface CircleBoxConfig {
   x: number;
   y: number;
   r: number;
 }
+
+export interface CapsuleBoxConfig {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  r: number;
+}
+
+export function isCircleBox(box: BoxConfig): box is CircleBoxConfig {
+  return _.has(box, 'x');
+}
+
+export type BoxConfig = CircleBoxConfig | CapsuleBoxConfig
 
 export interface AnimationFrameConfig {
   index: number;
@@ -26,7 +40,7 @@ export interface AnimationDefinition {
 export interface HitboxDefinition {
   hit?: Hit;
   tag?: string | number;
-  boxes: HitboxConfig[];
+  boxes: BoxConfig[];
   persistUntilFrame?: number;
 }
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { AnimationFrameConfig, FrameDefinition, FrameDefinitionMap, HitboxConfig } from 'src/characters';
+import { AnimationFrameConfig, FrameDefinition, FrameDefinitionMap, BoxConfig } from 'src/characters';
 import { SpriteFrame } from 'src/editor/components';
 import 'src/editor/components/frameDefinitionDisplay/styles.scss';
 import { AppState } from 'src/editor/redux';
@@ -37,7 +37,7 @@ class FrameDefinitionDisplay extends React.PureComponent<FrameDefinitionDisplayP
     );
   }
 
-  private getHitboxes(index: number): { boxes: HitboxConfig[]; persistent?: boolean } {
+  private getHitboxes(index: number): { boxes: BoxConfig[]; persistent?: boolean } {
     const { hitboxDef } = this.props.definition;
     if (hitboxDef) {
       if (hitboxDef[index]) {

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { CollisionDataMap, Direction, Hitbox, HitboxData, HurtboxData } from 'src/frame';
-import { FrameDefinition, HitboxConfig } from 'src/characters';
+import { FrameDefinition, BoxConfig } from 'src/characters';
 import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 
@@ -135,7 +135,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       const hit = { ...frameDefinition.hitboxDef.hit, ...frameHitDef.hit };
       const tag = frameHitDef.tag ? [frameKey, frameHitDef.tag].join('-') : frameKey;
       return new HitboxData(
-        frameHitDef.boxes.map((box: HitboxConfig) =>
+        frameHitDef.boxes.map((box: BoxConfig) =>
           Hitbox.generateCircular(new Phaser.Geom.Circle(box.x, box.y, box.r), hit, direction)
         ),
         tag,

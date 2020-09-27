@@ -1,6 +1,6 @@
 import * as React from 'react';
 import 'src/editor/components/spriteFrame/styles.scss';
-import { HitboxConfig } from 'src/characters';
+import { BoxConfig } from 'src/characters';
 import { Box, Sprite } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
@@ -14,7 +14,7 @@ export interface SpriteFrameProps {
   frameKey: string;
   frameIndex: number;
   hit: {
-    boxes: HitboxConfig[];
+    boxes: BoxConfig[];
     persistent?: boolean;
   };
 }
@@ -60,7 +60,7 @@ class SpriteFrame extends React.PureComponent<
         <div className="cn--sprite">
           <Sprite config={config} source={this.props.frameData.source} />
           <div className="cn--box-display">
-            {this.props.hit.boxes.map((box: HitboxConfig, i: number) => (
+            {this.props.hit.boxes.map((box: BoxConfig, i: number) => (
               <Box key={i} config={box} persistent={this.props.hit.persistent} type={BoxType.HIT} origin={origin} />
             ))}
           </div>
