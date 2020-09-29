@@ -78,15 +78,13 @@ export abstract class Collider<T extends ColliderType = ColliderType> {
     return this.type === ColliderType.CAPSULE;
   }
 
-  public transformBox(offset: Vector2): BoxType<T> {
+  public transformBox(o: Vector2): BoxType<T> {
     if (this.isCircular()) {
       const { x, y, radius: r } = this.box;
-      return new Phaser.Geom.Circle(x + offset.x, y + offset.y, r) as BoxType<T>;
+      return new Phaser.Geom.Circle(x + o.x, y + o.y, r) as BoxType<T>;
     } else if (this.isCapsular()) {
       const { x1, y1, x2, y2, r } = this.box;
-      return new Capsule(r, { x1: x1 + offset.x, x2: x2 + offset.x, y1: y1 + offset.y, y2: y2 + offset.y }) as BoxType<
-        T
-      >;
+      return new Capsule(r, { x1: x1 + o.x, x2: x2 + o.x, y1: y1 + o.y, y2: y2 + o.y }) as BoxType<T>;
     } else {
       return this.box;
     }
