@@ -100,7 +100,7 @@ const frameData: FrameDefinitionMap = {
         knockback: 0
       },
       1: {
-        boxes: [{ x: 38.4, y: -75.2, r: 10 }]
+        boxes: [{ x1: 16, y1: -86, x2: 39.4, y2: -74.6, r: 6.5 }]
       }
     }
   },

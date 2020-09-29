@@ -17,8 +17,8 @@ export class Stage extends Phaser.Scene {
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
     this.p1 = new Player();
-    this.stageObjects.push(this.p1);
-    this.stageObjects.push(new Dummy());
+    this.addStageObject(this.p1);
+    this.addStageObject(new Dummy());
     PS.stage = this;
   }
 
@@ -44,24 +44,26 @@ export class Stage extends Phaser.Scene {
   private updateHits(): void {
     _.forEach(this.hitData, (hitboxData: HitboxData) => {
       _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
-        if (!hitboxData.hasCollided(hurtboxData)) {
+        if (!hitboxData.hasCollided(hurtboxData) && hitboxData.owner !== hurtboxData.owner) {
+          const hitOffset = this.getStageObject(hitboxData.owner).position;
+          const hurtOffset = this.getStageObject(hurtboxData.owner).position;
           for (let hitbox of hitboxData.data) {
             for (const hurtbox of hurtboxData.data) {
-              const hit = this.getColliderInWorldSpace(hitbox as Hitbox<ColliderType.CIRCLE>, hitboxData.owner);
-              const hurt = this.getColliderInWorldSpace(hurtbox as Hurtbox<ColliderType.CIRCLE>, hurtboxData.owner);
-              if (Phaser.Geom.Intersects.CircleToCircle(hit, hurt)) {
+              if (Collider.checkCollision(hitbox, hurtbox, { offset1: hitOffset, offset2: hurtOffset})) {
                 hitboxData.registerCollision(hurtboxData);
                 // TODO handle hits
                 const hurtObject = this.getStageObject(hurtboxData.owner);
                 hurtObject.applyHit(hitbox.hit);
                 this.p1.onTargetHit(hurtObject, hitbox.hit);
-                const { x, y, radius } = hurt;
-                this.debug.drawCircle(x, y, radius, {
-                  fill: {
-                    color: 0xffff00,
-                    alpha: 0.6
-                  }
-                });
+                if (hurtbox.isCircular()) {
+                  const { x, y, radius } = hurtbox.transformBox(hurtOffset);
+                  this.debug.drawCircle(x, y, radius, {
+                    fill: {
+                      color: 0xffff00,
+                      alpha: 0.6
+                    }
+                  });
+                }
                 break;
               }
             }
@@ -109,37 +111,37 @@ export class Stage extends Phaser.Scene {
 
   private draw(): void {
     _.forEach(this.hitData, (hitboxData: HitboxData) => {
+      const p = this.getStageObject(hitboxData.owner).position;
       hitboxData.data.forEach((hitbox: Hitbox<ColliderType.CIRCLE>) => {
-        const {x, y, radius} = this.getColliderInWorldSpace(hitbox, hitboxData.owner);
-        this.debug.drawCircle(x, y, radius, {
-          fill: {
-            color: 0xff0000,
-            alpha: 0.5
-          }
-        });
+        if (hitbox.isCircular()) {
+          const {x, y, radius} = hitbox.transformBox(p);
+          this.debug.drawCircle(x, y, radius, {
+            fill: {
+              color: 0xff0000,
+              alpha: 0.5
+            }
+          });
+        }
       });
     });
 
     _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
+      const p = this.getStageObject(hurtboxData.owner).position;
       hurtboxData.data.forEach((hurtbox: Hurtbox<ColliderType.CIRCLE>) => {
-        const {x, y, radius} = this.getColliderInWorldSpace(hurtbox, hurtboxData.owner);
-        this.debug.drawCircle(x, y, radius, {
-          fill: {
-            color: 0x00ffff,
-            alpha: 0.5
-          }
-        });
+        if (hurtbox.isCircular()) {
+          const {x, y, radius} = hurtbox.transformBox(p);
+          this.debug.drawCircle(x, y, radius, {
+            fill: {
+              color: 0x00ffff,
+              alpha: 0.5
+            }
+          });
+        }
       });
     });
   }
 
   private getStageObject(owner: string): StageObject {
     return this.stageObjects.find((so: StageObject) => so.tag === owner)!;
-  }
-
-  private getColliderInWorldSpace(item: Collider<ColliderType.CIRCLE>, owner: string): Phaser.Geom.Circle {
-    const p = this.getStageObject(owner).position;
-    const { x, y, radius: r } = item.box;
-    return new Phaser.Geom.Circle(x + p.x, y + p.y, r);
   }
 }

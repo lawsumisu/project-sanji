@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { CollisionDataMap, Direction, Hitbox, HitboxData, HurtboxData } from 'src/frame';
-import { FrameDefinition, BoxConfig } from 'src/characters';
+import { FrameDefinition, BoxConfig, isCircleBox } from 'src/characters';
 import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 
@@ -18,7 +18,7 @@ type State<K extends string, C, F extends string> = StateDefinition<C, F> & {
 interface AnimInfo {
   direction: Direction;
   index: number;
-  frameDefinition?: FrameDefinition
+  frameDefinition?: FrameDefinition;
   frameKey: string;
 }
 
@@ -94,7 +94,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       const currentStateDef = this.getStateDefinition(key);
       this.currentState = {
         ...currentStateDef,
-        key,
+        key
       };
       this.onAfterTransitionFn(this.currentState);
       this.tick = 0;
@@ -123,9 +123,14 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
     PS.stage.addHurtboxData(this.collisionData.hurtData);
   }
 
-  private generateHitboxData(hitboxData: HitboxData): HitboxData | null{
+  private generateHitboxData(hitboxData: HitboxData): HitboxData | null {
     const { index, direction, frameDefinition, frameKey } = this.getAnimInfo();
-    if (frameDefinition && frameDefinition.hitboxDef && frameDefinition.hitboxDef[index] && hitboxData.index !== index) {
+    if (
+      frameDefinition &&
+      frameDefinition.hitboxDef &&
+      frameDefinition.hitboxDef[index] &&
+      hitboxData.index !== index
+    ) {
       const frameHitDef = frameDefinition.hitboxDef[index];
       const persist = (): boolean => {
         const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();
@@ -135,9 +140,13 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       const hit = { ...frameDefinition.hitboxDef.hit, ...frameHitDef.hit };
       const tag = frameHitDef.tag ? [frameKey, frameHitDef.tag].join('-') : frameKey;
       return new HitboxData(
-        frameHitDef.boxes.map((box: BoxConfig) =>
-          Hitbox.generateCircular(new Phaser.Geom.Circle(box.x, box.y, box.r), hit, direction)
-        ),
+        frameHitDef.boxes.map((box: BoxConfig) => {
+          if (isCircleBox(box)) {
+            return Hitbox.generateCircular(box, hit, direction);
+          } else {
+            return Hitbox.generateCapsular(box, hit, direction);
+          }
+        }),
         tag,
         this.stageObject.tag,
         index,
