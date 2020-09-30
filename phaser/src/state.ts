@@ -1,6 +1,15 @@
 import * as _ from 'lodash';
-import { CollisionDataMap, Direction, Hitbox, HitboxData, HurtboxData } from 'src/frame';
-import { FrameDefinition, BoxConfig, isCircleBox } from 'src/characters';
+import {
+  Collider,
+  CollisionData,
+  CollisionDataMap,
+  Direction,
+  Hitbox,
+  HitboxData,
+  Hurtbox,
+  HurtboxData
+} from 'src/collider';
+import { FrameDefinition, BoxConfig, isCircleBox, HitboxDefinition, BoxDefinition } from 'src/characters';
 import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 
@@ -46,18 +55,22 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
     if (this.currentState.update) {
       this.currentState.update(this.tick, this.stateTemporaryValues);
     }
+    const prevHurtData = this.collisionData.hurtData;
+    const hurtData = this.currentState.hurtDefinition
+      ? this.currentState.hurtDefinition(this.tick, prevHurtData)
+      : this.generateHurtboxData(prevHurtData);
+    const persistHurtboxes = _.isFunction(prevHurtData.persist) ? prevHurtData.persist() : prevHurtData.persist;
+    if (!_.isNil(hurtData) || !persistHurtboxes) {
+      this.setHurtData(hurtData);
+    }
     if (this.currentState.hurtDefinition) {
-      const prevHurtData = this.collisionData.hurtData;
-      const hurtData = this.currentState.hurtDefinition(this.tick, prevHurtData);
-      const persist = _.isFunction(prevHurtData.persist) ? prevHurtData.persist() : prevHurtData.persist;
-      if (!_.isNil(hurtData) || !persist) {
-        this.setHurtData(hurtData);
-      }
     }
     const prevHitData = this.collisionData.hitData;
-    const hitData = this.generateHitboxData(prevHitData);
-    const persist = _.isFunction(prevHitData.persist) ? prevHitData.persist() : prevHitData.persist;
-    if (!_.isNil(hitData) || !persist) {
+    const hitData = this.currentState.hitDefinition
+      ? this.currentState.hitDefinition(this.tick, prevHitData)
+      : this.generateHitboxData(prevHitData);
+    const persistHitboxes = _.isFunction(prevHitData.persist) ? prevHitData.persist() : prevHitData.persist;
+    if (!_.isNil(hitData) || !persistHitboxes) {
       this.setHitData(hitData ? hitData : HitboxData.EMPTY);
     }
     this.tick++;
@@ -123,24 +136,38 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
     PS.stage.addHurtboxData(this.collisionData.hurtData);
   }
 
+  private generateHurtboxData(hurtboxData: HurtboxData): HurtboxData | null {
+    const boxDefinitionData = this.generateBoxDefinitionData(hurtboxData, 'hurtboxDef');
+    if (_.isNil(boxDefinitionData)) {
+      return null;
+    } else {
+      const { persist, tag, frameBoxDef, index } = boxDefinitionData;
+      return new HurtboxData(
+        frameBoxDef.boxes.map(box => {
+          if (isCircleBox(box)) {
+            return Hurtbox.generateCircular(box);
+          } else {
+            return Hurtbox.generateCapsular(box);
+          }
+        }),
+        tag,
+        this.stageObject.tag,
+        index,
+        { persist }
+      );
+    }
+  }
+
   private generateHitboxData(hitboxData: HitboxData): HitboxData | null {
-    const { index, direction, frameDefinition, frameKey } = this.getAnimInfo();
-    if (
-      frameDefinition &&
-      frameDefinition.hitboxDef &&
-      frameDefinition.hitboxDef[index] &&
-      hitboxData.index !== index
-    ) {
-      const frameHitDef = frameDefinition.hitboxDef[index];
-      const persist = (): boolean => {
-        const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();
-        const { persistUntilFrame = index + 1 } = frameHitDef;
-        return frameKey === currentFrameKey && (i === index || i < persistUntilFrame);
-      };
-      const hit = { ...frameDefinition.hitboxDef.hit, ...frameHitDef.hit };
-      const tag = frameHitDef.tag ? [frameKey, frameHitDef.tag].join('-') : frameKey;
+    const boxDefinitionData = this.generateBoxDefinitionData(hitboxData, 'hitboxDef');
+    if (_.isNil(boxDefinitionData)) {
+      return null;
+    } else {
+      const { direction, frameDefinition } = this.getAnimInfo();
+      const { persist, tag, frameBoxDef, index } = boxDefinitionData;
+      const hit = { ...frameDefinition!.hitboxDef!.hit, ...frameBoxDef.hit };
       return new HitboxData(
-        frameHitDef.boxes.map((box: BoxConfig) => {
+        frameBoxDef.boxes.map((box: BoxConfig) => {
           if (isCircleBox(box)) {
             return Hitbox.generateCircular(box, hit, direction);
           } else {
@@ -152,6 +179,28 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
         index,
         { persist, registeredCollisions: hitboxData.registeredCollisions }
       );
+    }
+  }
+
+  private generateBoxDefinitionData<T extends CollisionData<Collider>>(
+    data: T,
+    key: T extends HitboxData ? 'hitboxDef' : 'hurtboxDef'
+  ): {
+    persist: () => boolean;
+    tag: string;
+    frameBoxDef: T extends HitboxData ? HitboxDefinition : BoxDefinition;
+    index: number;
+  } | null {
+    const { index, frameDefinition, frameKey } = this.getAnimInfo();
+    if (frameDefinition && frameDefinition[key] && frameDefinition[key][index] && data.index !== index) {
+      const frameBoxDef = frameDefinition[key][index];
+      const persist = (): boolean => {
+        const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();
+        const { persistUntilFrame = index + 1 } = frameBoxDef;
+        return frameKey === currentFrameKey && (i === index || i < persistUntilFrame);
+      };
+      const tag = frameBoxDef.tag ? [frameKey, frameBoxDef.tag].join('-') : frameKey;
+      return { persist, tag, frameBoxDef, index };
     } else {
       return null;
     }

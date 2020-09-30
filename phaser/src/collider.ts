@@ -92,8 +92,12 @@ export abstract class Collider<T extends ColliderType = ColliderType> {
 }
 
 export class Hurtbox<T extends ColliderType = ColliderType> extends Collider<T> {
-  public static generateCircular(box: Phaser.Geom.Circle): Hurtbox<ColliderType.CIRCLE> {
-    return new Hurtbox(ColliderType.CIRCLE, new Phaser.Geom.Circle(box.x, box.y, box.radius));
+  public static generateCircular(box: CircleBoxConfig): Hurtbox<ColliderType.CIRCLE> {
+    return new Hurtbox(ColliderType.CIRCLE, new Phaser.Geom.Circle(box.x, box.y, box.r));
+  }
+
+  public static generateCapsular(box: CapsuleBoxConfig): Hurtbox<ColliderType.CAPSULE> {
+    return new Hurtbox(ColliderType.CAPSULE, new Capsule(box.r, box));
   }
 }
 

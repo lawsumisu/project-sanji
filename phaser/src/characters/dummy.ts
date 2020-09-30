@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { StageObject } from 'src/stage/stageObject';
 import { StateDefinition, StateManager } from 'src/state';
-import { Hit, Hurtbox, HurtboxData } from 'src/frame';
+import { Hit, Hurtbox, HurtboxData } from 'src/collider';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 
@@ -16,7 +16,7 @@ export class Dummy extends StageObject {
               [
                 { x: 0, y: 0, r: 10 },
                 { x: 0, y: -15, r: 5 }
-              ].map(({ x, y, r }) => Hurtbox.generateCircular(new Phaser.Geom.Circle(x, y * Unit.toPx, r * Unit.toPx))),
+              ].map(({ x, y, r }) => Hurtbox.generateCircular({ x, y: y * Unit.toPx, r: r * Unit.toPx })),
 
               'basic',
               this.tag,

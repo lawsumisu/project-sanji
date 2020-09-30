@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { addAnimation, addAnimationByFrames } from 'src/utilitiesPF/animation.util';
-import { Hit } from 'src/frame';
+import { Hit } from 'src/collider';
 
 export interface CircleBoxConfig {
   x: number;
@@ -37,18 +37,24 @@ export interface AnimationDefinition {
   repeat?: number;
 }
 
-export interface HitboxDefinition {
-  hit?: Hit;
+export interface BoxDefinition {
   tag?: string | number;
   boxes: BoxConfig[];
   persistUntilFrame?: number;
 }
 
+export interface HitboxDefinition extends BoxDefinition {
+  hit?: Hit;
+}
+
 export interface FrameDefinition {
   animDef: AnimationDefinition;
+  hurtboxDef?: {
+    [key: number]: BoxDefinition;
+  }
   hitboxDef?: {
     hit: Hit;
-    [key: number] : HitboxDefinition;
+    [key: number]: HitboxDefinition;
   };
 }
 

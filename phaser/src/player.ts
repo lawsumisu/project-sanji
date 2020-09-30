@@ -9,7 +9,7 @@ import { Command } from 'src/command';
 import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 import { Unit } from 'src/unit';
-import { Hit } from 'src/frame';
+import { Hit } from 'src/collider';
 
 enum CommonState {
   IDLE = 'IDLE',

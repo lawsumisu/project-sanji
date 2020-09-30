@@ -1,5 +1,5 @@
 import { Vector2 } from '@lawsumisu/common-utilities';
-import { Hit } from 'src/frame';
+import { Hit } from 'src/collider';
 
 export abstract class StageObject {
   private static objectCounter = 1;

@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import * as _ from 'lodash';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
-import { Collider, ColliderType, HitboxData, Hurtbox, HurtboxData } from 'src/frame';
+import { Collider, ColliderType, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
 import { PS } from 'src/global';
 import { Player } from 'src/player';
 import { StageObject } from 'src/stage/stageObject';
