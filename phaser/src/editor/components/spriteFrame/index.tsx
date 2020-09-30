@@ -17,6 +17,10 @@ export interface SpriteFrameProps {
     boxes: BoxConfig[];
     persistent?: boolean;
   };
+  hurt: {
+    boxes: BoxConfig[];
+    persistent?: boolean;
+  }
 }
 
 interface StateMappedSpriteFrameProps {
@@ -60,6 +64,9 @@ class SpriteFrame extends React.PureComponent<
         <div className="cn--sprite">
           <Sprite config={config} source={this.props.frameData.source} />
           <div className="cn--box-display">
+            {this.props.hurt.boxes.map((box: BoxConfig, i: number) => (
+              <Box key={i} config={box} persistent={this.props.hurt.persistent} type={BoxType.HURT} origin={origin} />
+            ))}
             {this.props.hit.boxes.map((box: BoxConfig, i: number) => (
               <Box key={i} config={box} persistent={this.props.hit.persistent} type={BoxType.HIT} origin={origin} />
             ))}

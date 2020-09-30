@@ -192,7 +192,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
     index: number;
   } | null {
     const { index, frameDefinition, frameKey } = this.getAnimInfo();
-    if (frameDefinition && frameDefinition[key] && frameDefinition[key][index] && data.index !== index) {
+    if (frameDefinition && frameDefinition[key] && frameDefinition[key][index] && (data.index !== index || data.isEmpty) ) {
       const frameBoxDef = frameDefinition[key][index];
       const persist = (): boolean => {
         const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();

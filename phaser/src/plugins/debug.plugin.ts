@@ -154,6 +154,7 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
             const majorAxis = new Vector2(config.x2, config.y2).subtract(new Vector2(config.x1, config.y1));
             const theta = Math.atan2(majorAxis.y, majorAxis.x);
             if (config.fill) {
+              this.graphics.beginPath();
               this.graphics.arc(config.x1, config.y1, config.r, theta + Math.PI / 2, theta - Math.PI / 2);
               this.graphics.arc(config.x2, config.y2, config.r, theta - Math.PI / 2, theta + Math.PI / 2);
               this.graphics.fillPath();

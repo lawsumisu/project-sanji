@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import * as _ from 'lodash';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
-import { Collider, ColliderType, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
+import { Collider, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
 import { PS } from 'src/global';
 import { Player } from 'src/player';
 import { StageObject } from 'src/stage/stageObject';
@@ -90,7 +90,6 @@ export class Stage extends Phaser.Scene {
 
   public addHurtboxData(hurt: HurtboxData): void {
     if (!hurt.isEmpty) {
-      console.log(hurt);
       this.hurtData[hurt.tag] = hurt;
     }
   }
@@ -110,9 +109,15 @@ export class Stage extends Phaser.Scene {
   }
 
   private draw(): void {
-    const options = {
+    const hitboxOptions = {
       fill: {
         color: 0xff0000,
+        alpha: 0.5
+      }
+    };
+    const hurtboxOptions = {
+      fill: {
+        color: 0x00ffff,
         alpha: 0.5
       }
     };
@@ -121,24 +126,21 @@ export class Stage extends Phaser.Scene {
       hitboxData.data.forEach((hitbox: Collider) => {
         if (hitbox.isCircular()) {
           const { x, y, radius } = hitbox.transformBox(p);
-          this.debug.drawCircle(x, y, radius, options);
+          this.debug.drawCircle(x, y, radius, hitboxOptions);
         } else if (hitbox.isCapsular()) {
-          this.debug.drawCapsule(hitbox.transformBox(p), options);
+          this.debug.drawCapsule(hitbox.transformBox(p), hitboxOptions);
         }
       });
     });
 
     _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
       const p = this.getStageObject(hurtboxData.owner).position;
-      hurtboxData.data.forEach((hurtbox: Hurtbox<ColliderType.CIRCLE>) => {
+      hurtboxData.data.forEach((hurtbox: Hurtbox) => {
         if (hurtbox.isCircular()) {
           const { x, y, radius } = hurtbox.transformBox(p);
-          this.debug.drawCircle(x, y, radius, {
-            fill: {
-              color: 0x00ffff,
-              alpha: 0.5
-            }
-          });
+          this.debug.drawCircle(x, y, radius, hurtboxOptions);
+        } else if (hurtbox.isCapsular()) {
+          this.debug.drawCapsule(hurtbox.transformBox(p), hurtboxOptions);
         }
       });
     });

@@ -2,7 +2,7 @@ import { StateDefinition, StateManager } from 'src/state';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { GameInput, InputHistory } from 'src/plugins/gameInput.plugin';
 import * as _ from 'lodash';
-import { addAnimationsByDefinition } from 'src/characters';
+import { addAnimationsByDefinition, getFrameIndexFromSpriteIndex } from 'src/characters';
 import aero from 'src/characters/aero/frameData';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { Command } from 'src/command';
@@ -226,7 +226,7 @@ export class Player extends StageObject {
     this.stateManager = new StateManager<CommonState, CommonStateConfig>(this, () => {
       const { currentFrame, currentAnim } = this.sprite.anims;
       return {
-        index: currentFrame.index - 1,
+        index: getFrameIndexFromSpriteIndex(aero[currentAnim.key].animDef, currentFrame.index),
         direction: { x: !this.sprite.flipX, y: true },
         frameDefinition: aero[currentAnim.key],
         frameKey: currentAnim.key

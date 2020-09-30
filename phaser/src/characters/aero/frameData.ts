@@ -8,6 +8,14 @@ const frameData: FrameDefinitionMap = {
       prefix: 'idle',
       frameRate: 13,
       repeat: -1
+    },
+    hurtboxDef: {
+      0: {
+        boxes: [
+          { x1: 1.3800000000000001, y1: -92.39999999999999, x2: 0.7800000000000002, y2: -12.800000000000011, r: 13.5 }
+        ],
+        persistUntilFrame: 22
+      }
     }
   },
   WALK_FWD: {
@@ -118,7 +126,10 @@ const frameData: FrameDefinitionMap = {
         knockback: 0
       },
       1: {
-        boxes: [{ x: 56.4, y: -93.6, r: 10 }]
+        boxes: [
+          { x: 57.8, y: -92.2, r: 10 },
+          { x1: 22.83, y1: -88.79, x2: 58.85000000000001, y2: -92.17, r: 7 }
+        ]
       }
     }
   }

@@ -22,7 +22,7 @@ class FrameDefinitionDisplay extends React.PureComponent<FrameDefinitionDisplayP
             if (_.isNumber(value)) {
               return acc + 1;
             } else {
-              const { index: start, endIndex: end = start} = value;
+              const { index: start, endIndex: end = start } = value;
               return acc + end - start + 1;
             }
           },
@@ -31,20 +31,28 @@ class FrameDefinitionDisplay extends React.PureComponent<FrameDefinitionDisplayP
     return (
       <div className="cn--frame-definition-display">
         {_.times(uniqueFrames, (i: number) => {
-          return <SpriteFrame key={i} frameKey={this.props.frameKey} frameIndex={i} hit={this.getHitboxes(i)} />;
+          return (
+            <SpriteFrame
+              key={i}
+              frameKey={this.props.frameKey}
+              frameIndex={i}
+              hit={this.getBoxes(i, 'hitboxDef')}
+              hurt={this.getBoxes(i, 'hurtboxDef')}
+            />
+          );
         })}
       </div>
     );
   }
 
-  private getHitboxes(index: number): { boxes: BoxConfig[]; persistent?: boolean } {
-    const { hitboxDef } = this.props.definition;
-    if (hitboxDef) {
-      if (hitboxDef[index]) {
-        return { boxes: hitboxDef[index].boxes };
+  private getBoxes(index: number, key: 'hitboxDef' | 'hurtboxDef'): { boxes: BoxConfig[]; persistent?: boolean } {
+    if (this.props.definition[key]) {
+      const boxDef = this.props.definition[key]!;
+      if (boxDef[index]) {
+        return { boxes: boxDef[index].boxes };
       } else {
         for (let i = index - 1; i >= 0; --i) {
-          const H = hitboxDef[i];
+          const H = boxDef[i];
           if (H) {
             if (H.persistUntilFrame && H.persistUntilFrame > index) {
               return { boxes: H.boxes, persistent: true };
