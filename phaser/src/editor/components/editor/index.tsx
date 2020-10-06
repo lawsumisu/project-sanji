@@ -173,7 +173,7 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
             selectedBox: {
               offset: Vector2.ZERO,
               index: this.state[key].length,
-              selectionType: SelectionType.BOX,
+              selectionType: SelectionType.HANDLE_2,
               boxType: this.state.newBoxType
             },
             [key]: [...this.state[key], box],

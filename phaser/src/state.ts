@@ -9,7 +9,7 @@ import {
   Hurtbox,
   HurtboxData
 } from 'src/collider';
-import { FrameDefinition, BoxConfig, isCircleBox, HitboxDefinition, BoxDefinition } from 'src/characters';
+import { BoxConfig, BoxDefinition, BoxType, FrameDefinition, HitboxDefinition, isCircleBox } from 'src/characters';
 import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 
@@ -137,7 +137,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   }
 
   private generateHurtboxData(hurtboxData: HurtboxData): HurtboxData | null {
-    const boxDefinitionData = this.generateBoxDefinitionData(hurtboxData, 'hurtboxDef');
+    const boxDefinitionData = this.generateBoxDefinitionData(hurtboxData, BoxType.HURT);
     if (_.isNil(boxDefinitionData)) {
       return null;
     } else {
@@ -159,7 +159,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   }
 
   private generateHitboxData(hitboxData: HitboxData): HitboxData | null {
-    const boxDefinitionData = this.generateBoxDefinitionData(hitboxData, 'hitboxDef');
+    const boxDefinitionData = this.generateBoxDefinitionData(hitboxData, BoxType.HIT);
     if (_.isNil(boxDefinitionData)) {
       return null;
     } else {
@@ -184,7 +184,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
 
   private generateBoxDefinitionData<T extends CollisionData<Collider>>(
     data: T,
-    key: T extends HitboxData ? 'hitboxDef' : 'hurtboxDef'
+    boxType: T extends HitboxData ? BoxType.HIT : BoxType.HURT
   ): {
     persist: () => boolean;
     tag: string;
@@ -192,8 +192,9 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
     index: number;
   } | null {
     const { index, frameDefinition, frameKey } = this.getAnimInfo();
-    if (frameDefinition && frameDefinition[key] && frameDefinition[key][index] && (data.index !== index || data.isEmpty) ) {
-      const frameBoxDef = frameDefinition[key][index];
+    const key = boxType === BoxType.HIT ? 'hitboxDef' : 'hurtboxDef';
+    if (frameDefinition && frameDefinition[key] && frameDefinition[key]![index] && (data.index !== index || data.isEmpty)) {
+      const frameBoxDef = frameDefinition[key]![index] as T extends HitboxData ? HitboxDefinition : BoxDefinition;
       const persist = (): boolean => {
         const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();
         const { persistUntilFrame = index + 1 } = frameBoxDef;
