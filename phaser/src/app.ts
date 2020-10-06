@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
-import { Stage } from './stage';
+import { Stage } from 'src/stage';
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,

@@ -1,18 +1,20 @@
 import * as Phaser from 'phaser';
 import * as _ from 'lodash';
+import { Vector2 } from '@lawsumisu/common-utilities';
 
 export interface Drawable {
   draw: (plugin: DebugDrawPlugin) => void;
 }
 
 export function isDrawable(o: unknown): o is Drawable {
-  return _.hasIn(o, 'draw') && _.isFunction((<{draw: unknown}> o).draw);
+  return _.hasIn(o, 'draw') && _.isFunction((<{ draw: unknown }>o).draw);
 }
 
 enum ConfigType {
   LINE = 'LINE',
   RECT = 'RECT',
-  CIRCLE = 'CIRCLE'
+  CIRCLE = 'CIRCLE',
+  CAPSULE = 'CAPSULE'
 }
 
 interface RectLike {
@@ -54,6 +56,15 @@ interface CircleConfig extends DebugConfig {
   r: number;
 }
 
+interface CapsuleConfig extends DebugConfig {
+  type: ConfigType.CAPSULE;
+  x1: number;
+  x2: number;
+  y1: number;
+  y2: number;
+  r: number;
+}
+
 function isRect(config: DebugConfig): config is RectConfig {
   return config.type === ConfigType.RECT;
 }
@@ -64,6 +75,10 @@ function isLine(config: DebugConfig): config is LineConfig {
 
 function isCircle(config: DebugConfig): config is CircleConfig {
   return config.type === ConfigType.CIRCLE;
+}
+
+function isCapsule(config: DebugConfig): config is CapsuleConfig {
+  return config.type === ConfigType.CAPSULE;
 }
 
 export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
@@ -90,6 +105,15 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
   public drawCircle(x: number, y: number, r: number, options: Partial<DebugOptions> = {}): void {
     const { lineColor = 0xffffff, fill, lineWidth = 1 } = options;
     this.configs.push(<CircleConfig>{ type: ConfigType.CIRCLE, x, y, r, lineColor, lineWidth, fill });
+  }
+
+  public drawCapsule(
+    capsule: { x1: number; y1: number; x2: number; y2: number; r: number },
+    options: Partial<DebugOptions> = {}
+  ): void {
+    const { x1, y1, x2, y2, r } = capsule;
+    const { lineColor = 0xffffff, fill, lineWidth = 1 } = options;
+    this.configs.push(<CapsuleConfig>{ type: ConfigType.CAPSULE, x1, x2, y1, y2, r, lineColor, lineWidth, fill });
   }
 
   private onSceneStart = (): void => {
@@ -126,7 +150,15 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
             } else {
               this.graphics.strokeCircleShape(circle);
             }
-
+          } else if (isCapsule(config)) {
+            const majorAxis = new Vector2(config.x2, config.y2).subtract(new Vector2(config.x1, config.y1));
+            const theta = Math.atan2(majorAxis.y, majorAxis.x);
+            if (config.fill) {
+              this.graphics.beginPath();
+              this.graphics.arc(config.x1, config.y1, config.r, theta + Math.PI / 2, theta - Math.PI / 2);
+              this.graphics.arc(config.x2, config.y2, config.r, theta - Math.PI / 2, theta + Math.PI / 2);
+              this.graphics.fillPath();
+            }
           }
         }
       });
