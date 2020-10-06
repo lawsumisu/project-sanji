@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { CapsuleBoxConfig } from 'src/characters';
-import Box, { BoxProps, BoxType } from 'src/editor/components/box';
+import Box, { BoxProps } from 'src/editor/components/box';
 import * as _ from 'lodash';
 import 'src/editor/components/editor/styles.scss';
 
@@ -19,7 +19,6 @@ export default class EditableCapsuleBox extends React.PureComponent<CapsuleProps
   public static defaultProps = {
     scale: 1,
     persistent: false,
-    type: BoxType.HURT,
     onMouseDown: _.noop,
     onMouseUp: _.noop,
   };

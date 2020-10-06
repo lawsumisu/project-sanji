@@ -1,7 +1,10 @@
 .cn--frame-editor {
+  display: flex;
+  flex-direction: row;
   .cn--tools {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    width: 200px;
   }
   .cn--frame {
     width: 510px;

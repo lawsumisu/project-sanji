@@ -1,13 +1,12 @@
 import * as React from 'react';
 import 'src/editor/components/spriteFrame/styles.scss';
-import { BoxConfig } from 'src/characters';
+import { BoxConfig, BoxType } from 'src/characters';
 import { Box, Sprite } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
 import { FrameDataState, getAnchorPosition, getSpriteConfig } from 'src/editor/redux/frameData';
 import { bindActionCreators, Dispatch } from 'redux';
 import { frameEditActionCreators, FrameEditState } from 'src/editor/redux/frameEdit';
-import { BoxType } from 'src/editor/components/box';
 import cx from 'classnames';
 
 export interface SpriteFrameProps {

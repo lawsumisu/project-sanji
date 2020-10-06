@@ -1,0 +1,17 @@
+.cn--tool {
+  display: flex;
+  flex-direction: row;
+  .selection, .option {
+    cursor: pointer;
+  }
+
+
+  &:hover {
+    .option {
+      display: block;
+    }
+  }
+  .option {
+    display: none;
+  }
+}

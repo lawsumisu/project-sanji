@@ -37,6 +37,11 @@ export interface AnimationDefinition {
   repeat?: number;
 }
 
+export enum BoxType {
+  HIT = 'HIT',
+  HURT = 'HURT'
+}
+
 export interface BoxDefinition {
   tag?: string | number;
   boxes: BoxConfig[];

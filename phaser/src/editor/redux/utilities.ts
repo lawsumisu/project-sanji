@@ -1,10 +1,17 @@
-import { HitboxDefinition } from 'src/characters';
+import { BoxDefinition, BoxType } from 'src/characters';
 import { FrameDataState } from 'src/editor/redux/frameData';
 
-export function getFrameDefinition(frameData: FrameDataState, frameKey: string, frameIndex: number): HitboxDefinition | null {
-  const { hitboxDef } =  frameData.definitionMap[frameKey];
-  if (hitboxDef) {
-    return hitboxDef[frameIndex] ? hitboxDef[frameIndex] : null;
+export function getBoxDefinition(
+  frameData: FrameDataState,
+  frameKey: string,
+  frameIndex: number,
+  type: BoxType
+): BoxDefinition | null {
+  const { hitboxDef, hurtboxDef } = frameData.definitionMap[frameKey];
+  if (type === BoxType.HIT && hitboxDef) {
+    return hitboxDef[frameIndex] || null;
+  } else if (type === BoxType.HURT && hurtboxDef) {
+    return hurtboxDef[frameIndex] || null;
   }
   return null;
 }

@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import * as _ from 'lodash';
-import { PolarVector, Vector2 } from '@lawsumisu/common-utilities';
+import { Vector2 } from '@lawsumisu/common-utilities';
 
 export interface Drawable {
   draw: (plugin: DebugDrawPlugin) => void;

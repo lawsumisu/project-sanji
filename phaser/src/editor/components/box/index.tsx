@@ -1,14 +1,9 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { BoxConfig, isCircleBox } from 'src/characters';
+import { BoxConfig, BoxType, isCircleBox } from 'src/characters';
 import cx from 'classnames';
 import 'src/editor/components/box/styles.scss';
 import { Vector2 } from '@lawsumisu/common-utilities';
-
-export enum BoxType {
-  HIT = 'HIT',
-  HURT = 'HURT'
-}
 
 export interface BoxProps {
   scale: number;
