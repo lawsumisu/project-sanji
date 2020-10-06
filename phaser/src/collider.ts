@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { Capsule, Vector2 } from '@lawsumisu/common-utilities';
-import { CapsuleBoxConfig, CircleBoxConfig } from 'src/characters';
+import { CapsuleBoxConfig, CircleBoxConfig } from 'src/characters/frameData';
 
 type BoxType<T = ColliderType> = T extends ColliderType.CIRCLE
   ? Phaser.Geom.Circle

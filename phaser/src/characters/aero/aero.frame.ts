@@ -1,4 +1,4 @@
-import { FrameDefinitionMap } from 'src/characters';
+import { FrameDefinitionMap } from 'src/characters/frameData';
 
 const frameData: FrameDefinitionMap = {
   IDLE: {

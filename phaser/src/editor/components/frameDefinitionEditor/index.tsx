@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { BoxConfig, BoxType, CapsuleBoxConfig, isCircleBox } from 'src/characters';
+import { BoxConfig, BoxType, CapsuleBoxConfig, isCircleBox } from 'src/characters/frameData';
 import { Box, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';

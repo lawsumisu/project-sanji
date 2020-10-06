@@ -1,8 +1,8 @@
 import { FrameConfigTP, TextureDataTP } from 'src/assets';
-import { FrameDefinitionMap, getSpriteIndexFromDefinition } from 'src/characters';
-import spriteSheet from 'src/assets/vanessa.png';
-import data from 'src/assets/vanessa.json';
-import aero from 'src/characters/aero/frameData';
+import { FrameDefinitionMap, getSpriteIndexFromDefinition } from 'src/characters/frameData';
+import spriteSheet from 'src/characters/aero/vanessa.png';
+import data from 'src/characters/aero/vanessa.json';
+import aero from 'src/characters/aero/aero.frame';
 import actionCreatorFactory, { isType } from 'typescript-fsa';
 import { Action } from 'redux';
 import { Vector2 } from '@lawsumisu/common-utilities';

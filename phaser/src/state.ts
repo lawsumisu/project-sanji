@@ -9,7 +9,7 @@ import {
   Hurtbox,
   HurtboxData
 } from 'src/collider';
-import { BoxConfig, BoxDefinition, BoxType, FrameDefinition, HitboxDefinition, isCircleBox } from 'src/characters';
+import { BoxConfig, BoxDefinition, BoxType, FrameDefinition, HitboxDefinition, isCircleBox } from 'src/characters/frameData';
 import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 

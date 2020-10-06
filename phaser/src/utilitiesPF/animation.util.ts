@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import * as _ from 'lodash';
-import { AnimationFrameConfig } from 'src/characters';
+import { AnimationFrameConfig } from 'src/characters/frameData';
 
 export function addAnimation(
   sprite: Phaser.GameObjects.Sprite,

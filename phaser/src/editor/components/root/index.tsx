@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { FrameDefinitionEditor } from 'src/editor/components';
-import aero from 'src/characters/aero/frameData';
+import aero from 'src/characters/aero/aero.frame';
 import 'src/editor/components/root/styles.scss';
 import FrameDefinitionMapRenderer from 'src/editor/components/frameDefinitionMapRenderer';
 import cx from 'classnames';

@@ -4,26 +4,27 @@ import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
 import { Collider, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
 import { PS } from 'src/global';
-import { Player } from 'src/player';
+import { BaseCharacter } from 'src/characters';
 import { StageObject } from 'src/stage/stageObject';
 import { Dummy } from 'src/characters/dummy';
+import Aero from 'src/characters/aero/aero.character';
 
 export class Stage extends Phaser.Scene {
   protected hitData: { [tag: string]: HitboxData } = {};
   protected hurtData: { [tag: string]: HurtboxData } = {};
   private stageObjects: StageObject[] = [];
-  p1: Player;
+  p1: BaseCharacter;
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
-    this.p1 = new Player();
+    this.p1 = new Aero();
     this.addStageObject(this.p1);
     this.addStageObject(new Dummy());
     PS.stage = this;
   }
 
   public preload(): void {
-    this.load.multiatlas('vanessa', 'assets/vanessa.json', 'assets');
+    this.p1.preload();
   }
 
   public create(): void {

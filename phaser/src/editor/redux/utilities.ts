@@ -1,4 +1,4 @@
-import { BoxDefinition, BoxType } from 'src/characters';
+import { BoxDefinition, BoxType } from 'src/characters/frameData';
 import { FrameDataState } from 'src/editor/redux/frameData';
 
 export function getBoxDefinition(
