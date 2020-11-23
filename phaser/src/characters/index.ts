@@ -18,7 +18,7 @@ export enum CommonState {
   JUMP = 'JUMP',
   FALL = 'FALL',
   CROUCH = 'CROUCH',
-  RUN = 'RUN',
+  RUN = 'RUN'
 }
 
 export enum CommonCommand {
@@ -26,27 +26,27 @@ export enum CommonCommand {
   JUMP = 'JUMP',
   CROUCH = 'CROUCH',
   RUN = 'RUN',
-  DASH_BACK = 'DASH_BACK',
+  DASH_BACK = 'DASH_BACK'
 }
 
-interface CommonStateConfig {
+export interface CommonStateConfig {
   startAnimation?: string;
 }
 
 interface CommandTrigger<S extends string> {
   command: Command;
-  trigger?: () => boolean;
-  executionTrigger?: () => boolean;
+  trigger?: () => boolean | (() => boolean);
   state: CharacterState<S>;
   priority?: number;
 }
 
-type CharacterState<T extends string> = T | CommonState;
+export type CharacterState<T extends string> = T | CommonState;
 type CharacterCommand<T extends string> = T | CommonCommand;
+export type CharacterStateConfig<T> = Partial<T> & StateDefinition<CommonStateConfig>;
 
-export class BaseCharacter<S extends string, C extends string> extends StageObject {
-  protected stateManager: StateManager<CharacterState<S>, CommonStateConfig>;
-  protected nextStates: Array<{state: CharacterState<S>, executionTrigger: () => boolean }> = [];
+export class BaseCharacter<S extends string = string, C extends string = string, D = {}> extends StageObject {
+  protected stateManager: StateManager<CharacterState<S>, CharacterStateConfig<D>>;
+  protected nextStates: Array<{ state: CharacterState<S>; executionTrigger: () => boolean }> = [];
 
   protected sprite: Phaser.GameObjects.Sprite;
 
@@ -63,7 +63,7 @@ export class BaseCharacter<S extends string, C extends string> extends StageObje
   private readonly playerIndex: number;
 
   protected commands: {
-    [key in CharacterCommand<C>]?: CommandTrigger<S> | CommandTrigger<S>[];
+    [key in CharacterCommand<C>]?: CommandTrigger<S>;
   } = {
     [CommonCommand.JUMP]: {
       command: new Command('7|8|9', 1),
@@ -96,7 +96,8 @@ export class BaseCharacter<S extends string, C extends string> extends StageObje
 
   private commandList: CharacterCommand<C>[];
 
-  protected states: { [key in CharacterState<S>]?: StateDefinition<CommonStateConfig> } = {
+  protected states: { [key in CharacterState<S>]?: CharacterStateConfig<D> } = {};
+  private commonStates: { [key in CommonState]: StateDefinition<CommonStateConfig> } = {
     [CommonState.IDLE]: {
       startAnimation: 'IDLE',
       update: () => {
@@ -190,7 +191,7 @@ export class BaseCharacter<S extends string, C extends string> extends StageObje
   constructor(playerIndex = 0) {
     super();
     this.playerIndex = playerIndex;
-    this.stateManager = new StateManager<CharacterState<S>, CommonStateConfig>(this, () => {
+    this.stateManager = new StateManager<CharacterState<S>, D>(this, () => {
       const { currentFrame, currentAnim } = this.sprite.anims;
       return {
         index: getFrameIndexFromSpriteIndex(aero[currentAnim.key].animDef, currentFrame.index),
@@ -207,7 +208,8 @@ export class BaseCharacter<S extends string, C extends string> extends StageObje
   }
 
   public preload(): void {
-    _.forEach(this.states, (value: StateDefinition<CommonStateConfig>, key: CharacterState<S>) => {
+    this.states = { ...this.commonStates, ...this.states };
+    _.forEach(this.states, (value: CharacterStateConfig<D>, key: CharacterState<S>) => {
       this.stateManager.addState(key, value);
     });
     this.commandList = (_.keys(this.commands) as CharacterCommand<C>[]).sort((a, b) => {
@@ -242,36 +244,16 @@ export class BaseCharacter<S extends string, C extends string> extends StageObje
   }
 
   protected updateState(): void {
-    commandListLoop: for (const name of this.commandList) {
-      if (_.isArray(this.commands[name])) {
-        const commandString = this.commands[name] as CommandTrigger<S>[];
-        for (let i = commandString.length - 1; i >= 0; i--) {
-          const { command, trigger = () => true, executionTrigger, state } = commandString[i];
-          if (this.isNextStateBuffered(state)) {
-            break;
-          }
-          if (i >= 1) {
-            // Currently (potentially) executing this string, so check needs to change based on the current state:
-            // If state i-1 has not been entered yet, but is buffered, then only need to check if command is executed.
-            // If currently in state i-1, then need to check for command and trigger.
-            const isNextStateBuffered = this.isNextStateBuffered(commandString[i - 1].state);
-            const isCurrentState = this.stateManager.current.key === commandString[i - 1].state;
-            if (isNextStateBuffered || isCurrentState) {
-              if (command.isExecuted() && (isNextStateBuffered || (isCurrentState && trigger()))) {
-                this.queueNextState(state, executionTrigger);
-                break commandListLoop;
-              }
-            }
-          } else if (command.isExecuted() && trigger()) {
-            // Currently checking commandString[0], so not currently executing this string, so check first command like normal
-            this.queueNextState(state);
-            break commandListLoop;
-          }
-        }
-      } else {
-        const { command, trigger = () => true, state } = this.commands[name] as CommandTrigger<S>;
-        if (command.isExecuted() && trigger()) {
-          this.queueNextState(state);
+    for (const name of this.commandList) {
+      const { command, trigger = () => true, state } = this.commands[name] as CommandTrigger<S>;
+      if (command.isExecuted()) {
+        const canTransition = trigger();
+        if (_.isFunction(canTransition)) {
+          // chainable state, so add to queue
+          this.queueNextState(state, canTransition);
+        } else if (canTransition) {
+          // Immediately transition to next state.
+          this.goToNextState(state);
           break;
         }
       }
@@ -316,15 +298,42 @@ export class BaseCharacter<S extends string, C extends string> extends StageObje
     }
   }
 
-  protected goToNextState(): void {
-    if (this.nextStates.length >= 1) {
+  /**
+   * Transition to the next state in the state transition queue.
+   * If a state is provided directly, transition to that state immediately (this will clear the transition queue).
+   * @param state
+   */
+  protected goToNextState(state?: CharacterState<S>): void {
+    if (state) {
+      this.nextStates = [];
+      this.stateManager.setState(state);
+    } else if (this.nextStates.length >= 1) {
       const [nextState, ...rest] = this.nextStates;
       if (nextState.executionTrigger()) {
-        console.log(nextState.state, rest.map(i => i.state));
+        console.log(
+          nextState.state,
+          rest.map(i => i.state)
+        );
         this.stateManager.setState(nextState.state);
         this.nextStates = rest;
       }
     }
+  }
+
+  /**
+   * Checks if a state can be chained from the last state in the state transition queue,
+   * or if the state an be chained from the current state, up until a specified frame.
+   */
+  protected canChainFrom(fromState: CharacterState<S>, untilFrame = Number.MAX_VALUE): boolean {
+    const lastQueuedState = this.nextStates[this.nextStates.length - 1];
+    return (
+      (lastQueuedState && lastQueuedState.state === fromState) ||
+      (this.isCurrentState(fromState) && this.sprite.anims.currentFrame.index <= untilFrame)
+    );
+  }
+
+  protected isCurrentState(state: CharacterState<S>): boolean {
+    return this.stateManager.current.key === state;
   }
 
   protected get input(): InputHistory {

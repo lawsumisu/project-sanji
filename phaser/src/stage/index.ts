@@ -136,14 +136,16 @@ export class Stage extends Phaser.Scene {
 
     _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
       const p = this.getStageObject(hurtboxData.owner).position;
-      hurtboxData.data.forEach((hurtbox: Hurtbox) => {
-        if (hurtbox.isCircular()) {
-          const { x, y, radius } = hurtbox.transformBox(p);
-          this.debug.drawCircle(x, y, radius, hurtboxOptions);
-        } else if (hurtbox.isCapsular()) {
-          this.debug.drawCapsule(hurtbox.transformBox(p), hurtboxOptions);
-        }
-      });
+      if (hurtboxData.owner !== this.p1.tag) {
+        hurtboxData.data.forEach((hurtbox: Hurtbox) => {
+          if (hurtbox.isCircular()) {
+            const { x, y, radius } = hurtbox.transformBox(p);
+            this.debug.drawCircle(x, y, radius, hurtboxOptions);
+          } else if (hurtbox.isCapsular()) {
+            this.debug.drawCapsule(hurtbox.transformBox(p), hurtboxOptions);
+          }
+        });
+      }
     });
   }
 

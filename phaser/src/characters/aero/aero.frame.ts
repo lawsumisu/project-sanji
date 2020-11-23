@@ -151,6 +151,48 @@ const frameData: FrameDefinitionMap = {
         ]
       }
     }
+  },
+  GUT_PUNCH_1: {
+    animDef: {
+      frames: [1, 2, 3, 4, 5, 11],
+      assetKey: 'vanessa',
+      prefix: 'attacks/gutpunch',
+      frameRate: 14
+    },
+    hitboxDef: {
+      hit: {
+        damage: 10,
+        angle: 0,
+        knockback: 0
+      },
+      2: {
+        boxes: [{ x1: 50.8, y1: -82.82000000000001, x2: 28.799999999999994, y2: -57.02, r: 8.5 }]
+      }
+    }
+  },
+  GUT_PUNCH_2: {
+    animDef: {
+      frames: [6, 7, 8, 9, 10, 11],
+      assetKey: 'vanessa',
+      prefix: 'attacks/gutpunch',
+      frameRate: 14
+    },
+    hitboxDef: {
+      hit: {
+        damage: 10,
+        angle: 0,
+        knockback: 0
+      },
+      1: {
+        boxes: [
+          { x1: 50.42, y1: -74.58, x2: 27.64, y2: -60.76, r: 7.5 },
+          { x1: 26.8, y1: -61, x2: 14.400000000000002, y2: -62.6, r: 6.5 }
+        ]
+      },
+      2: {
+        boxes: [{ x: 45, y: -72.2, r: 10 }]
+      }
+    }
   }
 };
 
