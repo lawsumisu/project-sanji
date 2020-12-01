@@ -8,38 +8,57 @@ import { BaseCharacter } from 'src/characters';
 import { StageObject } from 'src/stage/stageObject';
 import { Dummy } from 'src/characters/dummy';
 import Aero from 'src/characters/aero/aero.character';
+import { Vector2 } from '@lawsumisu/common-utilities';
 
 export class Stage extends Phaser.Scene {
   protected hitData: { [tag: string]: HitboxData } = {};
   protected hurtData: { [tag: string]: HurtboxData } = {};
   private stageObjects: StageObject[] = [];
   p1: BaseCharacter;
+  p2: StageObject;
+
+  public ground = 0;
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
     this.p1 = new Aero();
+    this.p2 = new Dummy();
     this.addStageObject(this.p1);
-    this.addStageObject(new Dummy());
+    this.addStageObject(this.p2);
     PS.stage = this;
   }
 
   public preload(): void {
+    this.load.image('background', 'assets/stages/makoto.jpg');
     this.p1.preload();
   }
 
   public create(): void {
-    this.cameras.main.setBounds(0, 0, 1500, 1200);
+    const { width: bgWidth, height: bgHeight } = this.game.textures.get('background').source[0];
+    this.cameras.main.setBounds(0, 0, bgWidth, bgHeight);
+    this.add.image(bgWidth / 2, bgHeight / 2, 'background');
+    this.ground = bgHeight - 32;
     this.p1.create();
+    this.p1.position.x = bgWidth / 2;
+    this.p2.position = new Vector2(400, this.ground - 25);
+    this.cameras.main.setZoom(2);
   }
 
   public update(time: number, delta: number): void {
     this.draw();
     this.stageObjects.forEach((so: StageObject) => so.update({ time, delta: delta / 1000 }));
     this.updateHits();
+    this.updateCamera();
   }
 
   public addStageObject(stageObject: StageObject): void {
     this.stageObjects.push(stageObject);
+  }
+
+  private updateCamera(): void {
+    const camera = this.cameras.main;
+    camera.scrollX = this.p1.position.x - camera.width / 2;
+    camera.scrollY = this.p1.position.y - camera.height / 2 - 40;
   }
 
   private updateHits(): void {

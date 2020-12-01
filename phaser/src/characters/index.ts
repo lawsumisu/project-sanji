@@ -58,7 +58,7 @@ export class BaseCharacter<S extends string = string, C extends string = string,
   protected gravity = 500;
 
   protected velocity: Vector2 = Vector2.ZERO;
-  public position: Vector2 = new Vector2(300, 300);
+  public position: Vector2 = Vector2.ZERO;
   private direction: -1 | 1 = 1;
 
   private readonly playerIndex: number;
@@ -166,19 +166,19 @@ export class BaseCharacter<S extends string = string, C extends string = string,
       }
     },
     [CommonState.JUMP]: {
-      update: (tick: number, stateTemporaryValues: { d: -1 | 1 }) => {
+      startAnimation: 'SQUAT',
+      update: (tick: number, state: { d: -1 | 1 | undefined }) => {
         if (tick <= 2) {
           if (tick === 0) {
             this.velocity.x = 0;
-            playAnimation(this.sprite, 'SQUAT');
           }
           if (_.some([GameInput.UP_RIGHT, GameInput.UP_LEFT], (gi: GameInput) => this.input.isInputDown(gi))) {
             const jumpDirection = this.input.isInputDown(GameInput.UP_RIGHT) ? 1 : -1;
-            stateTemporaryValues.d = jumpDirection === this.direction ? 1 : -1;
+            state.d = jumpDirection === this.direction ? 1 : -1;
           }
         } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
           this.velocity.y = -this.jumpSpeed;
-          this.velocity.x = this.walkSpeed * this.direction * (stateTemporaryValues.d || 0);
+          this.velocity.x = this.walkSpeed * this.direction * (state.d || 0);
           playAnimation(this.sprite, 'JUMP');
         }
         if (this.velocity.y > 0) {
@@ -225,6 +225,8 @@ export class BaseCharacter<S extends string = string, C extends string = string,
     this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, 'vanessa', 'idle/11.png');
     addAnimationsByDefinition(this.sprite, aero);
     this.stateManager.setState(CommonState.IDLE);
+
+    this.position = new Vector2(300, PS.stage.ground);
   }
 
   public applyHit(): void {}
@@ -278,8 +280,8 @@ export class BaseCharacter<S extends string = string, C extends string = string,
     this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
 
     // TODO handle this in a separate function?
-    if (this.position.y > 300) {
-      this.position.y = 300;
+    if (this.position.y > PS.stage.ground) {
+      this.position.y = PS.stage.ground;
       this.velocity.y = 0;
       if (this.stateManager.current.key === CommonState.FALL) {
         this.stateManager.setState(CommonState.IDLE);
@@ -328,14 +330,13 @@ export class BaseCharacter<S extends string = string, C extends string = string,
   }
 
   /**
-   * Checks if a state can be chained from the last state in the state transition queue,
-   * or if the state an be chained from the current state, up until a specified frame.
+   * Checks if a state can be chained from a given state, up through the specified frame.
    */
-  protected canChainFrom(fromState: CharacterState<S>, untilFrame = Number.MAX_VALUE): boolean {
+  protected canChainFrom(fromState: CharacterState<S>, throughFrame = Number.MAX_VALUE): boolean {
     const lastQueuedState = this.nextStates[this.nextStates.length - 1];
     return (
       (lastQueuedState && lastQueuedState.state === fromState) ||
-      (this.isCurrentState(fromState) && this.sprite.anims.currentFrame.index <= untilFrame)
+      (this.isCurrentState(fromState) && this.sprite.anims.currentFrame.index <= throughFrame)
     );
   }
 

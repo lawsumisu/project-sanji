@@ -11,5 +11,11 @@ export const PS = {
   },
   set stage(newStage: Stage) {
     stage = newStage;
+  },
+  get config() {
+    return {
+      width: 384 * 2,
+      height: 260 * 2,
+    }
   }
 };

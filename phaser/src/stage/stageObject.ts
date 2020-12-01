@@ -2,6 +2,7 @@ import { Vector2 } from '@lawsumisu/common-utilities';
 import { Hit } from 'src/collider';
 
 export abstract class StageObject {
+  public position: Vector2;
   private static objectCounter = 1;
   public readonly tag: string;
   protected hitlag: number = 0;
@@ -16,8 +17,6 @@ export abstract class StageObject {
       this.hitlag = Math.max(0, this.hitlag - 1);
     }
   }
-
-  public abstract get position(): Vector2;
 
   public abstract applyHit(hit: Hit): void;
 

@@ -2,12 +2,14 @@ import * as Phaser from 'phaser';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
 import { Stage } from 'src/stage';
+import { PS } from 'src/global';
 
+const config = PS.config;
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  parent: 'phaser-example',
-  width: 1000,
-  height: 800,
+  // parent: 'phaser-example',
+  width: config.width,
+  height: config.height,
   scene: Stage,
   input: {
     gamepad: true,
