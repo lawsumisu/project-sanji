@@ -80,7 +80,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
    * Set callback that is called after a state transitions to a new state.
    * @param fn
    */
-  public onAfterTransition(fn: (config: C) => any): void {
+  public onAfterTransition(fn: (config: C) => void): void {
     this.onAfterTransitionFn = fn;
   }
 

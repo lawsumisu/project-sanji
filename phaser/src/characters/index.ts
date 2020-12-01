@@ -31,6 +31,7 @@ export enum CommonCommand {
 
 export interface CommonStateConfig {
   startAnimation?: string;
+  idle?: boolean;
 }
 
 interface CommandTrigger<S extends string> {
@@ -61,6 +62,7 @@ export class BaseCharacter<S extends string = string, C extends string = string,
   private direction: -1 | 1 = 1;
 
   private readonly playerIndex: number;
+  protected isIdle: boolean;
 
   protected commands: {
     [key in CharacterCommand<C>]?: CommandTrigger<S>;
@@ -78,7 +80,7 @@ export class BaseCharacter<S extends string = string, C extends string = string,
     },
     [CommonCommand.CROUCH]: {
       command: new Command('*1|*2|*3', 1),
-      trigger: () => !this.isAirborne,
+      trigger: () => !this.isAirborne && this.isIdle,
       state: CommonState.CROUCH
     },
     [CommonCommand.WALK]: {
@@ -148,6 +150,7 @@ export class BaseCharacter<S extends string = string, C extends string = string,
     },
     [CommonState.DASH_BACK]: {
       startAnimation: 'DASH_BACK',
+      idle: false,
       update: (tick: number) => {
         if (tick === 0) {
           this.velocity.x = this.dashSpeed * -this.direction;
@@ -200,11 +203,7 @@ export class BaseCharacter<S extends string = string, C extends string = string,
         frameKey: currentAnim.key
       };
     });
-    this.stateManager.onAfterTransition((config: CommonStateConfig) => {
-      if (config.startAnimation) {
-        playAnimation(this.sprite, config.startAnimation, true);
-      }
-    });
+    this.stateManager.onAfterTransition(config => this.afterStateTransition(config));
   }
 
   public preload(): void {
@@ -288,6 +287,14 @@ export class BaseCharacter<S extends string = string, C extends string = string,
     }
   }
 
+  protected afterStateTransition(config: CharacterStateConfig<D>): void {
+    const { idle = true, startAnimation } = config;
+    if (startAnimation) {
+      playAnimation(this.sprite, startAnimation, true);
+    }
+    this.isIdle = idle;
+  }
+
   protected isNextStateBuffered(state: CharacterState<S>): boolean {
     return !!this.nextStates.find(nextState => nextState.state === state);
   }
@@ -343,5 +350,9 @@ export class BaseCharacter<S extends string = string, C extends string = string,
   protected get isAirborne(): boolean {
     const state = this.stateManager.current.key;
     return CommonState.FALL === state || (CommonState.JUMP === state && this.sprite.anims.currentAnim.key === 'JUMP');
+  }
+
+  protected get currentAnimation(): string {
+    return this.sprite.anims.currentAnim.key;
   }
 }

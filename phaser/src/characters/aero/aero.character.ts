@@ -3,19 +3,24 @@ import { PS } from 'src/global';
 import { Command } from 'src/command';
 import { StageObject } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
+import { playAnimation } from 'src/utilitiesPF/animation.util';
+import { GameInput } from 'src/plugins/gameInput.plugin';
+import * as _ from 'lodash';
 
 enum AeroState {
   N_LIGHT = 'N_LIGHT',
   N_LIGHT_2 = 'N_LIGHT_2',
   N_MED = 'N_MED',
-  N_MED_2 = 'N_MED_2'
+  N_MED_2 = 'N_MED_2',
+  ROLL = 'ROLL',
 }
 
 enum AeroCommand {
   N_LIGHT = 'N_LIGHT',
   N_LIGHT_2 = 'N_LIGHT_2',
   N_MED = 'N_MED',
-  N_MED_2 = 'N_MED_2'
+  N_MED_2 = 'N_MED_2',
+  ROLL = 'ROLL'
 }
 
 interface AeroStateConfig {
@@ -63,6 +68,26 @@ export default class Aero extends BaseCharacter<AeroState, AeroCommand, AeroStat
           this.stateManager.setState(CommonState.IDLE);
         }
       }
+    },
+    [AeroState.ROLL]: {
+      startAnimation: 'ROLL_STARTUP',
+      idle: false,
+      update: (tick: number, state: { continue: boolean  }) => {
+        this.velocity.x = 0;
+        if (!this.sprite.anims.isPlaying) {
+          if (this.currentAnimation === 'ROLL_STARTUP') {
+            playAnimation(this.sprite,'ROLL_1');
+          } else if (state.continue) {
+            playAnimation(this.sprite, this.currentAnimation === 'ROLL_1' ? 'ROLL_2' : 'ROLL_1');
+            state.continue = false;
+          } else {
+            this.stateManager.setState(CommonState.IDLE);
+          }
+        }
+        if (tick > 0 && this.input.isInputPressed(GameInput.INPUT1)) {
+          state.continue = true;
+        }
+      }
     }
   };
 
@@ -70,7 +95,7 @@ export default class Aero extends BaseCharacter<AeroState, AeroCommand, AeroStat
     super(playerIndex);
     // TODO make this an overwritten function
     this.stateManager.onBeforeTransition(() => {
-      this.cancelFlag = false
+      this.cancelFlag = false;
     });
 
     this.commands = {
@@ -108,6 +133,12 @@ export default class Aero extends BaseCharacter<AeroState, AeroCommand, AeroStat
           }
         },
         state: AeroState.N_MED_2,
+      },
+      [AeroCommand.ROLL]: {
+        command: new Command('d', 1),
+        trigger: () => this.isIdle && !this.isAirborne,
+        state: AeroState.ROLL,
+        priority: 2,
       }
     };
   }

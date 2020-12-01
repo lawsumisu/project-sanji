@@ -193,6 +193,38 @@ const frameData: FrameDefinitionMap = {
         boxes: [{ x: 45, y: -72.2, r: 10 }]
       }
     }
+  },
+  ROLL_STARTUP: {
+    animDef: {
+      frames: [1,2],
+      assetKey: 'vanessa',
+      prefix: 'roll',
+      frameRate: 15,
+    }
+  },
+  ROLL_1: {
+    animDef: {
+      frames: [3,4,5,6,7],
+      assetKey: 'vanessa',
+      prefix: 'roll',
+      frameRate: 15,
+    },
+  },
+  ROLL_2: {
+    animDef: {
+      frames: [8,9,10,11,12],
+      assetKey: 'vanessa',
+      prefix: 'roll',
+      frameRate: 15,
+    },
+  },
+  ROLL_RECOVERY: {
+    animDef: {
+      frames: [13],
+      assetKey: 'vanessa',
+      prefix: 'roll',
+      frameRate: 15,
+    }
   }
 };
 
