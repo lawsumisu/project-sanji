@@ -76,8 +76,8 @@ export class Stage extends Phaser.Scene {
                 hurtObject.applyHit(hitbox.hit);
                 this.p1.onTargetHit(hurtObject, hitbox.hit);
                 if (hurtbox.isCircular()) {
-                  const { x, y, radius } = hurtbox.transformBox(hurtOffset);
-                  this.debug.drawCircle(x, y, radius, {
+                  const { x, y, radius: r } = hurtbox.transformBox(hurtOffset);
+                  this.debug.drawCircle({ x, y, r }, {
                     fill: {
                       color: 0xffff00,
                       alpha: 0.6
@@ -145,8 +145,8 @@ export class Stage extends Phaser.Scene {
       const p = this.getStageObject(hitboxData.owner).position;
       hitboxData.data.forEach((hitbox: Collider) => {
         if (hitbox.isCircular()) {
-          const { x, y, radius } = hitbox.transformBox(p);
-          this.debug.drawCircle(x, y, radius, hitboxOptions);
+          const { x, y, radius: r } = hitbox.transformBox(p);
+          this.debug.drawCircle({ x, y, r }, hitboxOptions);
         } else if (hitbox.isCapsular()) {
           this.debug.drawCapsule(hitbox.transformBox(p), hitboxOptions);
         }
@@ -158,8 +158,8 @@ export class Stage extends Phaser.Scene {
       if (hurtboxData.owner !== this.p1.tag) {
         hurtboxData.data.forEach((hurtbox: Hurtbox) => {
           if (hurtbox.isCircular()) {
-            const { x, y, radius } = hurtbox.transformBox(p);
-            this.debug.drawCircle(x, y, radius, hurtboxOptions);
+            const { x, y, radius: r } = hurtbox.transformBox(p);
+            this.debug.drawCircle({ x, y, r } , hurtboxOptions);
           } else if (hurtbox.isCapsular()) {
             this.debug.drawCapsule(hurtbox.transformBox(p), hurtboxOptions);
           }
