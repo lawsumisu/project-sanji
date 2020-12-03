@@ -24,7 +24,7 @@ type State<K extends string, C, F extends string> = StateDefinition<C, F> & {
   key: K;
 };
 
-interface AnimInfo {
+export interface AnimInfo {
   direction: Direction;
   index: number;
   frameDefinition?: FrameDefinition;

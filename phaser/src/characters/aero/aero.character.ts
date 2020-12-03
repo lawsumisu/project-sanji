@@ -5,7 +5,7 @@ import { StageObject } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { GameInput } from 'src/plugins/gameInput.plugin';
-import * as _ from 'lodash';
+import aero from 'src/characters/aero/aero.frame';
 
 enum AeroState {
   N_LIGHT = 'N_LIGHT',
@@ -28,6 +28,7 @@ interface AeroStateConfig {
 }
 
 export default class Aero extends BaseCharacter<AeroState, AeroCommand, AeroStateConfig> {
+  protected defaultState = CommonState.IDLE;
   private cancelFlag = false;
 
   protected states: { [key in CharacterState<AeroState>]?: CharacterStateConfig<AeroStateConfig> } = {
@@ -92,7 +93,7 @@ export default class Aero extends BaseCharacter<AeroState, AeroCommand, AeroStat
   };
 
   constructor(playerIndex = 0) {
-    super(playerIndex);
+    super(playerIndex, aero);
     // TODO make this an overwritten function
     this.stateManager.onBeforeTransition(() => {
       this.cancelFlag = false;

@@ -2,8 +2,7 @@ import { StateDefinition, StateManager } from 'src/state';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { GameInput, InputHistory } from 'src/plugins/gameInput.plugin';
 import * as _ from 'lodash';
-import { addAnimationsByDefinition, getFrameIndexFromSpriteIndex } from 'src/characters/frameData';
-import aero from 'src/characters/aero/aero.frame';
+import { addAnimationsByDefinition, FrameDefinitionMap, getFrameIndexFromSpriteIndex } from 'src/characters/frameData';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { Command } from 'src/command/';
 import { PS } from 'src/global';
@@ -48,6 +47,8 @@ export type CharacterStateConfig<T> = Partial<T> & StateDefinition<CommonStateCo
 export class BaseCharacter<S extends string = string, C extends string = string, D = {}> extends StageObject {
   protected stateManager: StateManager<CharacterState<S>, CharacterStateConfig<D>>;
   protected nextStates: Array<{ state: CharacterState<S>; executionTrigger: () => boolean }> = [];
+  protected defaultState: S | CommonState;
+  protected frameDefinitionMap: FrameDefinitionMap;
 
   protected sprite: Phaser.GameObjects.Sprite;
 
@@ -62,6 +63,7 @@ export class BaseCharacter<S extends string = string, C extends string = string,
   private direction: -1 | 1 = 1;
 
   private readonly playerIndex: number;
+  protected target: StageObject;
   protected isIdle: boolean;
 
   protected commands: {
@@ -105,10 +107,12 @@ export class BaseCharacter<S extends string = string, C extends string = string,
       update: () => {
         this.velocity.y = 0;
         this.velocity.x = 0;
+        this.sprite.flipX = this.direction === -1;
       }
     },
     [CommonState.WALK]: {
       update: () => {
+        this.sprite.flipX = this.direction === -1;
         if (!this.input.isInputDown(GameInput.LEFT) && !this.input.isInputDown(GameInput.RIGHT)) {
           this.stateManager.setState(CommonState.IDLE);
         } else {
@@ -143,7 +147,7 @@ export class BaseCharacter<S extends string = string, C extends string = string,
       startAnimation: 'RUN',
       update: () => {
         this.velocity.x = this.runSpeed * this.direction;
-        if (!this.input.isInputDown(GameInput.RIGHT)) {
+        if (!this.isCommandExecuted(Command.common.FORWARD)) {
           this.stateManager.setState(CommonState.IDLE);
         }
       }
@@ -191,16 +195,17 @@ export class BaseCharacter<S extends string = string, C extends string = string,
     }
   };
 
-  constructor(playerIndex = 0) {
+  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
     super();
+    this.frameDefinitionMap = frameDefinitionMap;
     this.playerIndex = playerIndex;
     this.stateManager = new StateManager<CharacterState<S>, D>(this, () => {
-      const { currentFrame, currentAnim } = this.sprite.anims;
+      const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
       return {
-        index: getFrameIndexFromSpriteIndex(aero[currentAnim.key].animDef, currentFrame.index),
+        index: anim ? getFrameIndexFromSpriteIndex(this.frameDefinitionMap[anim.key].animDef, frame.index) : -1,
         direction: { x: !this.sprite.flipX, y: true },
-        frameDefinition: aero[currentAnim.key],
-        frameKey: currentAnim.key
+        frameDefinition: anim && this.frameDefinitionMap[anim.key],
+        frameKey: anim && anim.key
       };
     });
     this.stateManager.onAfterTransition(config => this.afterStateTransition(config));
@@ -223,20 +228,27 @@ export class BaseCharacter<S extends string = string, C extends string = string,
   public create() {
     // TODO load create values from file.
     this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, 'vanessa', 'idle/11.png');
-    addAnimationsByDefinition(this.sprite, aero);
-    this.stateManager.setState(CommonState.IDLE);
+    addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
+    this.stateManager.setState(this.defaultState);
 
     this.position = new Vector2(300, PS.stage.ground);
   }
 
-  public applyHit(): void {}
+  public applyHit(hit: Hit): void {
+    this.setHitlag(hit);
+  }
 
   public onTargetHit(_stageObject: StageObject, hit: Hit): void {
     this.setHitlag(hit);
   }
 
+  public setTarget(stageObject: StageObject): void {
+    this.target = stageObject;
+  }
+
   public update(params: { time: number; delta: number }): void {
     super.update(params);
+    this.direction = this.position.x < this.target.position.x ? 1 : -1;
     this.updateState();
     if (!this.isHitlagged) {
       this.updateKinematics(params.delta);
@@ -247,7 +259,7 @@ export class BaseCharacter<S extends string = string, C extends string = string,
   protected updateState(): void {
     for (const name of this.commandList) {
       const { command, trigger = () => true, state } = this.commands[name] as CommandTrigger<S>;
-      if (command.isExecuted()) {
+      if (this.isCommandExecuted(command)) {
         const canTransition = trigger();
         if (_.isFunction(canTransition)) {
           // chainable state, so add to queue
@@ -342,6 +354,10 @@ export class BaseCharacter<S extends string = string, C extends string = string,
 
   protected isCurrentState(state: CharacterState<S>): boolean {
     return this.stateManager.current.key === state;
+  }
+
+  protected isCommandExecuted(command: Command): boolean {
+    return command.isExecuted(this.playerIndex, this.direction === 1);
   }
 
   protected get input(): InputHistory {

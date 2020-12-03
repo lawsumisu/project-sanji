@@ -41,7 +41,7 @@ export function addAnimationByFrames(
         return {
           key: assetKey,
           frame: `${prefix}/${frameString}.png`
-        }
+        };
       });
     })
     .flatten()
@@ -50,7 +50,7 @@ export function addAnimationByFrames(
 }
 
 export function playAnimation(sprite: Phaser.GameObjects.Sprite, key: string, force = false): void {
-  if (sprite.anims.getCurrentKey() !== key || force) {
+  if (sprite.anims.animationManager.exists(key) && (sprite.anims.getCurrentKey() !== key || force)) {
     sprite.anims.play(key);
   }
 }

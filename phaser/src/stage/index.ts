@@ -15,7 +15,7 @@ export class Stage extends Phaser.Scene {
   protected hurtData: { [tag: string]: HurtboxData } = {};
   private stageObjects: StageObject[] = [];
   p1: BaseCharacter;
-  p2: StageObject;
+  p2: BaseCharacter;
 
   public ground = 0;
 
@@ -31,6 +31,7 @@ export class Stage extends Phaser.Scene {
   public preload(): void {
     this.load.image('background', 'assets/stages/makoto.jpg');
     this.p1.preload();
+    this.p2.preload();
   }
 
   public create(): void {
@@ -38,10 +39,8 @@ export class Stage extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, bgWidth, bgHeight);
     this.add.image(bgWidth / 2, bgHeight / 2, 'background');
     this.ground = bgHeight - 32;
-    this.p1.create();
-    this.p1.position.x = bgWidth / 2;
-    this.p2.position = new Vector2(400, this.ground - 25);
     this.cameras.main.setZoom(2);
+    this.setupPlayers();
   }
 
   public update(time: number, delta: number): void {
@@ -53,6 +52,15 @@ export class Stage extends Phaser.Scene {
 
   public addStageObject(stageObject: StageObject): void {
     this.stageObjects.push(stageObject);
+  }
+
+  private setupPlayers(): void {
+    this.p1.create();
+    this.p2.create();
+    this.p1.setTarget(this.p2);
+    this.p2.setTarget(this.p1);
+    this.p1.position.x = 200;
+    this.p2.position = new Vector2(400, this.ground - 25);
   }
 
   private updateCamera(): void {

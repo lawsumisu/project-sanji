@@ -36,8 +36,8 @@ describe('Command Tests', () => {
 
       const simpleInput = new SimpleInput(GameInput.RIGHT, CommandInputType.PRESS);
       assert.isTrue(simpleInput.checkInput(0));
-      assert.isFalse(simpleInput.checkInput(0, 1));
-      assert.isTrue(simpleInput.checkInput(0, 2));
+      assert.isFalse(simpleInput.checkInput(0, true, 1));
+      assert.isTrue(simpleInput.checkInput(0, true, 2));
     });
 
     it('checkInputIgnoringType', () => {
