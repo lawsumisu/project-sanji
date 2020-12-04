@@ -95,8 +95,9 @@ export class Command {
     [GameInput.LEFT]: GameInput.RIGHT
   };
 
-  public static common: { [key: string]: Command } = {
-    FORWARD: new Command('*6', 1)
+  public static registry = {
+    FORWARD: new Command('*6', 1),
+    BACK: new Command('*4', 1),
   };
 
   private readonly inputs: CommandInput[];

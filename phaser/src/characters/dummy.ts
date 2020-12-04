@@ -16,8 +16,8 @@ export class Dummy extends BaseCharacter {
         return hurtboxData.isEmpty
           ? new HurtboxData(
               [
-                { x: 0, y: 0, r: 10 },
-                { x: 0, y: -15, r: 5 }
+                { x: 0, y: -20, r: 10 },
+                { x: 0, y: -35, r: 5 }
               ].map(({ x, y, r }) => Hurtbox.generateCircular({ x, y: y * Unit.toPx, r: r * Unit.toPx })),
 
               'basic',
@@ -47,8 +47,8 @@ export class Dummy extends BaseCharacter {
     this.stateManager.update();
     this.updateKinematics(params.delta);
     this.hitstun = Math.max(0, this.hitstun - 1);
-    if (this.hitstun === 0) {
-      this.velocity = Vector2.ZERO;
+    if (this.hitstun === 0 && !this.isAirborne) {
+      this.velocity.x = 0;
     }
   }
 
@@ -63,7 +63,7 @@ export class Dummy extends BaseCharacter {
   }
 
   private setHitstun(hit: Hit): void {
-    this.hitstun = hit.knockback / 3;
+    this.hitstun = hit.knockback * .1;
     this.velocity = new PolarVector(hit.knockback, hit.angle).toCartesian();
   }
 }

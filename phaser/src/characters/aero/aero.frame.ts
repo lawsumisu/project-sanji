@@ -124,7 +124,7 @@ const frameData: FrameDefinitionMap = {
       hit: {
         damage: 10,
         angle: 0,
-        knockback: 10
+        knockback: 10,
       },
       1: {
         boxes: [{ x1: 16, y1: -86, x2: 39.4, y2: -74.6, r: 6.5 }]
@@ -162,8 +162,8 @@ const frameData: FrameDefinitionMap = {
     hitboxDef: {
       hit: {
         damage: 10,
-        angle: 0,
-        knockback: 25
+        angle: -75,
+        knockback: 50
       },
       2: {
         boxes: [{ x1: 50.8, y1: -82.82000000000001, x2: 28.799999999999994, y2: -57.02, r: 8.5 }]

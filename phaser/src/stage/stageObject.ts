@@ -23,7 +23,7 @@ export abstract class StageObject {
   public abstract onTargetHit(stageObject: StageObject, hit: Hit): void;
 
   protected setHitlag(hit: Hit, m = 1): void {
-    this.hitlag = Math.floor((hit.damage / 3) * m);
+    this.hitlag = Math.floor(5 * m);
   }
 
   protected get isHitlagged(): boolean {

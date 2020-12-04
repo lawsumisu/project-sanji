@@ -1,4 +1,3 @@
-import { BaseCharacter, CharacterState, CharacterStateConfig, CommonState } from 'src/characters';
 import { PS } from 'src/global';
 import { Command } from 'src/command';
 import { StageObject } from 'src/stage/stageObject';
@@ -6,6 +5,7 @@ import { Hit } from 'src/collider';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { GameInput } from 'src/plugins/gameInput.plugin';
 import aero from 'src/characters/aero/aero.frame';
+import { CharacterState, CharacterStateConfig, CommonCharacter, CommonState } from 'src/characters/common';
 
 enum AeroState {
   N_LIGHT = 'N_LIGHT',
@@ -27,7 +27,7 @@ interface AeroStateConfig {
   attackLevel: number;
 }
 
-export default class Aero extends BaseCharacter<AeroState, AeroCommand, AeroStateConfig> {
+export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroStateConfig> {
   protected defaultState = CommonState.IDLE;
   private cancelFlag = false;
 

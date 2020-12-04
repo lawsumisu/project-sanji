@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { Capsule, Vector2 } from '@lawsumisu/common-utilities';
+import { Capsule, Scalar, Vector2 } from '@lawsumisu/common-utilities';
 import { CapsuleBoxConfig, CircleBoxConfig } from 'src/characters/frameData';
 
 type BoxType<T = ColliderType> = T extends ColliderType.CIRCLE
@@ -108,7 +108,8 @@ export class Hitbox<T extends ColliderType = ColliderType> extends Collider<T> {
     direction: Direction = { x: true, y: true }
   ): Hitbox<ColliderType.CIRCLE> {
     const d = !direction.x ? -1 : 1;
-    const H = { ...hit, angle: !direction.x ? 180 - hit.angle : hit.angle };
+    const angleInDegrees = !direction.x ? 180 - hit.angle : hit.angle;
+    const H = { ...hit, angle: Scalar.toRadians(angleInDegrees) };
     return new Hitbox(ColliderType.CIRCLE, new Phaser.Geom.Circle(box.x * d, box.y, box.r), H);
   }
 
@@ -118,7 +119,8 @@ export class Hitbox<T extends ColliderType = ColliderType> extends Collider<T> {
     direction: Direction = { x: true, y: true }
   ): Hitbox<ColliderType.CAPSULE> {
     const d = !direction.x ? -1 : 1;
-    const H = { ...hit, angle: !direction.x ? 180 - hit.angle : hit.angle };
+    const angleInDegrees = !direction.x ? 180 - hit.angle : hit.angle;
+    const H = { ...hit, angle: Scalar.toRadians(angleInDegrees) };
     return new Hitbox(
       ColliderType.CAPSULE,
       new Capsule(box.r, { x1: box.x1 * d, x2: box.x2 * d, y1: box.y1, y2: box.y2 }),
