@@ -20,6 +20,10 @@ enum BoxMode {
   CAPSULE = 'CAPSULE'
 }
 
+function round(v: number, precision = 100) {
+  return Math.round(v * precision) / precision;
+}
+
 interface State {
   selectedFrame: FrameEditState['frame'];
   newBoxType: BoxType;
@@ -147,9 +151,11 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
         .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
         .scale(1 / this.scale)
         .subtract(this.origin);
+      const ox = round(o.x);
+      const oy = round(o.y);
       const key = this.state.newBoxType === BoxType.HIT ? 'hitboxes' : 'hurtboxes';
       if (this.state.mode === BoxMode.CIRCLE) {
-        const box = { x: o.x, y: o.y, r: 10 };
+        const box = { x: ox, y: oy, r: 10 };
         this.setState({
           selectedBox: {
             offset: Vector2.ZERO,
@@ -162,7 +168,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
       } else {
         if (this.state.incompleteCapsule) {
           const { x, y } = this.state.incompleteCapsule;
-          const box = { x1: x, y1: y, x2: o.x, y2: o.y, r: 10 };
+          const box = { x1: x, y1: y, x2: ox, y2: oy, r: 10 };
           this.setState({
             selectedBox: {
               offset: Vector2.ZERO,
@@ -175,7 +181,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           } as any);
         } else {
           this.setState({
-            incompleteCapsule: { x: o.x, y: o.y }
+            incompleteCapsule: { x: ox, y: oy }
           });
         }
       }
@@ -185,18 +191,17 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
   private onMouseMove = (e: React.MouseEvent): void => {
     if (this.ref && this.state.selectedBox) {
       const { index, offset } = this.state.selectedBox;
-      const precision = 100;
       const o = new Vector2(e.clientX, e.clientY)
         .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
         .scale(1 / this.scale)
         .subtract(offset)
         .subtract(this.origin);
-      const nx = Math.round(o.x * precision) / precision;
-      const ny = Math.round(o.y * precision) / precision;
+      const nx = round(o.x);
+      const ny = round(o.y);
       const key = this.getSelectedBoxKey()!;
       if (isCircleBox(this.state[key][index])) {
         const boxes = [...this.state[key]];
-        boxes[index] = { ...boxes[index], x: Math.round(o.x * precision) / precision, y: Math.round(o.y * precision) / precision };
+        boxes[index] = { ...boxes[index], x: nx, y: ny};
         this.setState({
           [key]: boxes
         } as any);
@@ -225,10 +230,10 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
         case SelectionType.BOX: {
           const oldX = (box.x1 + box.x2) / 2;
           const oldY = (box.y1 + box.y2) / 2;
-          box.x1 += nx - oldX;
-          box.x2 += nx - oldX;
-          box.y1 += ny - oldY;
-          box.y2 += ny - oldY;
+          box.x1 = round(box.x1 + nx - oldX);
+          box.x2 = round(box.x2 + nx - oldX);
+          box.y1 = round( box.y1 + ny - oldY);
+          box.y2 = round (box.y2 + ny - oldY);
           break;
         }
       }
