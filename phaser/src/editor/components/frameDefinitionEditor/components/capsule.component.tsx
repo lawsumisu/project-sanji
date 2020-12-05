@@ -2,7 +2,7 @@ import * as React from 'react';
 import { CapsuleBoxConfig } from 'src/characters';
 import Box, { BoxProps } from 'src/editor/components/box';
 import * as _ from 'lodash';
-import 'src/editor/components/editor/styles.scss';
+import 'src/editor/components/frameDefinitionEditor/styles.scss';
 
 export enum SelectionType {
   HANDLE_1 = 'HANDLE_1',

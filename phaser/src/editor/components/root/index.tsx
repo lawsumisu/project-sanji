@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { Editor } from 'src/editor/components';
+import { FrameDefinitionEditor } from 'src/editor/components';
 import aero from 'src/characters/aero/frameData';
 import 'src/editor/components/root/styles.scss';
 import FrameDefinitionMapRenderer from 'src/editor/components/frameDefinitionMapRenderer';
 import cx from 'classnames';
 
-export default class HitboxEditor extends React.PureComponent {
+export default class Editor extends React.PureComponent {
   private keys = Object.keys(aero).sort();
 
   public render(): React.ReactNode {
@@ -17,7 +17,7 @@ export default class HitboxEditor extends React.PureComponent {
         </div>
         <div className="root--section">
           <div className="section--header">Frame Editor</div>
-          <Editor />
+          <FrameDefinitionEditor />
         </div>
       </div>
     );

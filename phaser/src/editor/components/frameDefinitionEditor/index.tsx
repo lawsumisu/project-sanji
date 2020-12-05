@@ -1,24 +1,26 @@
 import * as React from 'react';
 import * as _ from 'lodash';
 import { BoxConfig, BoxType, CapsuleBoxConfig, isCircleBox } from 'src/characters';
-import { Box, Sprite } from 'src/editor/components';
+import { Box, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
 import { FrameDataState, getAnchorPosition, getSpriteConfig } from 'src/editor/redux/frameData';
-import 'src/editor/components/editor/styles.scss';
+import 'src/editor/components/frameDefinitionEditor/styles.scss';
 import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
-import EditableCapsuleBox, { SelectionType } from 'src/editor/components/editor/components/capsule.component';
-import { Tool } from 'src/editor/components/editor/components/tool';
-import { FrameInfo } from 'src/editor/components/editor/components/frameInfo';
+import EditableCapsuleBox, {
+  SelectionType
+} from 'src/editor/components/frameDefinitionEditor/components/capsule.component';
+import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
+import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
   CAPSULE = 'CAPSULE'
 }
 
-interface EditorState {
+interface State {
   selectedFrame: FrameEditState['frame'];
   newBoxType: BoxType;
   hitboxes: BoxConfig[];
@@ -28,20 +30,20 @@ interface EditorState {
   mode: BoxMode;
 }
 
-interface StateMappedEditorProps {
+interface StateMappedProps {
   frameData: FrameDataState;
   selected: FrameEditState;
 }
 
-class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
-  public static mapStateToProps(state: AppState): StateMappedEditorProps {
+class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State> {
+  public static mapStateToProps(state: AppState): StateMappedProps {
     return {
       frameData: state.frameData,
       selected: { ...state.frameEdit }
     };
   }
 
-  public static getDerivedStateFromProps(props: StateMappedEditorProps, state: EditorState): EditorState {
+  public static getDerivedStateFromProps(props: StateMappedProps, state: State): State {
     if (props.selected.frame && !_.isEqual(props.selected.frame, state.selectedFrame)) {
       const hit = getBoxDefinition(props.frameData, props.selected.frame.key, props.selected.frame.index, BoxType.HIT);
       const hurt = getBoxDefinition(
@@ -63,7 +65,7 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
     return state;
   }
 
-  public state: EditorState = {
+  public state: State = {
     selectedFrame: null,
     newBoxType: BoxType.HURT,
     hitboxes: [],
@@ -108,7 +110,7 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
               ]}
             />
           </div>
-          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes}/>
+          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} />
         </div>
       </div>
     );
@@ -376,15 +378,18 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
       const origin = this.origin;
       return (
         <div ref={this.setRef}>
-          <Sprite source={this.props.frameData.source} config={config} scale={this.scale} />
-          {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes})}
-          {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes})}
+          <SpriteRenderer source={this.props.frameData.source} config={config} scale={this.scale} />
+          {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
+          {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
         </div>
-      )
+      );
     } else {
       return null;
     }
-  }
+  };
 }
 
-export const EditorRX = connect(Editor.mapStateToProps, null)(Editor);
+export const ReduxConnectedFrameDefinitionEditor = connect(
+  FrameDefinitionEditor.mapStateToProps,
+  null
+)(FrameDefinitionEditor);

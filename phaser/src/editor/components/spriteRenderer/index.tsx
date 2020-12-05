@@ -8,7 +8,7 @@ export interface SpriteProps {
   config: FrameConfigTP;
 }
 
-export default class Sprite extends React.PureComponent<SpriteProps> {
+export default class SpriteRenderer extends React.PureComponent<SpriteProps> {
   public static defaultProps = {
     scale: 1
   };

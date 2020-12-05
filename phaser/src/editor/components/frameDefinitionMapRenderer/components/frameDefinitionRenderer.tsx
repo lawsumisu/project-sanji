@@ -1,7 +1,7 @@
 import { AnimationFrameConfig, BoxConfig, FrameDefinition } from 'src/characters/index';
 import * as React from 'react';
 import * as _ from 'lodash';
-import { SpriteFrame } from 'src/editor/components/index';
+import { FrameRenderer } from 'src/editor/components/index';
 import cx from 'classnames';
 
 interface Props {
@@ -31,7 +31,7 @@ export default class FrameDefinitionRenderer extends React.PureComponent<Props> 
       <div className={cx('cn--frame-definition-renderer', this.props.className)}>
         {_.times(uniqueFrames, (i: number) => {
           return (
-            <SpriteFrame
+            <FrameRenderer
               key={i}
               frameKey={this.props.frameKey}
               frameIndex={i}
