@@ -7,21 +7,22 @@
     flex-direction: column;
     align-items: stretch;
     height: 95vh;
-    border: 1px solid #555;
+    border: 1px solid #aaa;
+    flex: 1;
 
     .cn--animations {
       overflow: auto;
       padding: 0 16px;
     }
 
-    .section--title {
+    .section--header{
       padding: 8px 16px;
-      background-color: #ddd;
-      border-bottom: 1px solid #555;
+      background-color: #eeeeee;
+      border-bottom: 1px solid #aaa;
     }
 
     &.mod--animations {
-      width: 500px;
+      flex: 0 0 350px;
     }
   }
 

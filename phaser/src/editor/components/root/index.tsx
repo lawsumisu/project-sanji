@@ -12,11 +12,11 @@ export default class HitboxEditor extends React.PureComponent {
     return (
       <div className="cn--root">
         <div className={cx("root--section", 'mod--animations')}>
-          <div className="section--title">Animations</div>
+          <div className="section--header">Animations</div>
           <FrameDefinitionMapRenderer keys={this.keys} className="cn--animations"/>
         </div>
         <div className="root--section">
-          <div className="section--title">Frame Editor</div>
+          <div className="section--header">Frame Editor</div>
           <Editor />
         </div>
       </div>

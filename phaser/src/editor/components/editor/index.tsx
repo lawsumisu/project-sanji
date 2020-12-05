@@ -11,6 +11,7 @@ import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import EditableCapsuleBox, { SelectionType } from 'src/editor/components/editor/components/capsule.component';
 import { Tool } from 'src/editor/components/editor/components/tool';
+import { FrameInfo } from 'src/editor/components/editor/components/frameInfo';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -77,28 +78,20 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
   private ref: HTMLDivElement | null;
 
   public render(): React.ReactNode {
-    if (this.state.selectedFrame) {
-      const { key, index } = this.state.selectedFrame;
-      const config = getSpriteConfig(this.props.frameData, key, index);
-      const origin = this.origin;
-      return (
-        <div className="cn--frame-editor">
-          <div
-            className="cn--frame"
-            onMouseMove={this.onMouseMove}
-            onKeyDown={this.onKeyDown}
-            tabIndex={0}
-            onMouseUp={this.onMouseUp}
-            onMouseDown={this.onMouseDown}
-          >
-            <div ref={this.setRef}>
-              <Sprite source={this.props.frameData.source} config={config} scale={this.scale} />
-              <this.BoxDisplay origin={origin} type={BoxType.HURT} boxes={this.state.hurtboxes} />
-              <this.BoxDisplay origin={origin} type={BoxType.HIT} boxes={this.state.hitboxes} />
-            </div>
-          </div>
+    return (
+      <div className="cn--frame-editor">
+        <div
+          className="cn--frame"
+          onMouseMove={this.onMouseMove}
+          onKeyDown={this.onKeyDown}
+          tabIndex={0}
+          onMouseUp={this.onMouseUp}
+          onMouseDown={this.onMouseDown}
+        >
+          <this.SelectedFrame />
+        </div>
+        <div>
           <div className="cn--tools">
-            <Tool options={[{ onSelect: this.onSelectPrint, name: 'Print' }]} />
             <Tool
               options={[
                 { onSelect: this.onClickCircleMode, name: 'Circle' },
@@ -115,11 +108,10 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
               ]}
             />
           </div>
+          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes}/>
         </div>
-      );
-    } else {
-      return null;
-    }
+      </div>
+    );
   }
 
   private deleteBox(): void {
@@ -278,10 +270,6 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
     }
   };
 
-  private onSelectPrint = (): void => {
-    console.log(JSON.stringify(this.state.hurtboxes), JSON.stringify(this.state.hitboxes));
-  };
-
   private onClickCapsuleMode = (): void => {
     this.setState({
       mode: BoxMode.CAPSULE
@@ -380,6 +368,23 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
       )}
     </div>
   );
+
+  private SelectedFrame = () => {
+    if (this.state.selectedFrame) {
+      const { key, index } = this.state.selectedFrame;
+      const config = getSpriteConfig(this.props.frameData, key, index);
+      const origin = this.origin;
+      return (
+        <div ref={this.setRef}>
+          <Sprite source={this.props.frameData.source} config={config} scale={this.scale} />
+          {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes})}
+          {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes})}
+        </div>
+      )
+    } else {
+      return null;
+    }
+  }
 }
 
 export const EditorRX = connect(Editor.mapStateToProps, null)(Editor);
