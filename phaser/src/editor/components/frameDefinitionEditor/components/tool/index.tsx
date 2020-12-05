@@ -1,5 +1,5 @@
 import * as React from 'react';
-import 'src/editor/components/editor/components/tool/styles.scss';
+import 'src/editor/components/frameDefinitionEditor/components/tool/styles.scss';
 
 interface ToolOption {
   onSelect?: () => void;

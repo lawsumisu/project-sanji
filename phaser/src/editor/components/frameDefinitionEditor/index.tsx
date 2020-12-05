@@ -1,23 +1,30 @@
 import * as React from 'react';
 import * as _ from 'lodash';
 import { BoxConfig, BoxType, CapsuleBoxConfig, isCircleBox } from 'src/characters';
-import { Box, Sprite } from 'src/editor/components';
+import { Box, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
 import { FrameDataState, getAnchorPosition, getSpriteConfig } from 'src/editor/redux/frameData';
-import 'src/editor/components/editor/styles.scss';
+import 'src/editor/components/frameDefinitionEditor/styles.scss';
 import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
-import EditableCapsuleBox, { SelectionType } from 'src/editor/components/editor/components/capsule.component';
-import { Tool } from 'src/editor/components/editor/components/tool';
+import EditableCapsuleBox, {
+  SelectionType
+} from 'src/editor/components/frameDefinitionEditor/components/capsule.component';
+import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
+import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
   CAPSULE = 'CAPSULE'
 }
 
-interface EditorState {
+function round(v: number, precision = 100) {
+  return Math.round(v * precision) / precision;
+}
+
+interface State {
   selectedFrame: FrameEditState['frame'];
   newBoxType: BoxType;
   hitboxes: BoxConfig[];
@@ -27,20 +34,20 @@ interface EditorState {
   mode: BoxMode;
 }
 
-interface StateMappedEditorProps {
+interface StateMappedProps {
   frameData: FrameDataState;
   selected: FrameEditState;
 }
 
-class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
-  public static mapStateToProps(state: AppState): StateMappedEditorProps {
+class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State> {
+  public static mapStateToProps(state: AppState): StateMappedProps {
     return {
       frameData: state.frameData,
       selected: { ...state.frameEdit }
     };
   }
 
-  public static getDerivedStateFromProps(props: StateMappedEditorProps, state: EditorState): EditorState {
+  public static getDerivedStateFromProps(props: StateMappedProps, state: State): State {
     if (props.selected.frame && !_.isEqual(props.selected.frame, state.selectedFrame)) {
       const hit = getBoxDefinition(props.frameData, props.selected.frame.key, props.selected.frame.index, BoxType.HIT);
       const hurt = getBoxDefinition(
@@ -62,7 +69,7 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
     return state;
   }
 
-  public state: EditorState = {
+  public state: State = {
     selectedFrame: null,
     newBoxType: BoxType.HURT,
     hitboxes: [],
@@ -77,28 +84,20 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
   private ref: HTMLDivElement | null;
 
   public render(): React.ReactNode {
-    if (this.state.selectedFrame) {
-      const { key, index } = this.state.selectedFrame;
-      const config = getSpriteConfig(this.props.frameData, key, index);
-      const origin = this.origin;
-      return (
-        <div className="cn--frame-editor">
-          <div
-            className="cn--frame"
-            onMouseMove={this.onMouseMove}
-            onKeyDown={this.onKeyDown}
-            tabIndex={0}
-            onMouseUp={this.onMouseUp}
-            onMouseDown={this.onMouseDown}
-          >
-            <div ref={this.setRef}>
-              <Sprite source={this.props.frameData.source} config={config} scale={this.scale} />
-              <this.BoxDisplay origin={origin} type={BoxType.HURT} boxes={this.state.hurtboxes} />
-              <this.BoxDisplay origin={origin} type={BoxType.HIT} boxes={this.state.hitboxes} />
-            </div>
-          </div>
+    return (
+      <div className="cn--frame-editor">
+        <div
+          className="cn--frame"
+          onMouseMove={this.onMouseMove}
+          onKeyDown={this.onKeyDown}
+          tabIndex={0}
+          onMouseUp={this.onMouseUp}
+          onMouseDown={this.onMouseDown}
+        >
+          <this.SelectedFrame />
+        </div>
+        <div>
           <div className="cn--tools">
-            <Tool options={[{ onSelect: this.onSelectPrint, name: 'Print' }]} />
             <Tool
               options={[
                 { onSelect: this.onClickCircleMode, name: 'Circle' },
@@ -115,11 +114,10 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
               ]}
             />
           </div>
+          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} />
         </div>
-      );
-    } else {
-      return null;
-    }
+      </div>
+    );
   }
 
   private deleteBox(): void {
@@ -153,9 +151,11 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
         .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
         .scale(1 / this.scale)
         .subtract(this.origin);
+      const ox = round(o.x);
+      const oy = round(o.y);
       const key = this.state.newBoxType === BoxType.HIT ? 'hitboxes' : 'hurtboxes';
       if (this.state.mode === BoxMode.CIRCLE) {
-        const box = { x: o.x, y: o.y, r: 10 };
+        const box = { x: ox, y: oy, r: 10 };
         this.setState({
           selectedBox: {
             offset: Vector2.ZERO,
@@ -168,7 +168,7 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
       } else {
         if (this.state.incompleteCapsule) {
           const { x, y } = this.state.incompleteCapsule;
-          const box = { x1: x, y1: y, x2: o.x, y2: o.y, r: 10 };
+          const box = { x1: x, y1: y, x2: ox, y2: oy, r: 10 };
           this.setState({
             selectedBox: {
               offset: Vector2.ZERO,
@@ -181,7 +181,7 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
           } as any);
         } else {
           this.setState({
-            incompleteCapsule: { x: o.x, y: o.y }
+            incompleteCapsule: { x: ox, y: oy }
           });
         }
       }
@@ -191,18 +191,17 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
   private onMouseMove = (e: React.MouseEvent): void => {
     if (this.ref && this.state.selectedBox) {
       const { index, offset } = this.state.selectedBox;
-      const s = this.scale ** 2;
       const o = new Vector2(e.clientX, e.clientY)
         .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
         .scale(1 / this.scale)
         .subtract(offset)
         .subtract(this.origin);
-      const nx = Math.round(o.x * s) / s;
-      const ny = Math.round(o.y * s) / s;
+      const nx = round(o.x);
+      const ny = round(o.y);
       const key = this.getSelectedBoxKey()!;
       if (isCircleBox(this.state[key][index])) {
         const boxes = [...this.state[key]];
-        boxes[index] = { ...boxes[index], x: Math.round(o.x * s) / s, y: Math.round(o.y * s) / s };
+        boxes[index] = { ...boxes[index], x: nx, y: ny};
         this.setState({
           [key]: boxes
         } as any);
@@ -231,10 +230,10 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
         case SelectionType.BOX: {
           const oldX = (box.x1 + box.x2) / 2;
           const oldY = (box.y1 + box.y2) / 2;
-          box.x1 += nx - oldX;
-          box.x2 += nx - oldX;
-          box.y1 += ny - oldY;
-          box.y2 += ny - oldY;
+          box.x1 = round(box.x1 + nx - oldX);
+          box.x2 = round(box.x2 + nx - oldX);
+          box.y1 = round( box.y1 + ny - oldY);
+          box.y2 = round (box.y2 + ny - oldY);
           break;
         }
       }
@@ -276,10 +275,6 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
         } as any);
       }
     }
-  };
-
-  private onSelectPrint = (): void => {
-    console.log(JSON.stringify(this.state.hurtboxes), JSON.stringify(this.state.hitboxes));
   };
 
   private onClickCapsuleMode = (): void => {
@@ -380,6 +375,26 @@ class Editor extends React.PureComponent<StateMappedEditorProps, EditorState> {
       )}
     </div>
   );
+
+  private SelectedFrame = () => {
+    if (this.state.selectedFrame) {
+      const { key, index } = this.state.selectedFrame;
+      const config = getSpriteConfig(this.props.frameData, key, index);
+      const origin = this.origin;
+      return (
+        <div ref={this.setRef}>
+          <SpriteRenderer source={this.props.frameData.source} config={config} scale={this.scale} />
+          {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
+          {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
+        </div>
+      );
+    } else {
+      return null;
+    }
+  };
 }
 
-export const EditorRX = connect(Editor.mapStateToProps, null)(Editor);
+export const ReduxConnectedFrameDefinitionEditor = connect(
+  FrameDefinitionEditor.mapStateToProps,
+  null
+)(FrameDefinitionEditor);

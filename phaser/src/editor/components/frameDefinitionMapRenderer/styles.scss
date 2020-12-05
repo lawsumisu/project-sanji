@@ -1,0 +1,23 @@
+.cn--frame-definition-item {
+  .frame-definition-item--tab{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: stretch;
+
+    .tab--name {
+      cursor: pointer;
+      flex-grow: 1;
+    }
+  }
+
+  .cn--frame-definition-renderer {
+    margin-left: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    >div {
+      border: 1px solid #e1e4e8;
+      flex-shrink: 0;
+    }
+  }
+}

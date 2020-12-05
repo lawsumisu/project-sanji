@@ -1,7 +1,7 @@
 import * as React from 'react';
-import 'src/editor/components/spriteFrame/styles.scss';
+import 'src/editor/components/frameRenderer/styles.scss';
 import { BoxConfig, BoxType } from 'src/characters';
-import { Box, Sprite } from 'src/editor/components';
+import { Box, SpriteRenderer } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
 import { FrameDataState, getAnchorPosition, getSpriteConfig } from 'src/editor/redux/frameData';
@@ -33,7 +33,7 @@ interface DispatchMappedSpriteFrameProps {
   };
 }
 
-class SpriteFrame extends React.PureComponent<
+class FrameRenderer extends React.PureComponent<
   SpriteFrameProps & StateMappedSpriteFrameProps & DispatchMappedSpriteFrameProps
 > {
   public static defaultProps = {
@@ -61,7 +61,7 @@ class SpriteFrame extends React.PureComponent<
     return (
       <div className={cx('cn--sprite-frame', this.isSelected && 'mod--selected')} onClick={this.onClick}>
         <div className="cn--sprite">
-          <Sprite config={config} source={this.props.frameData.source} />
+          <SpriteRenderer config={config} source={this.props.frameData.source} />
           <div className="cn--box-display">
             {this.props.hurt.boxes.map((box: BoxConfig, i: number) => (
               <Box key={i} config={box} persistent={this.props.hurt.persistent} type={BoxType.HURT} origin={origin} />
@@ -85,4 +85,4 @@ class SpriteFrame extends React.PureComponent<
   }
 }
 
-export const SpriteFrameRX = connect(SpriteFrame.mapStateToProps, SpriteFrame.mapDispatchToProps)(SpriteFrame);
+export const ReduxConnectedFrameRenderer = connect(FrameRenderer.mapStateToProps, FrameRenderer.mapDispatchToProps)(FrameRenderer);

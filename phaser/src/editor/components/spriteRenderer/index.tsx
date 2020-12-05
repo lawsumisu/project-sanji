@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { FrameConfigTP } from 'src/assets';
+import { loadImage } from 'src/editor/utilities/image.util';
 
 export interface SpriteProps {
   source: string;
@@ -7,13 +8,18 @@ export interface SpriteProps {
   config: FrameConfigTP;
 }
 
-export default class Sprite extends React.PureComponent<SpriteProps> {
+export default class SpriteRenderer extends React.PureComponent<SpriteProps> {
   public static defaultProps = {
     scale: 1
   };
 
   private ref: HTMLCanvasElement | null;
+  private imagePromise: Promise<HTMLImageElement>;
 
+  public componentDidMount(): void {
+    this.imagePromise = loadImage(this.props.source);
+    this.updateImage();
+  }
   public componentDidUpdate(): void {
     this.updateImage();
   }
@@ -25,25 +31,23 @@ export default class Sprite extends React.PureComponent<SpriteProps> {
 
   private setRef = (ref: HTMLCanvasElement | null): void => {
     this.ref = ref;
-    this.updateImage();
   };
 
   private updateImage(): void {
-    if (this.ref !== null) {
-      const context = this.ref.getContext('2d');
-      const imageObj = new Image();
-      imageObj.onload = () => {
-        if (context && this.ref) {
+    this.imagePromise.then(image => {
+      if (this.ref !== null) {
+        const context = this.ref.getContext('2d');
+        if (context) {
+
           context.imageSmoothingEnabled = false;
           context.clearRect(0, 0, this.ref.width, this.ref.height);
           // draw cropped image
           const { w, h } = this.props.config.spriteSourceSize;
           const { frame } = this.props.config;
           const { scale } = this.props;
-          context.drawImage(imageObj, frame.x, frame.y, w, h, 0, 0, w * scale, h * scale);
+          context.drawImage(image, frame.x, frame.y, w, h, 0, 0, w * scale, h * scale);
         }
-      };
-      imageObj.src = this.props.source;
-    }
+      }
+    });
   }
 }
