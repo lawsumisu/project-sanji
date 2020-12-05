@@ -1,4 +1,16 @@
 .cn--root {
   display: flex;
   flex-direction: row;
+  .root--section {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 500px;
+    height: 100vh;
+
+    .cn--animations {
+      overflow: auto;
+    }
+  }
+
 }
