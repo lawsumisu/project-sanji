@@ -194,6 +194,27 @@ const frameData: FrameDefinitionMap = {
       }
     }
   },
+  STRAIGHT: {
+    animDef: {
+      frames: 10,
+      assetKey: 'vanessa',
+      prefix: 'attacks/rightcross',
+      frameRate: 15,
+    },
+    hitboxDef: {
+      hit: {
+        damage: 20,
+        angle: 0,
+        knockback: 50,
+      },
+      2: {
+        boxes: [{"x1":30.400000000000013,"y1":-92.17,"x2":68,"y2":-91.99000000000001,"r":6.5}],
+      },
+      3: {
+        boxes: [{"x1":32.6,"y1":-89.4,"x2":67.80000000000001,"y2":-88.60000000000001,"r":6.5}]
+      }
+    }
+  },
   ROLL_STARTUP: {
     animDef: {
       frames: [1,2],

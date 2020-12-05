@@ -40,7 +40,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   private states: { [key in K]?: StateDefinition<C, F> } = {};
   private readonly getAnimInfo: () => AnimInfo;
   private currentState: State<K, C, F>;
-  private stateTemporaryValues = {};
+  private localState = {};
   private collisionData: CollisionDataMap = {
     hitData: HitboxData.EMPTY,
     hurtData: HurtboxData.EMPTY
@@ -53,7 +53,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
 
   public update(): void {
     if (this.currentState.update) {
-      this.currentState.update(this.tick, this.stateTemporaryValues);
+      this.currentState.update(this.tick, this.localState);
     }
     const prevHurtData = this.collisionData.hurtData;
     const hurtData = this.currentState.hurtDefinition
@@ -111,7 +111,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       };
       this.onAfterTransitionFn(this.currentState);
       this.tick = 0;
-      this.stateTemporaryValues = {};
+      this.localState = {};
       // console.log(this.currentState.key);
     }
   }

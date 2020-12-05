@@ -12,6 +12,7 @@ enum AeroState {
   N_LIGHT_2 = 'N_LIGHT_2',
   N_MED = 'N_MED',
   N_MED_2 = 'N_MED_2',
+  N_HEAVY = 'N_HEAVY',
   ROLL = 'ROLL',
 }
 
@@ -20,6 +21,7 @@ enum AeroCommand {
   N_LIGHT_2 = 'N_LIGHT_2',
   N_MED = 'N_MED',
   N_MED_2 = 'N_MED_2',
+  N_HEAVY = 'N_HEAVY',
   ROLL = 'ROLL'
 }
 
@@ -70,23 +72,32 @@ export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroSt
         }
       }
     },
+    [AeroState.N_HEAVY]: {
+      startAnimation: 'STRAIGHT',
+      attackLevel: 3,
+      update: () => {
+        if (!this.sprite.anims.isPlaying) {
+          this.stateManager.setState(CommonState.IDLE);
+        }
+      }
+    },
     [AeroState.ROLL]: {
       startAnimation: 'ROLL_STARTUP',
       idle: false,
-      update: (tick: number, state: { continue: boolean  }) => {
+      update: (tick: number, localState: { continue: boolean }) => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
           if (this.currentAnimation === 'ROLL_STARTUP') {
             playAnimation(this.sprite,'ROLL_1');
-          } else if (state.continue) {
+          } else if (localState.continue) {
             playAnimation(this.sprite, this.currentAnimation === 'ROLL_1' ? 'ROLL_2' : 'ROLL_1');
-            state.continue = false;
+            localState.continue = false;
           } else {
             this.stateManager.setState(CommonState.IDLE);
           }
         }
         if (tick > 0 && this.input.isInputPressed(GameInput.INPUT1)) {
-          state.continue = true;
+          localState.continue = true;
         }
       }
     }
@@ -134,6 +145,11 @@ export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroSt
           }
         },
         state: AeroState.N_MED_2,
+      },
+      [AeroCommand.N_HEAVY]: {
+        command: new Command('c', 1),
+        trigger: () => this.isCurrentState(CommonState.IDLE) || this.canCancel(AeroState.N_HEAVY),
+        state: AeroState.N_HEAVY,
       },
       [AeroCommand.ROLL]: {
         command: new Command('d', 1),
