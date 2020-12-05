@@ -185,18 +185,18 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
   private onMouseMove = (e: React.MouseEvent): void => {
     if (this.ref && this.state.selectedBox) {
       const { index, offset } = this.state.selectedBox;
-      const s = this.scale ** 2;
+      const precision = 100;
       const o = new Vector2(e.clientX, e.clientY)
         .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
         .scale(1 / this.scale)
         .subtract(offset)
         .subtract(this.origin);
-      const nx = Math.round(o.x * s) / s;
-      const ny = Math.round(o.y * s) / s;
+      const nx = Math.round(o.x * precision) / precision;
+      const ny = Math.round(o.y * precision) / precision;
       const key = this.getSelectedBoxKey()!;
       if (isCircleBox(this.state[key][index])) {
         const boxes = [...this.state[key]];
-        boxes[index] = { ...boxes[index], x: Math.round(o.x * s) / s, y: Math.round(o.y * s) / s };
+        boxes[index] = { ...boxes[index], x: Math.round(o.x * precision) / precision, y: Math.round(o.y * precision) / precision };
         this.setState({
           [key]: boxes
         } as any);
