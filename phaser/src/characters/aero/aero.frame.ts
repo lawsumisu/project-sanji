@@ -12,7 +12,7 @@ const frameData: FrameDefinitionMap = {
     hurtboxDef: {
       0: {
         boxes: [
-          { x1: 1.3800000000000001, y1: -92.39999999999999, x2: 0.7800000000000002, y2: -12.800000000000011, r: 13.5 }
+          { x1: 1.38, y1: -92.4, x2: 0.78, y2: -12.8, r: 13.5 }
         ],
         persistUntilFrame: 22
       }
@@ -124,7 +124,7 @@ const frameData: FrameDefinitionMap = {
       hit: {
         damage: 10,
         angle: 0,
-        knockback: 10,
+        knockback: 10
       },
       1: {
         boxes: [{ x1: 16, y1: -86, x2: 39.4, y2: -74.6, r: 6.5 }]
@@ -199,52 +199,53 @@ const frameData: FrameDefinitionMap = {
       frames: 10,
       assetKey: 'vanessa',
       prefix: 'attacks/rightcross',
-      frameRate: 15,
+      frameRate: 15
     },
     hitboxDef: {
       hit: {
         damage: 20,
         angle: 0,
-        knockback: 50,
+        knockback: 50
       },
       2: {
-        boxes: [{"x1":30.400000000000013,"y1":-92.17,"x2":68,"y2":-91.99000000000001,"r":6.5}],
+        boxes: [{ x1: 30.4, y1: -92.37, x2: 68, y2: -92.19, r: 6.5 }]
       },
       3: {
-        boxes: [{"x1":32.6,"y1":-89.4,"x2":67.80000000000001,"y2":-88.60000000000001,"r":6.5}]
+        boxes: [{ x1: 32.6, y1: -89.8, x2: 67.8, y2: -89, r: 6.5 }],
+        persistUntilFrame: 5
       }
     }
   },
   ROLL_STARTUP: {
     animDef: {
-      frames: [1,2],
+      frames: [1, 2],
       assetKey: 'vanessa',
       prefix: 'roll',
-      frameRate: 15,
+      frameRate: 15
     }
   },
   ROLL_1: {
     animDef: {
-      frames: [3,4,5,6,7],
+      frames: [3, 4, 5, 6, 7],
       assetKey: 'vanessa',
       prefix: 'roll',
-      frameRate: 15,
-    },
+      frameRate: 15
+    }
   },
   ROLL_2: {
     animDef: {
-      frames: [8,9,10,11,12],
+      frames: [8, 9, 10, 11, 12],
       assetKey: 'vanessa',
       prefix: 'roll',
-      frameRate: 15,
-    },
+      frameRate: 15
+    }
   },
   ROLL_RECOVERY: {
     animDef: {
       frames: [13],
       assetKey: 'vanessa',
       prefix: 'roll',
-      frameRate: 15,
+      frameRate: 15
     }
   }
 };

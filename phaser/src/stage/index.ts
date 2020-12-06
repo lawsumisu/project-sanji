@@ -30,6 +30,9 @@ export class Stage extends Phaser.Scene {
 
   public preload(): void {
     this.load.image('background', 'assets/stages/makoto.jpg');
+    _.forEach(Aero.sfx, (path, key) => {
+      this.load.audio(key, `assets/audio/${path}`);
+    });
     this.p1.preload();
     this.p2.preload();
   }
@@ -85,12 +88,15 @@ export class Stage extends Phaser.Scene {
                 this.p1.onTargetHit(hurtObject, hitbox.hit);
                 if (hurtbox.isCircular()) {
                   const { x, y, radius: r } = hurtbox.transformBox(hurtOffset);
-                  this.debug.drawCircle({ x, y, r }, {
-                    fill: {
-                      color: 0xffff00,
-                      alpha: 0.6
+                  this.debug.drawCircle(
+                    { x, y, r },
+                    {
+                      fill: {
+                        color: 0xffff00,
+                        alpha: 0.6
+                      }
                     }
-                  });
+                  );
                 }
                 break;
               }
@@ -167,7 +173,7 @@ export class Stage extends Phaser.Scene {
         hurtboxData.data.forEach((hurtbox: Hurtbox) => {
           if (hurtbox.isCircular()) {
             const { x, y, radius: r } = hurtbox.transformBox(p);
-            this.debug.drawCircle({ x, y, r } , hurtboxOptions);
+            this.debug.drawCircle({ x, y, r }, hurtboxOptions);
           } else if (hurtbox.isCapsular()) {
             this.debug.drawCapsule(hurtbox.transformBox(p), hurtboxOptions);
           }

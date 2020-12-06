@@ -8,6 +8,7 @@ import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { Unit } from 'src/unit';
+import * as Phaser from 'phaser';
 
 export interface CommandTrigger<S extends string> {
   command: Command;
@@ -49,6 +50,7 @@ export class BaseCharacter<
   private commandList: C[];
 
   protected states: { [key in S]?: D };
+  private sounds: Set<string> = new Set<string>();
 
   constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
     super();
@@ -183,6 +185,7 @@ export class BaseCharacter<
 
   protected afterStateTransition(config: D): void {
     _.noop(config);
+    this.sounds.clear();
   }
 
   /**
@@ -194,6 +197,17 @@ export class BaseCharacter<
       (lastQueuedState && lastQueuedState.state === fromState) ||
       (this.isCurrentState(fromState) && this.sprite.anims.currentFrame.index <= throughFrame)
     );
+  }
+
+  protected playSound(
+    key: string,
+    extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
+    force?: boolean
+  ): void {
+    if (!(PS.stage.sound.get(key) && this.sounds.has(key)) || force) {
+      PS.stage.sound.play(key, extra);
+      this.sounds.add(key);
+    }
   }
 
   protected isCurrentState(state: S): boolean {

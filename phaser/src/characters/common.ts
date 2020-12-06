@@ -12,6 +12,7 @@ import { Unit } from 'src/unit';
 export interface CommonStateConfig {
   startAnimation?: string;
   idle?: boolean;
+  onHitSound?: string;
 }
 
 export enum CommonState {
@@ -41,6 +42,10 @@ export class CommonCharacter<S extends string = string, C extends string = strin
   CharacterCommand<C>,
   CharacterStateConfig<D>
 > {
+  public static sfx = {
+    land: 'sfx/land.ogg'
+  };
+
   private commonStates: { [key in CommonState]: StateDefinition<CommonStateConfig> } = {
     [CommonState.IDLE]: {
       startAnimation: 'IDLE',
@@ -138,13 +143,13 @@ export class CommonCharacter<S extends string = string, C extends string = strin
     [key in CharacterCommand<C>]?: CommandTrigger<CharacterState<S>>;
   } = {
     [CommonCommand.JUMP]: {
-      command: new Command('7|8|9', 1),
-      trigger: () => !this.isAirborne,
+      command: new Command('*7|*8|*9', 1),
+      trigger: () => !this.isAirborne && this.isIdle,
       state: CommonState.JUMP
     },
     [CommonCommand.RUN]: {
       command: new Command('6~6', 12),
-      trigger: () => !this.isAirborne,
+      trigger: () => !this.isAirborne && this.isIdle,
       state: CommonState.RUN,
       priority: 1
     },
@@ -160,7 +165,7 @@ export class CommonCharacter<S extends string = string, C extends string = strin
     },
     [CommonCommand.DASH_BACK]: {
       command: new Command('4~4', 12),
-      trigger: () => !this.isAirborne,
+      trigger: () => !this.isAirborne && this.isIdle,
       state: CommonState.DASH_BACK,
       priority: 1
     }
@@ -192,11 +197,13 @@ export class CommonCharacter<S extends string = string, C extends string = strin
       this.velocity.y = 0;
       if (this.stateManager.current.key === CommonState.FALL) {
         this.stateManager.setState(CommonState.IDLE);
+        this.playSound('land', { volume: .5 }, true);
       }
     }
   }
 
   protected afterStateTransition(config: CharacterStateConfig<D>): void {
+    super.afterStateTransition(config);
     const { idle = true, startAnimation } = config;
     if (startAnimation) {
       playAnimation(this.sprite, startAnimation, true);

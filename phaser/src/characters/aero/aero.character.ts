@@ -30,6 +30,15 @@ interface AeroStateConfig {
 }
 
 export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroStateConfig> {
+  public static sfx = {
+    ...CommonCharacter.sfx,
+    hitLight: 'sfx/hits/SE_00007.ogg',
+    hitMed: 'sfx/hits/SE_00008.ogg',
+    hitHeavy: 'sfx/hits/SE_00009.ogg',
+    punch1: 'sfx/hits/SE_00025.ogg',
+    punch2: 'sfx/hits/SE_00026.ogg',
+  };
+
   protected defaultState = CommonState.IDLE;
   private cancelFlag = false;
 
@@ -37,6 +46,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroSt
     [AeroState.N_LIGHT]: {
       startAnimation: 'LIGHT_JAB_1',
       attackLevel: 1,
+      idle: false,
+      onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
@@ -47,6 +58,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroSt
     [AeroState.N_LIGHT_2]: {
       startAnimation: 'LIGHT_JAB_2',
       attackLevel: 1,
+      idle: false,
+      onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
@@ -57,7 +70,12 @@ export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroSt
     [AeroState.N_MED]: {
       startAnimation: 'GUT_PUNCH_1',
       attackLevel: 2,
+      idle: false,
+      onHitSound: 'hitMed',
       update: () => {
+        if (this.sprite.anims.currentFrame.index === 3) {
+          this.playSound('punch1', { volume: .5 });
+        }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.IDLE);
         }
@@ -66,7 +84,12 @@ export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroSt
     [AeroState.N_MED_2]: {
       startAnimation: 'GUT_PUNCH_2',
       attackLevel: 2,
+      idle: false,
+      onHitSound: 'hitMed',
       update: () => {
+        if (this.sprite.anims.currentFrame.index === 2) {
+          this.playSound('punch1', { volume: .5 });
+        }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.IDLE);
         }
@@ -75,7 +98,12 @@ export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroSt
     [AeroState.N_HEAVY]: {
       startAnimation: 'STRAIGHT',
       attackLevel: 3,
+      idle: false,
+      onHitSound: 'hitHeavy',
       update: () => {
+        if (this.sprite.anims.currentFrame.index === 3) {
+          this.playSound('punch2', { volume: .5 });
+        }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.IDLE);
         }
@@ -167,6 +195,10 @@ export default class Aero extends CommonCharacter<AeroState, AeroCommand, AeroSt
 
   public onTargetHit(target: StageObject, hit: Hit): void {
     super.onTargetHit(target, hit);
+    const config = this.states[this.stateManager.current.key];
+    if (config && config.onHitSound){
+      this.playSound(config.onHitSound, {}, true);
+    }
     this.cancelFlag = true;
   }
 
