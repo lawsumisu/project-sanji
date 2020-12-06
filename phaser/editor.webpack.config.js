@@ -1,47 +1,54 @@
-const webpack = require("webpack");
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const webpack = require('webpack');
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const SRC_DIR = path.join(__dirname, 'src');
 module.exports = {
   entry: path.join(SRC_DIR, 'editor', 'app.tsx'),
-  mode: "development",
-  devtool: "eval-source-map",
+  mode: 'development',
+  devtool: 'eval-source-map',
   module: {
     rules: [
       {
         test: /\.scss$/,
-        use: [{
-          loader: "style-loader" // creates style nodes from JS strings
-        }, {
-          loader: "css-loader" // translates CSS into CommonJS
-        }, {
-          loader: "sass-loader" // compiles Sass to CSS
-        }]
+        use: [
+          {
+            loader: 'style-loader' // creates style nodes from JS strings
+          },
+          {
+            loader: 'css-loader' // translates CSS into CommonJS
+          },
+          {
+            loader: 'sass-loader' // compiles Sass to CSS
+          }
+        ]
       },
       {
         test: /\.[jt]sx?$/,
         exclude: /node_modules/,
         use: {
-          loader: "babel-loader"
+          loader: 'babel-loader'
         }
       },
       {
         test: /\.(gif|png|jpe?g|svg|xml)$/i,
-        use: "file-loader"
+        use: 'file-loader'
       }
     ]
   },
   devServer: {
     hot: true,
     port: 8081,
-    contentBase: SRC_DIR,
+    contentBase: SRC_DIR
   },
   resolve: {
     alias: {
-      src: SRC_DIR,
+      src: SRC_DIR
     },
     extensions: ['.js', '.ts', '.tsx', '.jsx']
+  },
+  watchOptions: {
+    ignored: path.resolve(SRC_DIR, '**/*.frame.ts'),
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -49,7 +56,7 @@ module.exports = {
       WEBGL_RENDERER: JSON.stringify(true)
     }),
     new HtmlWebpackPlugin({
-      template: "./editor.html"
+      template: './editor.html'
     }),
     new webpack.SourceMapDevToolPlugin({
       test: /\.(ts|js)($|\?)/i

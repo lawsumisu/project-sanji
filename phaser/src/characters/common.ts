@@ -34,14 +34,9 @@ export enum CommonCommand {
 }
 
 export type CharacterState<T extends string> = T | CommonState;
-type CharacterCommand<T extends string> = T | CommonCommand;
 export type CharacterStateConfig<T> = Partial<T> & StateDefinition<CommonStateConfig>;
 
-export class CommonCharacter<S extends string = string, C extends string = string, D = {}> extends BaseCharacter<
-  CharacterState<S>,
-  CharacterCommand<C>,
-  CharacterStateConfig<D>
-> {
+export class CommonCharacter<S extends string, D> extends BaseCharacter<CharacterState<S>, CharacterStateConfig<D>> {
   public static sfx = {
     land: 'sfx/land.ogg'
   };
@@ -139,40 +134,40 @@ export class CommonCharacter<S extends string = string, C extends string = strin
     }
   };
 
-  protected commands: {
-    [key in CharacterCommand<C>]?: CommandTrigger<CharacterState<S>>;
-  } = {
-    [CommonCommand.JUMP]: {
-      command: new Command('*7|*8|*9', 1),
-      trigger: () => !this.isAirborne && this.isIdle,
-      state: CommonState.JUMP
-    },
-    [CommonCommand.RUN]: {
-      command: new Command('6~6', 12),
-      trigger: () => !this.isAirborne && this.isIdle,
-      state: CommonState.RUN,
-      priority: 1
-    },
-    [CommonCommand.CROUCH]: {
-      command: new Command('*1|*2|*3', 1),
-      trigger: () => !this.isAirborne && this.isIdle,
-      state: CommonState.CROUCH
-    },
-    [CommonCommand.WALK]: {
-      command: new Command('*4|*6', 1),
-      trigger: () => this.stateManager.current.key === CommonState.IDLE,
-      state: CommonState.WALK
-    },
-    [CommonCommand.DASH_BACK]: {
-      command: new Command('4~4', 12),
-      trigger: () => !this.isAirborne && this.isIdle,
-      state: CommonState.DASH_BACK,
-      priority: 1
-    }
-  };
-
   constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
     super(playerIndex, frameDefinitionMap);
+    this.commandList = this.getCommandList();
+  }
+
+  protected getCommandList(): Array<CommandTrigger<CharacterState<S>>> {
+    return [
+      {
+        command: new Command('*7|*8|*9', 1),
+        trigger: () => !this.isAirborne && this.isIdle,
+        state: CommonState.JUMP
+      },
+      {
+        command: new Command('6~6', 12),
+        trigger: () => !this.isAirborne && this.isIdle,
+        state: CommonState.RUN,
+        priority: 1
+      },
+      {
+        command: new Command('*1|*2|*3', 1),
+        trigger: () => !this.isAirborne && this.isIdle,
+        state: CommonState.CROUCH
+      },{
+        command: new Command('*4|*6', 1),
+        trigger: () => this.stateManager.current.key === CommonState.IDLE,
+        state: CommonState.WALK
+      },
+      {
+        command: new Command('4~4', 12),
+        trigger: () => !this.isAirborne && this.isIdle,
+        state: CommonState.DASH_BACK,
+        priority: 1
+      }
+    ];
   }
 
   public preload() {
@@ -197,7 +192,7 @@ export class CommonCharacter<S extends string = string, C extends string = strin
       this.velocity.y = 0;
       if (this.stateManager.current.key === CommonState.FALL) {
         this.stateManager.setState(CommonState.IDLE);
-        this.playSound('land', { volume: .5 }, true);
+        this.playSound('land', { volume: 0.5 }, true);
       }
     }
   }

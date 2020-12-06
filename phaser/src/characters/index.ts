@@ -17,11 +17,7 @@ export interface CommandTrigger<S extends string> {
   priority?: number;
 }
 
-export class BaseCharacter<
-  S extends string = string,
-  C extends string = string,
-  D extends StateDefinition = StateDefinition
-> extends StageObject {
+export class BaseCharacter<S extends string = string, D extends StateDefinition = StateDefinition> extends StageObject {
   protected stateManager: StateManager<S, D>;
   protected nextStates: Array<{ state: S; executionTrigger: () => boolean }> = [];
   protected defaultState: S;
@@ -43,11 +39,7 @@ export class BaseCharacter<
   protected target: StageObject;
   protected isIdle: boolean;
 
-  protected commands: {
-    [key in C]?: CommandTrigger<S>;
-  } = {};
-
-  private commandList: C[];
+  protected commandList: Array<CommandTrigger<S>> = [];
 
   protected states: { [key in S]?: D };
   private sounds: Set<string> = new Set<string>();
@@ -72,19 +64,17 @@ export class BaseCharacter<
     _.forEach(this.states, (value: D, key: S) => {
       this.stateManager.addState(key, value);
     });
-    this.commandList = (_.keys(this.commands) as C[]).sort((a, b) => {
-      const cA = this.commands[a];
-      const cB = this.commands[b];
-      const p1 = (_.isArray(cA) ? cA[0].priority : (cA as CommandTrigger<S>).priority) || 0;
-      const p2 = (_.isArray(cB) ? cB[0].priority : (cB as CommandTrigger<S>).priority) || 0;
-      return p2 - p1;
-    });
   }
 
   public create() {
     this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
     addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
     this.stateManager.setState(this.defaultState);
+    this.commandList = this.commandList.sort((a, b) => {
+      const p1 = a.priority || 0;
+      const p2 = b.priority || 0;
+      return p2 - p1;
+    });
   }
 
   public applyHit(hit: Hit): void {
@@ -110,13 +100,13 @@ export class BaseCharacter<
   }
 
   protected updateState(): void {
-    for (const name of this.commandList) {
-      const { command, trigger = () => true, state } = this.commands[name] as CommandTrigger<S>;
+    for (const { command, trigger = () => true, state } of this.commandList) {
       if (this.isCommandExecuted(command)) {
         const canTransition = trigger();
         if (_.isFunction(canTransition)) {
           // chainable state, so add to queue
           this.queueNextState(state, canTransition);
+          break;
         } else if (canTransition) {
           // Immediately transition to next state.
           this.goToNextState(state);

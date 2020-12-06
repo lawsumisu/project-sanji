@@ -11,10 +11,8 @@ const frameData: FrameDefinitionMap = {
     },
     hurtboxDef: {
       0: {
-        boxes: [
-          { x1: 1.38, y1: -92.4, x2: 0.78, y2: -12.8, r: 13.5 }
-        ],
-        persistUntilFrame: 22
+        boxes: [{ x1: 1.38, y1: -92.4, x2: 0.78, y2: -12.8, r: 13.5 }],
+        persistThroughFrame: 21
       }
     }
   },
@@ -104,7 +102,7 @@ const frameData: FrameDefinitionMap = {
     hurtboxDef: {
       0: {
         boxes: [
-          { x1: 0.8874999999999997, y1: -84.6875, x2: 2.72, y2: -9.32, r: 11 },
+          { x1: 0.88, y1: -84.6875, x2: 2.72, y2: -9.32, r: 11 },
           { x1: 5.42, y1: -48.90999999999998, x2: 23.62, y2: -8.93000000000002, r: 10 },
           { x1: -4.56, y1: -55.6, x2: -15.18, y2: -8.599999999999962, r: 9 },
           { x: 1.8, y: -96.8, r: 10 }
@@ -152,6 +150,42 @@ const frameData: FrameDefinitionMap = {
       }
     }
   },
+  LIGHT_3: {
+    animDef: {
+      frames: 5,
+      assetKey: 'vanessa',
+      prefix: 'attacks/light3',
+      frameRate: 15
+    },
+    hitboxDef: {
+      hit: {
+        damage: 10,
+        angle: 0,
+        knockback: 10
+      },
+      1: {
+        boxes: [{ x1: 23.2, y1: -75.8, x2: 8.6, y2: -75.6, r: 6.5 }]
+      }
+    }
+  },
+  LIGHT_4: {
+    animDef: {
+      frames: 6,
+      assetKey: 'vanessa',
+      prefix: 'attacks/light4',
+      frameRate: 15
+    },
+    hitboxDef: {
+      hit: {
+        damage: 10,
+        angle: 0,
+        knockback: 10
+      },
+      1: {
+        boxes: [{ x1: 56.2, y1: -95, x2: 16.2, y2: -87.8, r: 6.5 }]
+      }
+    }
+  },
   GUT_PUNCH_1: {
     animDef: {
       frames: [1, 2, 3, 4, 5, 11],
@@ -194,6 +228,46 @@ const frameData: FrameDefinitionMap = {
       }
     }
   },
+  STAND_MED_R_2: {
+    animDef: {
+      frames: [1, 2, 3, 4, 5, { index: 11, prefix: 'attacks/gutpunch' }],
+      assetKey: 'vanessa',
+      prefix: 'attacks/med2',
+      frameRate: 14
+    },
+    hitboxDef: {
+      hit: {
+        damage: 10,
+        angle: 0,
+        knockback: 10
+      },
+      2: {
+        boxes: [{ x1: 46.6, y1: -65.4, x2: 12.4, y2: -60.8, r: 10 }]
+      }
+    }
+  },
+  STAND_MED_L_2: {
+    animDef: {
+      frames: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+      assetKey: 'vanessa',
+      prefix: 'attacks/med2',
+      frameRate: 14
+    },
+    hitboxDef: {
+      hit: {
+        damage: 10,
+        angle: -10,
+        knockback: 35
+      },
+      3: {
+        boxes: [{ x1: 64, y1: -111.2, x2: 32.8, y2: -64, r: 10 }]
+      },
+      4: {
+        boxes: [{ x: 62, y: -103, r: 10 }],
+        persistThroughFrame: 5
+      }
+    }
+  },
   STRAIGHT: {
     animDef: {
       frames: 10,
@@ -212,7 +286,7 @@ const frameData: FrameDefinitionMap = {
       },
       3: {
         boxes: [{ x1: 32.6, y1: -89.8, x2: 67.8, y2: -89, r: 6.5 }],
-        persistUntilFrame: 5
+        persistThroughFrame: 4
       }
     }
   },

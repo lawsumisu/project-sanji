@@ -45,7 +45,7 @@ export enum BoxType {
 export interface BoxDefinition {
   tag?: string | number;
   boxes: BoxConfig[];
-  persistUntilFrame?: number;
+  persistThroughFrame?: number;
 }
 
 export interface HitboxDefinition extends BoxDefinition {

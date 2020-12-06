@@ -53,7 +53,7 @@ export default class FrameDefinitionRenderer extends React.PureComponent<Props> 
         for (let i = index - 1; i >= 0; --i) {
           const H = boxDef[i];
           if (H) {
-            if (H.persistUntilFrame && H.persistUntilFrame > index) {
+            if (H.persistThroughFrame && H.persistThroughFrame > index) {
               return { boxes: H.boxes, persistent: true };
             } else {
               break;

@@ -102,7 +102,10 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
    * @param force: Forces the state to transition, even if the new state would be the same as the current one.
    */
   public setState(key: K, force?: boolean): void {
-    if (!this.currentState || this.currentState.key !== key || force) {
+    if (!this.states[key]) {
+      console.error(`${key} is not a valid state key; ignoring transition`);
+      return;
+    } else if (!this.currentState || this.currentState.key !== key || force) {
       this.onBeforeTransitionFn(this.currentState);
       const currentStateDef = this.getStateDefinition(key);
       this.currentState = {
@@ -197,8 +200,8 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       const frameBoxDef = frameDefinition[key]![index] as T extends HitboxData ? HitboxDefinition : BoxDefinition;
       const persist = (): boolean => {
         const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();
-        const { persistUntilFrame = index + 1 } = frameBoxDef;
-        return frameKey === currentFrameKey && (i === index || i < persistUntilFrame);
+        const { persistThroughFrame = index + 1 } = frameBoxDef;
+        return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
       };
       const tag = frameBoxDef.tag ? [frameKey, frameBoxDef.tag].join('-') : frameKey;
       return { persist, tag, frameBoxDef, index };

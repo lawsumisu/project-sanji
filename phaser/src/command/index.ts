@@ -97,7 +97,7 @@ export class Command {
 
   public static registry = {
     FORWARD: new Command('*6', 1),
-    BACK: new Command('*4', 1),
+    BACK: new Command('*4', 1)
   };
 
   private readonly inputs: CommandInput[];
@@ -116,7 +116,7 @@ export class Command {
       return true;
     } else {
       const executionTime = Math.min(this.inputTime, PS.gameInput.for(playerIndex).historyLength);
-      return this.isExecutedRecursive(playerIndex, facingRight,1, i - 1, executionTime);
+      return this.isExecutedRecursive(playerIndex, facingRight, 1, i - 1, executionTime);
     }
   }
 
@@ -141,7 +141,7 @@ export class Command {
         if (inputIndex === 0) {
           return true;
         } else {
-          return this.isExecutedRecursive(playerIndex, facingRight,j + 1, inputIndex - 1, executionTime);
+          return this.isExecutedRecursive(playerIndex, facingRight, j + 1, inputIndex - 1, executionTime);
         }
       }
     }
@@ -160,10 +160,14 @@ export class Command {
 
   private static parseInput(input: string): CommandInput {
     let strict = input.endsWith('~');
-    const parsedInput = input
-      .replace('~', '')
-      .split('|')
-      .map((simpleInput: string) => {
+    const parsedInput = Command.parseDisjunctiveInput(input.replace('~', ''));
+    return { input: parsedInput!, strict };
+  }
+
+  private static parseConjunctiveInput(input: string): SimpleInput | JunctiveInput {
+    return input
+      .split('+')
+      .map<SimpleInput | JunctiveInput>(simpleInput => {
         const type = simpleInput.startsWith('*') ? CommandInputType.DOWN : CommandInputType.PRESS;
         const input = Command.commandToGameInputMap[simpleInput.replace('*', '')];
         if (Command.reverseGameInputMap[input]) {
@@ -172,13 +176,25 @@ export class Command {
           return new SimpleInput(input, type);
         }
       })
-      .reduce((accumulator: JunctiveInput | SimpleInput, simpleInput: SimpleInput) => {
-        if (accumulator === null) {
+      .reduce((accumulator, simpleInput, i) => {
+        if (i === 0) {
+          return simpleInput;
+        } else {
+          return new JunctiveInput(accumulator, simpleInput, true);
+        }
+      });
+  }
+
+  private static parseDisjunctiveInput(input: string): SimpleInput | JunctiveInput {
+    return input
+      .split('|')
+      .map(Command.parseConjunctiveInput)
+      .reduce((accumulator, simpleInput, i) => {
+        if (i === 0) {
           return simpleInput;
         } else {
           return new JunctiveInput(accumulator, simpleInput);
         }
-      }, null);
-    return { input: parsedInput!, strict };
+      });
   }
 }
