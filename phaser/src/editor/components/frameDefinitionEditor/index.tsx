@@ -397,4 +397,4 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
 export const ReduxConnectedFrameDefinitionEditor = connect(
   FrameDefinitionEditor.mapStateToProps,
   null
-)(FrameDefinitionEditor);
+)(FrameDefinitionEditor) as React.ComponentType<{}>;

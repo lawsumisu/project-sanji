@@ -4,7 +4,7 @@ import { StageObject } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { GameInput } from 'src/plugins/gameInput.plugin';
-import aero from 'src/characters/aero/aero.frame';
+import aero from 'src/characters/aero/aero.frame.json';
 import { CharacterState, CharacterStateConfig, CommonCharacter, CommonState } from 'src/characters/common';
 import { CommandTrigger } from 'src/characters';
 
