@@ -1,4 +1,5 @@
 export { default as SpriteRenderer } from 'src/editor/components/spriteRenderer';
+export { default as Icon } from 'src/editor/components/iconButton';
 export { default as Box } from 'src/editor/components/box';
 export { default as AnimationRenderer } from 'src/editor/components/animationRenderer';
 export { ReduxConnectedFrameRenderer as FrameRenderer } from 'src/editor/components/frameRenderer';

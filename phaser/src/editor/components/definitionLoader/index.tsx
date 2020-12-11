@@ -3,6 +3,13 @@ import { FrameDefinitionMap } from 'src/characters/frameData';
 import { bindActionCreators, Dispatch } from 'redux';
 import { frameDataActionCreators } from 'src/editor/redux/frameData';
 import { connect } from 'react-redux';
+import 'src/editor/components/definitionLoader/styles.scss';
+import cx from 'classnames';
+import { Icon } from 'src/editor/components';
+
+interface Props {
+  className?: string;
+}
 
 interface DispatchMappedProps {
   actions: {
@@ -10,7 +17,9 @@ interface DispatchMappedProps {
   }
 }
 
-class DefinitionLoader extends React.PureComponent<DispatchMappedProps> {
+class DefinitionLoader extends React.PureComponent<Props & DispatchMappedProps> {
+  private ref: HTMLInputElement | null = null;
+
   public static mapDispatchToProps(dispatch: Dispatch): DispatchMappedProps {
     return {
       actions: bindActionCreators({
@@ -18,11 +27,13 @@ class DefinitionLoader extends React.PureComponent<DispatchMappedProps> {
       }, dispatch)
     }
   }
+
   public render(): React.ReactNode {
     return (
-      <div>
-        <input type="file" accept=".json" onChange={this.onChange}/>
-      </div>
+      <React.Fragment>
+        <Icon className={cx('icon', this.props.className)} icon="file-code" size="lg" onClick={this.onClick} hint="Load Config File"/>
+        <input ref={this.setRef} type="file" accept=".json" onChange={this.onChange}/>
+      </React.Fragment>
     )
   }
 
@@ -34,7 +45,16 @@ class DefinitionLoader extends React.PureComponent<DispatchMappedProps> {
       }
     });
     fileReader.readAsText(target.files![0])
+  };
+
+  private setRef = (ref: HTMLInputElement | null): void => {
+    this.ref = ref;
+  };
+
+  private onClick = (): void => {
+    this.ref && this.ref.click();
   }
+
 }
 
 export const ReduxConnectedDefinitionLoader = connect(null, DefinitionLoader.mapDispatchToProps)(DefinitionLoader);

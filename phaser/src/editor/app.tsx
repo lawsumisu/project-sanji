@@ -3,12 +3,15 @@ import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { store } from 'src/editor/redux';
 import { Root } from 'src/editor/components';
+import { initializeFontAwesome } from 'src/editor/redux/utilities';
+
+initializeFontAwesome();
 
 class App extends React.Component {
   public render(): React.ReactNode {
     return (
       <Provider store={store}>
-        <Root/>
+        <Root />
       </Provider>
     );
   }

@@ -10,21 +10,28 @@ interface MappedStateProps {
   keys: string[];
 }
 
+const Header = ({ name, children }: { name: string; children?: React.ReactNode }) => (
+  <div className="cn--section-header">
+    <div className="section-header--name">{name}</div>
+    {children}
+  </div>
+);
+
 class Root extends React.PureComponent<MappedStateProps> {
   public static mapStateToProps(state: AppState): MappedStateProps {
     return {
-      keys: Object.keys(state.frameData.definitionMap).sort(),
-    }
+      keys: Object.keys(state.frameData.definitionMap).sort()
+    };
   }
   public render(): React.ReactNode {
     return (
       <div className="cn--root">
-        <div className={cx("root--section", 'mod--animations')}>
-          <div className="section--header">Animations<DefinitionLoader/></div>
-          <FrameDefinitionMapRenderer keys={this.props.keys} className="cn--animations"/>
+        <div className={cx('root--section', 'mod--animations')}>
+          <Header name="Configuration"><DefinitionLoader/></Header>
+          <FrameDefinitionMapRenderer keys={this.props.keys} className="cn--animations" />
         </div>
         <div className="root--section">
-          <div className="section--header">Frame Editor</div>
+          <Header name="Frame Editor"/>
           <FrameDefinitionEditor />
         </div>
       </div>

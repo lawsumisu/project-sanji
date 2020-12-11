@@ -1,5 +1,7 @@
 import { BoxDefinition, BoxType } from 'src/characters/frameData';
 import { FrameDataState } from 'src/editor/redux/frameData';
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faAngleLeft, faAngleRight, faCopy, faFileCode } from '@fortawesome/free-solid-svg-icons';
 
 export function getBoxDefinition(
   frameData: FrameDataState,
@@ -14,4 +16,8 @@ export function getBoxDefinition(
     return hurtboxDef[frameIndex] || null;
   }
   return null;
+}
+
+export function initializeFontAwesome(): void {
+  library.add(faAngleRight, faAngleLeft, faCopy, faFileCode);
 }

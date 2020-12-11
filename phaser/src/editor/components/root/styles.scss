@@ -15,15 +15,21 @@
       padding: 0 16px;
     }
 
-    .section--header{
+    .cn--section-header{
+      height: 25px;
       padding: 8px 16px;
       background-color: #eeeeee;
       border-bottom: 1px solid #aaa;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      .section-header--name {
+        flex-grow: 1;
+      }
     }
 
     &.mod--animations {
       flex: 0 0 350px;
     }
   }
-
 }
