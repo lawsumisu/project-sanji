@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AnimationFrameConfig } from 'src/characters';
+import { AnimationFrameConfig } from 'src/characters/frameData';
 import * as _ from 'lodash';
 import { SpriteRenderer } from 'src/editor/components';
 import { FrameDataState, getSpriteConfig } from 'src/editor/redux/frameData';

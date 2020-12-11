@@ -2,7 +2,6 @@ import { FrameConfigTP, TextureDataTP } from 'src/assets';
 import { FrameDefinitionMap, getSpriteIndexFromDefinition } from 'src/characters/frameData';
 import spriteSheet from 'src/characters/aero/vanessa.png';
 import data from 'src/characters/aero/vanessa.json';
-import aero from 'src/characters/aero/aero.frame';
 import actionCreatorFactory, { isType } from 'typescript-fsa';
 import { Action } from 'redux';
 import { Vector2 } from '@lawsumisu/common-utilities';
@@ -41,37 +40,43 @@ export function getAnchorPosition(config: FrameConfigTP): Vector2 {
 export interface FrameDataState {
   source: string;
   texture: TextureDataMap;
-  definitionMap: FrameDefinitionMap<string>;
+  definitionMap: FrameDefinitionMap;
   selection: { key: string; frame: number } | null;
 }
 
 const initialState: FrameDataState = {
   source: spriteSheet,
   texture: processTextureData(data.textures[0]),
-  definitionMap: aero,
+  definitionMap: {},
   selection: null
 };
 
 const ACF = actionCreatorFactory('frameData');
 
-const actionCreators = {
+export const frameDataActionCreators = {
   update: ACF<{ source: string; textureData: TextureDataTP; definitionMap: FrameDefinitionMap<string> }>('UPDATE'),
-  select: ACF<{ key: string; frame: number }>('SELECT')
+  select: ACF<{ key: string; frame: number }>('SELECT'),
+  loadDefinition: ACF<FrameDefinitionMap>('LOAD'),
 };
 
 export function frameDataReducer(state: FrameDataState = initialState, action: Action): FrameDataState {
-  if (isType(action, actionCreators.update)) {
+  if (isType(action, frameDataActionCreators.update)) {
     return {
       source: action.payload.source,
       texture: processTextureData(action.payload.textureData),
       definitionMap: action.payload.definitionMap,
       selection: null
     };
-  } else if (isType(action, actionCreators.select)) {
+  } else if (isType(action, frameDataActionCreators.select)) {
     return {
       ...state,
       selection: { ...action.payload }
     };
+  } else if (isType(action, frameDataActionCreators.loadDefinition)) {
+    return {
+      ...state,
+      definitionMap: action.payload
+    }
   }
   return state;
 }
