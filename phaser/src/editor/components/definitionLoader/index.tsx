@@ -32,7 +32,7 @@ class DefinitionLoader extends React.PureComponent<Props & DispatchMappedProps> 
     return (
       <React.Fragment>
         <Icon className={cx('icon', this.props.className)} icon="file-code" size="lg" onClick={this.onClick} hint="Load Config File"/>
-        <input ref={this.setRef} type="file" accept=".json" onChange={this.onChange}/>
+        <input ref={this.setRef} type="file" accept=".json" onChange={this.onChange} onClick={this.clear}/>
       </React.Fragment>
     )
   }
@@ -45,6 +45,12 @@ class DefinitionLoader extends React.PureComponent<Props & DispatchMappedProps> 
       }
     });
     fileReader.readAsText(target.files![0])
+  };
+
+  private clear = () => {
+    if (this.ref) {
+      this.ref.value = '';
+    }
   };
 
   private setRef = (ref: HTMLInputElement | null): void => {

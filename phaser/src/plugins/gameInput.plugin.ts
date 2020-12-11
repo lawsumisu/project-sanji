@@ -213,7 +213,7 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
     [GameInput.INPUT2]: [getKeyboardConfig(keyCodes.S), getGamepadConfig('B')],
     [GameInput.INPUT3]: [getKeyboardConfig(keyCodes.W), getGamepadConfig('X')],
     [GameInput.INPUT4]: [getKeyboardConfig(keyCodes.E), getGamepadConfig('Y')],
-    [GameInput.INPUT5]: [],
+    [GameInput.INPUT5]: [getKeyboardConfig(keyCodes.Q), getGamepadConfig('L1')],
     [GameInput.INPUT6]: []
   };
 

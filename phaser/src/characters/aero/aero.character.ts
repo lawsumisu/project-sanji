@@ -207,7 +207,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('a', 1),
         trigger: () => {
-          if (this.canChainFrom(AeroState.STAND_LIGHT_R_1, 4) || this.canChainFrom(AeroState.STAND_LIGHT_R_2, 5)) {
+          if (this.canChainFrom(AeroState.STAND_LIGHT_R_1) || this.canChainFrom(AeroState.STAND_LIGHT_R_2, 5)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
           } else {
             return false;
@@ -225,7 +225,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('*6+a', 1),
         trigger: () => {
-          if (this.canChainFrom(AeroState.STAND_LIGHT_R_1, 4) || this.canChainFrom(AeroState.STAND_LIGHT_R_2, 5)) {
+          if (this.canChainFrom(AeroState.STAND_LIGHT_R_1) || this.canChainFrom(AeroState.STAND_LIGHT_R_2, 5)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
           } else {
             return false;
@@ -243,9 +243,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('b', 1),
         trigger: () => {
-          if (this.canChainFrom(AeroState.STAND_MED_R_2, 5) || this.canChainFrom(AeroState.STAND_MED_R_1, 5)) {
+          if (this.canChainFrom(AeroState.STAND_MED_R_2) || this.canChainFrom(AeroState.STAND_MED_R_1)) {
             return () => {
-              const i = this.stateManager.current.key === AeroState.STAND_MED_R_1 ? 5 : 6;
+              const i = this.stateManager.current.key === AeroState.STAND_MED_R_1 ? 4 : 5;
               return this.sprite.anims.currentFrame.index >= i;
             }
           } else {
@@ -263,9 +263,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('*6+b', 1),
         trigger: () => {
-          if (this.canChainFrom(AeroState.STAND_MED_R_2, 5) || this.canChainFrom(AeroState.STAND_MED_R_1, 5)) {
+          if (this.canChainFrom(AeroState.STAND_MED_R_2) || this.canChainFrom(AeroState.STAND_MED_R_1)) {
             return () => {
-              const i = this.stateManager.current.key === AeroState.STAND_MED_R_1 ? 5 : 6;
+              const i = this.stateManager.current.key === AeroState.STAND_MED_R_1 ? 4 : 5;
               return this.sprite.anims.currentFrame.index >= i;
             }
           } else {

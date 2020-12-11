@@ -87,7 +87,8 @@ export class Command {
     a: GameInput.INPUT3,
     b: GameInput.INPUT4,
     c: GameInput.INPUT2,
-    d: GameInput.INPUT1
+    d: GameInput.INPUT1,
+    l: GameInput.INPUT5,
   };
 
   private static reverseGameInputMap: { [key in GameInput]?: GameInput } = {
@@ -97,7 +98,8 @@ export class Command {
 
   public static registry = {
     FORWARD: new Command('*6', 1),
-    BACK: new Command('*4', 1)
+    BACK: new Command('*4', 1),
+    GUARD: new Command('*l', 1),
   };
 
   private readonly inputs: CommandInput[];
@@ -149,7 +151,7 @@ export class Command {
   }
 
   private static parse(cmd: string): CommandInput[] {
-    const regex = /\(?\*?[a-d1-9]([|+]\(*\*?[a-d1-9]\)*)*\)?~?/g;
+    const regex = /\(?\*?[a-dl1-9]([|+]\(*\*?[a-dl1-9]\)*)*\)?~?/g;
     const matches = cmd.match(regex);
     if (matches) {
       return matches.map(Command.parseInput);

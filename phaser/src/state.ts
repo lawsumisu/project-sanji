@@ -99,9 +99,10 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
   /**
    * Updates the current player state.
    * @param key
+   * @param localState
    * @param force: Forces the state to transition, even if the new state would be the same as the current one.
    */
-  public setState(key: K, force?: boolean): void {
+  public setState(key: K, localState = {}, force?: boolean): void {
     if (!this.states[key]) {
       console.error(`${key} is not a valid state key; ignoring transition`);
       return;
@@ -114,7 +115,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       };
       this.onAfterTransitionFn(this.currentState);
       this.tick = 0;
-      this.localState = {};
+      this.localState = {...localState};
       // console.log(this.currentState.key);
     }
   }

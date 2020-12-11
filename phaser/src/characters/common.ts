@@ -21,16 +21,11 @@ export enum CommonState {
   DASH_BACK = 'DASH_BACK',
   JUMP = 'JUMP',
   FALL = 'FALL',
-  CROUCH = 'CROUCH',
-  RUN = 'RUN'
-}
-
-export enum CommonCommand {
-  WALK = 'WALK',
-  JUMP = 'JUMP',
+  CROUCH_TRANSITION = 'CROUCH_TRANSITION',
   CROUCH = 'CROUCH',
   RUN = 'RUN',
-  DASH_BACK = 'DASH_BACK'
+  BLOCK_STAND = 'BLOCK_STAND',
+  BLOCK_CROUCH = 'BLOCK_CROUCH'
 }
 
 export type CharacterState<T extends string> = T | CommonState;
@@ -63,19 +58,27 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
         }
       }
     },
-    [CommonState.CROUCH]: {
+    [CommonState.CROUCH_TRANSITION]: {
       update: (tick: number) => {
         this.velocity.x = 0;
-        if (
-          !_.some([GameInput.DOWN_LEFT, GameInput.DOWN_RIGHT, GameInput.DOWN], (gi: GameInput) =>
-            this.input.isInputDown(gi)
-          )
-        ) {
+        if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
           playAnimation(this.sprite, 'STAND_UP');
         } else if (tick === 0) {
           playAnimation(this.sprite, 'SQUAT');
         } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
-          playAnimation(this.sprite, 'CROUCH');
+          this.stateManager.setState(CommonState.CROUCH);
+        }
+        if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
+          this.stateManager.setState(CommonState.IDLE);
+        }
+      }
+    },
+    [CommonState.CROUCH]: {
+      startAnimation: 'CROUCH',
+      update: () => {
+        this.velocity.x = 0;
+        if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
+          playAnimation(this.sprite, 'STAND_UP');
         }
         if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
           this.stateManager.setState(CommonState.IDLE);
@@ -131,6 +134,28 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
     },
     [CommonState.FALL]: {
       startAnimation: 'FALL'
+    },
+    [CommonState.BLOCK_STAND]: {
+      startAnimation: 'BLOCK_STAND',
+      update: (tick: number) => {
+        if (tick === 0) {
+          this.velocity.x = 0;
+        }
+        if (!this.isCommandExecuted(Command.registry.GUARD)) {
+          this.stateManager.setState(CommonState.IDLE);
+        }
+      }
+    },
+    [CommonState.BLOCK_CROUCH]: {
+      startAnimation: 'BLOCK_CROUCH',
+      update: (tick: number) => {
+        if (tick === 0) {
+          this.velocity.x = 0;
+        }
+        if (!this.isCommandExecuted(Command.registry.GUARD)) {
+          this.stateManager.setState(CommonState.CROUCH);
+        }
+      }
     }
   };
 
@@ -154,9 +179,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
       },
       {
         command: new Command('*1|*2|*3', 1),
-        trigger: () => !this.isAirborne && this.isIdle,
-        state: CommonState.CROUCH
-      },{
+        trigger: () => !this.isAirborne && this.isIdle && !this.isCrouching,
+        state: CommonState.CROUCH_TRANSITION
+      },
+      {
         command: new Command('*4|*6', 1),
         trigger: () => this.stateManager.current.key === CommonState.IDLE,
         state: CommonState.WALK
@@ -166,6 +192,18 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
         trigger: () => !this.isAirborne && this.isIdle,
         state: CommonState.DASH_BACK,
         priority: 1
+      },
+      {
+        command: Command.registry.GUARD,
+        trigger: () => this.isIdle && !this.isAirborne,
+        state: CommonState.BLOCK_STAND,
+        priority: 1
+      },
+      {
+        command: new Command('*2+*l', 1),
+        trigger: () => this.isIdle && !this.isAirborne,
+        state: CommonState.BLOCK_CROUCH,
+        priority: 2
       }
     ];
   }
@@ -204,5 +242,11 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
       playAnimation(this.sprite, startAnimation, true);
     }
     this.isIdle = idle;
+  }
+
+  protected get isCrouching(): boolean {
+    return _.some([CommonState.CROUCH, CommonState.CROUCH_TRANSITION, CommonState.BLOCK_CROUCH], s =>
+      this.isCurrentState(s)
+    );
   }
 }
