@@ -4,7 +4,7 @@ import { StageObject } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { GameInput } from 'src/plugins/gameInput.plugin';
-import aero from 'src/characters/aero/aero.frame';
+import aero from 'src/characters/aero/aero.frame.json';
 import { CharacterState, CharacterStateConfig, CommonCharacter, CommonState } from 'src/characters/common';
 import { CommandTrigger } from 'src/characters';
 
@@ -32,7 +32,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     hitMed: 'sfx/hits/SE_00008.ogg',
     hitHeavy: 'sfx/hits/SE_00009.ogg',
     punch1: 'sfx/hits/SE_00025.ogg',
-    punch2: 'sfx/hits/SE_00026.ogg'
+    punch2: 'sfx/hits/SE_00026.ogg',
+    jabVoice: 'sfx/vanessa/001.ogg',
   };
 
   protected defaultState = CommonState.IDLE;
@@ -58,7 +59,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
-        if (!this.sprite.anims.isPlaying) {
+        if (this.sprite.anims.currentFrame.index === 2) {
+          this.playSound('jabVoice', { volume: .5 });
+        } else if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.IDLE);
         }
       }
@@ -82,7 +85,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
-        if (!this.sprite.anims.isPlaying) {
+        if (this.sprite.anims.currentFrame.index === 2) {
+          this.playSound('jabVoice', { volume: .5 });
+        } else if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.IDLE);
         }
       }

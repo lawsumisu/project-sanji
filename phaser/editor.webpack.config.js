@@ -47,9 +47,6 @@ module.exports = {
     },
     extensions: ['.js', '.ts', '.tsx', '.jsx']
   },
-  watchOptions: {
-    ignored: path.resolve(SRC_DIR, '**/*.frame.ts'),
-  },
   plugins: [
     new webpack.DefinePlugin({
       CANVAS_RENDERER: JSON.stringify(true),

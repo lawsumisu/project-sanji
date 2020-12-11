@@ -26,11 +26,14 @@ class FrameDefinitionMapRenderer extends React.PureComponent<Props & ReduxStateM
         {this.props.keys
           .filter((key: string) => _.has(this.props.frameData.definitionMap, key))
           .map((key: string, i: number) => (
-            <FrameDefinitionItem key={i} frameKey={key} frameData={this.props.frameData}/>
+            <FrameDefinitionItem key={i} frameKey={key} frameData={this.props.frameData} />
           ))}
       </div>
     );
   }
 }
 
-export default connect(FrameDefinitionMapRenderer.mapStateToProps, null)(FrameDefinitionMapRenderer);
+export default connect(
+  FrameDefinitionMapRenderer.mapStateToProps,
+  null
+)(FrameDefinitionMapRenderer) as React.ComponentType<Props>;
