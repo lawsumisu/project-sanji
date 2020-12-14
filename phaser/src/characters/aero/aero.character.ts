@@ -5,7 +5,7 @@ import { Hit } from 'src/collider';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { GameInput } from 'src/plugins/gameInput.plugin';
 import aero from 'src/characters/aero/aero.frame.json';
-import { CharacterState, CharacterStateConfig, CommonCharacter, CommonState } from 'src/characters/common';
+import { CharacterState, CharacterStateConfig, CommonCharacter, CommonState, StateType } from 'src/characters/common';
 import { CommandTrigger } from 'src/characters';
 
 enum AeroState {
@@ -36,66 +36,66 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     jabVoice: 'sfx/vanessa/001.ogg',
   };
 
-  protected defaultState = CommonState.IDLE;
+  protected defaultState = CommonState.STAND;
   private cancelFlag = false;
 
   protected states: { [key in CharacterState<AeroState>]?: CharacterStateConfig<AeroStateConfig> } = {
     [AeroState.STAND_LIGHT_L_1]: {
       startAnimation: 'LIGHT_JAB_1',
+      type: [StateType.ATTACK, StateType.STAND],
       attackLevel: 1,
-      idle: false,
       onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.STAND_LIGHT_L_2]: {
       startAnimation: 'LIGHT_JAB_2',
       attackLevel: 1,
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 2) {
           this.playSound('jabVoice', { volume: .5 });
         } else if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.STAND_LIGHT_R_1]: {
       startAnimation: 'LIGHT_3',
       attackLevel: 1,
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.STAND_LIGHT_R_2]: {
       startAnimation: 'LIGHT_4',
       attackLevel: 1,
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 2) {
           this.playSound('jabVoice', { volume: .5 });
         } else if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.STAND_MED_R_1]: {
       startAnimation: 'GUT_PUNCH_1',
       attackLevel: 2,
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitMed',
       update: () => {
         this.velocity.x = 0;
@@ -103,28 +103,28 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           this.playSound('punch1', { volume: 0.5 });
         }
         if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.STAND_MED_L_1]: {
       startAnimation: 'GUT_PUNCH_2',
       attackLevel: 2,
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitMed',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 2) {
           this.playSound('punch1', { volume: 0.5 });
         }
         if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.STAND_MED_R_2]: {
       startAnimation: 'STAND_MED_R_2',
       attackLevel: 2,
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitMed',
       update: () => {
         this.velocity.x = 0;
@@ -132,14 +132,14 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           this.playSound('punch1', { volume: 0.5 });
         }
         if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.STAND_MED_L_2]: {
       startAnimation: 'STAND_MED_L_2',
       attackLevel: 2,
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitMed',
       update: () => {
         this.velocity.x = 0;
@@ -147,27 +147,27 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           this.playSound('punch1', { volume: 0.5 });
         }
         if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.STAND_HEAVY]: {
       startAnimation: 'STRAIGHT',
       attackLevel: 3,
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitHeavy',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 3) {
           this.playSound('punch2', { volume: 0.5 });
         }
         if (!this.sprite.anims.isPlaying) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [AeroState.ROLL]: {
       startAnimation: 'ROLL_STARTUP',
-      idle: false,
+      type: [StateType.ATTACK, StateType.STAND],
       update: (tick: number, localState: { continue: boolean }) => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
@@ -177,7 +177,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             playAnimation(this.sprite, this.currentAnimation === 'ROLL_1' ? 'ROLL_2' : 'ROLL_1');
             localState.continue = false;
           } else {
-            this.stateManager.setState(CommonState.IDLE);
+            this.stateManager.setState(CommonState.STAND);
           }
         }
         if (tick > 0 && this.input.isInputPressed(GameInput.INPUT1)) {
@@ -277,7 +277,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       },
       {
         command: new Command('c', 1),
-        trigger: () => this.isCurrentState(CommonState.IDLE) || this.canCancel(AeroState.STAND_HEAVY),
+        trigger: () => this.isCurrentState(CommonState.STAND) || this.canCancel(AeroState.STAND_HEAVY),
         state: AeroState.STAND_HEAVY
       },
       {

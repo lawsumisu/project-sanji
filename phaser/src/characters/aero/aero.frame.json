@@ -1,5 +1,5 @@
 {
-  "IDLE": {
+  "STAND": {
     "animDef": {
       "frames": [{ "index": 1, "endIndex": 6, "loop": 5 }, 7, 8, 9, { "index": 10, "endIndex": 21, "loop": 2 }, 22],
       "assetKey": "vanessa",

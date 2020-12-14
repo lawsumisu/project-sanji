@@ -9,14 +9,23 @@ import { PS } from 'src/global';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 
+export enum StateType {
+  AIR = 'AIR',
+  STAND = 'STAND',
+  CROUCH = 'CROUCH',
+  IDLE = 'IDLE',
+  ATTACK = 'ATTACK',
+  BLOCK = 'BLOCK'
+}
+
 export interface CommonStateConfig {
   startAnimation?: string;
-  idle?: boolean;
   onHitSound?: string;
+  type: string[] | string;
 }
 
 export enum CommonState {
-  IDLE = 'IDLE',
+  STAND = 'STAND',
   WALK = 'WALK',
   DASH_BACK = 'DASH_BACK',
   JUMP = 'JUMP',
@@ -37,8 +46,9 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
   };
 
   private commonStates: { [key in CommonState]: StateDefinition<CommonStateConfig> } = {
-    [CommonState.IDLE]: {
-      startAnimation: 'IDLE',
+    [CommonState.STAND]: {
+      startAnimation: 'STAND',
+      type: [StateType.IDLE, StateType.STAND],
       update: () => {
         this.velocity.y = 0;
         this.velocity.x = 0;
@@ -46,10 +56,11 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
       }
     },
     [CommonState.WALK]: {
+      type: [StateType.IDLE, StateType.STAND],
       update: () => {
         this.sprite.flipX = this.direction === -1;
         if (!this.isCommandExecuted(Command.registry.FORWARD) && !this.isCommandExecuted(Command.registry.BACK)) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         } else {
           const animation = this.isCommandExecuted(Command.registry.FORWARD) ? 'WALK_FWD' : 'WALK_BACK';
           const d = this.isCommandExecuted(Command.registry.FORWARD) ? 1 : -1;
@@ -59,6 +70,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
       }
     },
     [CommonState.CROUCH_TRANSITION]: {
+      type: [StateType.IDLE, StateType.CROUCH],
       update: (tick: number) => {
         this.velocity.x = 0;
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
@@ -69,34 +81,36 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
           this.stateManager.setState(CommonState.CROUCH);
         }
         if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [CommonState.CROUCH]: {
       startAnimation: 'CROUCH',
+      type: [StateType.IDLE, StateType.CROUCH],
       update: () => {
         this.velocity.x = 0;
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
           playAnimation(this.sprite, 'STAND_UP');
         }
         if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [CommonState.RUN]: {
       startAnimation: 'RUN',
+      type: [StateType.IDLE, StateType.STAND],
       update: () => {
         this.velocity.x = this.runSpeed * this.direction;
         if (!this.isCommandExecuted(Command.registry.FORWARD)) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [CommonState.DASH_BACK]: {
       startAnimation: 'DASH_BACK',
-      idle: false,
+      type: [StateType.IDLE, StateType.STAND],
       update: (tick: number) => {
         if (tick === 0) {
           this.velocity.x = this.dashSpeed * -this.direction;
@@ -107,12 +121,13 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
           this.velocity.x = 0;
         }
         if (!this.sprite.anims.isPlaying && this.sprite.anims.currentFrame.index === 3) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [CommonState.JUMP]: {
       startAnimation: 'SQUAT',
+      type: [StateType.IDLE, StateType.STAND],
       update: (tick: number, state: { d: -1 | 1 | undefined }) => {
         if (tick <= 2) {
           if (tick === 0) {
@@ -133,27 +148,32 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
       }
     },
     [CommonState.FALL]: {
-      startAnimation: 'FALL'
+      startAnimation: 'FALL',
+      type: [StateType.IDLE, StateType.AIR]
     },
     [CommonState.BLOCK_STAND]: {
       startAnimation: 'BLOCK_STAND',
+      type: [StateType.BLOCK, StateType.STAND],
       update: (tick: number) => {
         if (tick === 0) {
           this.velocity.x = 0;
         }
         if (!this.isCommandExecuted(Command.registry.GUARD)) {
-          this.stateManager.setState(CommonState.IDLE);
+          this.stateManager.setState(CommonState.STAND);
         }
       }
     },
     [CommonState.BLOCK_CROUCH]: {
       startAnimation: 'BLOCK_CROUCH',
+      type: [StateType.BLOCK, StateType.CROUCH],
       update: (tick: number) => {
         if (tick === 0) {
           this.velocity.x = 0;
         }
         if (!this.isCommandExecuted(Command.registry.GUARD)) {
           this.stateManager.setState(CommonState.CROUCH);
+        } else if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
+          this.stateManager.setState(CommonState.BLOCK_STAND)
         }
       }
     }
@@ -168,7 +188,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
     return [
       {
         command: new Command('*7|*8|*9', 1),
-        trigger: () => !this.isAirborne && this.isIdle,
+        trigger: () => !this.isAirborne && (this.isIdle || this.checkStateType(StateType.BLOCK)),
         state: CommonState.JUMP
       },
       {
@@ -184,7 +204,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
       },
       {
         command: new Command('*4|*6', 1),
-        trigger: () => this.stateManager.current.key === CommonState.IDLE,
+        trigger: () => this.stateManager.current.key === CommonState.STAND,
         state: CommonState.WALK
       },
       {
@@ -195,13 +215,13 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
       },
       {
         command: Command.registry.GUARD,
-        trigger: () => this.isIdle && !this.isAirborne,
+        trigger: () => !this.isAirborne && this.isIdle && this.isStanding && !this.isCurrentState(CommonState.JUMP),
         state: CommonState.BLOCK_STAND,
         priority: 1
       },
       {
         command: new Command('*2+*l', 1),
-        trigger: () => this.isIdle && !this.isAirborne,
+        trigger: () => !this.isAirborne && (this.isIdle || this.checkStateType(StateType.BLOCK)),
         state: CommonState.BLOCK_CROUCH,
         priority: 2
       }
@@ -229,7 +249,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
       this.position.y = PS.stage.ground;
       this.velocity.y = 0;
       if (this.stateManager.current.key === CommonState.FALL) {
-        this.stateManager.setState(CommonState.IDLE);
+        this.stateManager.setState(CommonState.STAND);
         this.playSound('land', { volume: 0.5 }, true);
       }
     }
@@ -237,16 +257,26 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
 
   protected afterStateTransition(config: CharacterStateConfig<D>): void {
     super.afterStateTransition(config);
-    const { idle = true, startAnimation } = config;
+    const { startAnimation } = config;
     if (startAnimation) {
       playAnimation(this.sprite, startAnimation, true);
     }
-    this.isIdle = idle;
+  }
+
+  protected get isStanding(): boolean {
+    return this.checkStateType(StateType.STAND);
   }
 
   protected get isCrouching(): boolean {
-    return _.some([CommonState.CROUCH, CommonState.CROUCH_TRANSITION, CommonState.BLOCK_CROUCH], s =>
-      this.isCurrentState(s)
-    );
+    return this.checkStateType(StateType.CROUCH);
+  }
+
+  protected get isIdle(): boolean {
+    return this.checkStateType(StateType.IDLE);
+  }
+
+  protected checkStateType(toMatch: string): boolean {
+    const { type } = this.states[this.stateManager.current.key]!;
+    return _.isArray(type) ? _.some(type, t => t === toMatch) : type === toMatch;
   }
 }

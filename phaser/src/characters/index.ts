@@ -37,7 +37,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   private readonly playerIndex: number;
   protected target: StageObject;
-  protected isIdle: boolean;
 
   protected commandList: Array<CommandTrigger<S>> = [];
 
@@ -107,7 +106,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
           // chainable state, so add to queue
           this.queueNextState(state, canTransition);
           break;
-        } else if (canTransition) {
+        } else if (canTransition && !this.isCurrentState(state)) {
           // Immediately transition to next state.
           this.goToNextState(state);
           break;
@@ -126,6 +125,8 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected updateSprite(): void {
     this.sprite.x = this.position.x;
     this.sprite.y = this.position.y;
+    this.sprite.alpha = .5;
+    this.sprite.tint = 0x222222;
   }
 
   protected updateKinematics(delta: number): void {
