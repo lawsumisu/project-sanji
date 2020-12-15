@@ -10,7 +10,7 @@ import { Dummy } from 'src/characters/dummy';
 import Aero from 'src/characters/aero/aero.character';
 import { Vector2 } from '@lawsumisu/common-utilities';
 
-export class Stage extends Phaser.Scene {
+export class Stage extends Phaser.Scene{
   protected hitData: { [tag: string]: HitboxData } = {};
   protected hurtData: { [tag: string]: HurtboxData } = {};
   private stageObjects: StageObject[] = [];
@@ -84,8 +84,9 @@ export class Stage extends Phaser.Scene {
                 hitboxData.registerCollision(hurtboxData);
                 // TODO handle hits
                 const hurtObject = this.getStageObject(hurtboxData.owner);
+                const hitObject = this.getStageObject(hitboxData.owner);
                 hurtObject.applyHit(hitbox.hit);
-                this.p1.onTargetHit(hurtObject, hitbox.hit);
+                hitObject.onTargetHit(hurtObject, hitbox.hit);
                 if (hurtbox.isCircular()) {
                   const { x, y, radius: r } = hurtbox.transformBox(hurtOffset);
                   this.debug.drawCircle(
@@ -146,7 +147,7 @@ export class Stage extends Phaser.Scene {
     const hitboxOptions = {
       fill: {
         color: 0xff0000,
-        alpha: 0.5
+        alpha: 0.2
       }
     };
     const hurtboxOptions = {

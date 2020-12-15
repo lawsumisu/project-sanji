@@ -13,14 +13,13 @@ import { BoxConfig, BoxDefinition, BoxType, FrameDefinition, HitboxDefinition, i
 import { PS } from 'src/global';
 import { StageObject } from 'src/stage/stageObject';
 
-export type StateDefinition<C = {}, F extends string = string> = C & {
-  frameKey?: F;
+export type StateDefinition<C = {}> = C & {
   hitDefinition?: (tick: number, hitData: HitboxData) => HitboxData | null;
   hurtDefinition?: (tick: number, hurtData: HurtboxData) => HurtboxData | null;
   update?: (tick: number, stateTemporaryValues: object) => void;
 };
 
-type State<K extends string, C, F extends string> = StateDefinition<C, F> & {
+type State<K extends string, C> = StateDefinition<C> & {
   key: K;
 };
 
@@ -31,15 +30,15 @@ export interface AnimInfo {
   frameKey: string;
 }
 
-export class StateManager<K extends string, C = {}, F extends string = string> {
+export class StateManager<K extends string, C = {}> {
   // State Management
   private stageObject: StageObject;
   private tick = 0;
   private onAfterTransitionFn = _.noop;
-  private onBeforeTransitionFn = _.noop;
-  private states: { [key in K]?: StateDefinition<C, F> } = {};
+  private onBeforeTransitionFn: (key: K) => void = _.noop;
+  private states: { [key in K]?: StateDefinition<C> } = {};
   private readonly getAnimInfo: () => AnimInfo;
-  private currentState: State<K, C, F>;
+  private currentState: State<K, C>;
   private localState = {};
   private collisionData: CollisionDataMap = {
     hitData: HitboxData.EMPTY,
@@ -88,11 +87,11 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
    * Set callback that is called before a state transitions to a new state.
    * @param fn
    */
-  public onBeforeTransition(fn: (config: C) => void): void {
+  public onBeforeTransition(fn: (key: K) => void): void {
     this.onBeforeTransitionFn = fn;
   }
 
-  public addState(key: K, stateDef: StateDefinition<C, F>): void {
+  public addState(key: K, stateDef: StateDefinition<C>): void {
     this.states[key] = stateDef;
   }
 
@@ -107,7 +106,7 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
       console.error(`${key} is not a valid state key; ignoring transition`);
       return;
     } else if (!this.currentState || this.currentState.key !== key || force) {
-      this.onBeforeTransitionFn(this.currentState);
+      this.onBeforeTransitionFn(key);
       const currentStateDef = this.getStateDefinition(key);
       this.currentState = {
         ...currentStateDef,
@@ -124,8 +123,8 @@ export class StateManager<K extends string, C = {}, F extends string = string> {
     return { tick: this.tick, key: this.currentState.key };
   }
 
-  public getStateDefinition(key: K): StateDefinition<C, F> {
-    return { ...(this.states[key] as StateDefinition<C, F>) };
+  public getStateDefinition(key: K): StateDefinition<C> {
+    return { ...(this.states[key] as StateDefinition<C>) };
   }
 
   private setHitData(data: HitboxData): void {

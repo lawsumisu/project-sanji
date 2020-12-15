@@ -34,7 +34,6 @@ export class Dummy extends BaseCharacter {
 
   constructor(playerIndex = 1) {
     super(playerIndex);
-    this.commands = {};
     this.defaultState = 'basic';
   }
 

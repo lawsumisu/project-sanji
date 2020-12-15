@@ -45,6 +45,9 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
     land: 'sfx/land.ogg'
   };
 
+  protected states: { [key in S]: CharacterStateConfig<D> } &
+    { [key in CommonState]?: StateDefinition<CommonStateConfig> };
+
   private commonStates: { [key in CommonState]: StateDefinition<CommonStateConfig> } = {
     [CommonState.STAND]: {
       startAnimation: 'STAND',
@@ -173,7 +176,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
         if (!this.isCommandExecuted(Command.registry.GUARD)) {
           this.stateManager.setState(CommonState.CROUCH);
         } else if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
-          this.stateManager.setState(CommonState.BLOCK_STAND)
+          this.stateManager.setState(CommonState.BLOCK_STAND);
         }
       }
     }
@@ -238,6 +241,11 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
     this.position = new Vector2(300, PS.stage.ground);
   }
 
+  public update(params: { time: number; delta: number }): void {
+    this.direction = this.position.x < this.target.position.x ? 1 : -1;
+    super.update(params);
+  }
+
   protected updateKinematics(delta: number): void {
     if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
@@ -278,5 +286,16 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
   protected checkStateType(toMatch: string): boolean {
     const { type } = this.states[this.stateManager.current.key]!;
     return _.isArray(type) ? _.some(type, t => t === toMatch) : type === toMatch;
+  }
+
+  /**
+   * Checks if a state can be chained from a given state, up through the specified frame.
+   */
+  protected canChainFrom(fromState: CharacterState<S>, throughFrame = Number.MAX_VALUE): boolean {
+    const lastQueuedState = this.nextStates[this.nextStates.length - 1];
+    return (
+      (lastQueuedState && lastQueuedState.state === fromState) ||
+      (this.isCurrentState(fromState) && this.sprite.anims.currentFrame.index <= throughFrame)
+    );
   }
 }

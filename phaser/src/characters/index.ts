@@ -9,6 +9,7 @@ import { StageObject } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { Unit } from 'src/unit';
 import * as Phaser from 'phaser';
+import { playAnimation } from 'src/utilitiesPF/animation.util';
 
 export interface CommandTrigger<S extends string> {
   command: Command;
@@ -35,7 +36,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   public position: Vector2 = Vector2.ZERO;
   protected direction: -1 | 1 = 1;
 
-  private readonly playerIndex: number;
+  public readonly playerIndex: number;
   protected target: StageObject;
 
   protected commandList: Array<CommandTrigger<S>> = [];
@@ -56,16 +57,21 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
         frameKey: anim && anim.key
       };
     });
+    this.stateManager.onBeforeTransition((key: S) => this.beforeStateTransition(key));
     this.stateManager.onAfterTransition(config => this.afterStateTransition(config));
   }
 
   public preload(): void {
+    _.noop();
+  }
+
+  /**
+   * Creates the sprite, integrates states, and builds command list for this character.
+   */
+  public create() {
     _.forEach(this.states, (value: D, key: S) => {
       this.stateManager.addState(key, value);
     });
-  }
-
-  public create() {
     this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
     addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
     this.stateManager.setState(this.defaultState);
@@ -90,7 +96,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   public update(params: { time: number; delta: number }): void {
     super.update(params);
-    this.direction = this.position.x < this.target.position.x ? 1 : -1;
     this.updateState();
     if (!this.isHitlagged) {
       this.updateKinematics(params.delta);
@@ -125,8 +130,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected updateSprite(): void {
     this.sprite.x = this.position.x;
     this.sprite.y = this.position.y;
-    this.sprite.alpha = .5;
-    this.sprite.tint = 0x222222;
   }
 
   protected updateKinematics(delta: number): void {
@@ -179,15 +182,8 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.sounds.clear();
   }
 
-  /**
-   * Checks if a state can be chained from a given state, up through the specified frame.
-   */
-  protected canChainFrom(fromState: S, throughFrame = Number.MAX_VALUE): boolean {
-    const lastQueuedState = this.nextStates[this.nextStates.length - 1];
-    return (
-      (lastQueuedState && lastQueuedState.state === fromState) ||
-      (this.isCurrentState(fromState) && this.sprite.anims.currentFrame.index <= throughFrame)
-    );
+  protected beforeStateTransition(nextKey: S): void {
+    _.noop(nextKey);
   }
 
   protected playSound(
@@ -199,6 +195,10 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
       PS.stage.sound.play(key, extra);
       this.sounds.add(key);
     }
+  }
+
+  protected playAnimation(key: string, force = false) {
+    playAnimation(this.sprite, key, force);
   }
 
   protected isCurrentState(state: S): boolean {

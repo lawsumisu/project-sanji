@@ -5,8 +5,9 @@ import { Hit } from 'src/collider';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { GameInput } from 'src/plugins/gameInput.plugin';
 import aero from 'src/characters/aero/aero.frame.json';
-import { CharacterState, CharacterStateConfig, CommonCharacter, CommonState, StateType } from 'src/characters/common';
+import { CharacterState, CommonCharacter, CommonState, StateType } from 'src/characters/common';
 import { CommandTrigger } from 'src/characters';
+import { AeroShadow } from 'src/characters/aero/shadow';
 
 enum AeroState {
   STAND_LIGHT_L_1 = 'STAND_LIGHT_L_1',
@@ -33,13 +34,15 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     hitHeavy: 'sfx/hits/SE_00009.ogg',
     punch1: 'sfx/hits/SE_00025.ogg',
     punch2: 'sfx/hits/SE_00026.ogg',
-    jabVoice: 'sfx/vanessa/001.ogg',
+    jabVoice: 'sfx/vanessa/001.ogg'
   };
 
   protected defaultState = CommonState.STAND;
   private cancelFlag = false;
+  private shadow: AeroShadow;
+  private preRollState: CharacterState<AeroState> | null;
 
-  protected states: { [key in CharacterState<AeroState>]?: CharacterStateConfig<AeroStateConfig> } = {
+  protected states = {
     [AeroState.STAND_LIGHT_L_1]: {
       startAnimation: 'LIGHT_JAB_1',
       type: [StateType.ATTACK, StateType.STAND],
@@ -60,7 +63,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('jabVoice', { volume: .5 });
+          this.playSound('jabVoice', { volume: 0.5 });
         } else if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -86,7 +89,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('jabVoice', { volume: .5 });
+          this.playSound('jabVoice', { volume: 0.5 });
         } else if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -167,9 +170,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.ROLL]: {
       startAnimation: 'ROLL_STARTUP',
+      attackLevel: 4,
       type: [StateType.ATTACK, StateType.STAND],
       update: (tick: number, localState: { continue: boolean }) => {
         this.velocity.x = 0;
+        if (tick === 0) {
+          this.shadow.start({ direction: this.direction });
+        }
         if (!this.sprite.anims.isPlaying) {
           if (this.currentAnimation === 'ROLL_STARTUP') {
             playAnimation(this.sprite, 'ROLL_1');
@@ -178,6 +185,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             localState.continue = false;
           } else {
             this.stateManager.setState(CommonState.STAND);
+            this.preRollState = null;
           }
         }
         if (tick > 0 && this.input.isInputPressed(GameInput.INPUT1)) {
@@ -189,10 +197,6 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
 
   constructor(playerIndex = 0) {
     super(playerIndex, aero);
-    // TODO make this an overwritten function
-    this.stateManager.onBeforeTransition(() => {
-      this.cancelFlag = false;
-    });
   }
 
   protected getCommandList(): Array<CommandTrigger<CharacterState<AeroState>>> {
@@ -225,7 +229,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('*6+a', 1),
         trigger: () => {
-          if (this.canChainFrom(AeroState.STAND_LIGHT_R_1) || this.canChainFrom(AeroState.STAND_LIGHT_R_2, 5)) {
+          if (this.canChainFrom(AeroState.STAND_LIGHT_R_1) || this.canChainFrom(AeroState.STAND_LIGHT_R_2)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
           } else {
             return false;
@@ -243,16 +247,20 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('b', 1),
         trigger: () => {
-          if (this.canChainFrom(AeroState.STAND_MED_R_2) || this.canChainFrom(AeroState.STAND_MED_R_1)) {
-            return () => {
-              const i = this.stateManager.current.key === AeroState.STAND_MED_R_1 ? 4 : 5;
-              return this.sprite.anims.currentFrame.index >= i;
-            }
+          if (this.canChainFrom(AeroState.STAND_MED_R_2)) {
+            return () => this.sprite.anims.currentFrame.index >= 4;
+          } else if (this.canChainFrom(AeroState.STAND_MED_R_1)) {
+            return () => this.sprite.anims.currentFrame.index >= 5;
+          } else if (
+            [AeroState.STAND_MED_R_1, AeroState.STAND_MED_R_2].includes(this.preRollState as any) &&
+            this.isCurrentState(AeroState.ROLL)
+          ) {
+            return () => this.sprite.anims.currentFrame.index >= 4;
           } else {
-            return false
+            return false;
           }
         },
-        state: AeroState.STAND_MED_L_1,
+        state: AeroState.STAND_MED_L_1
       },
       {
         command: new Command('*6+b', 1),
@@ -267,13 +275,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             return () => {
               const i = this.stateManager.current.key === AeroState.STAND_MED_R_1 ? 4 : 5;
               return this.sprite.anims.currentFrame.index >= i;
-            }
+            };
           } else {
-            return false
+            return false;
           }
         },
         priority: 3,
-        state: AeroState.STAND_MED_L_2,
+        state: AeroState.STAND_MED_L_2
       },
       {
         command: new Command('c', 1),
@@ -282,7 +290,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       },
       {
         command: new Command('d', 1),
-        trigger: () => this.isIdle && !this.isAirborne,
+        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
         state: AeroState.ROLL,
         priority: 2
       }
@@ -292,6 +300,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   public preload(): void {
     super.preload();
     PS.stage.load.multiatlas('vanessa', 'characters/aero/vanessa.json', 'characters/aero');
+  }
+
+  public create(): void {
+    super.create();
+    this.shadow = new AeroShadow(this, aero);
+    this.shadow.create();
+    PS.stage.addStageObject(this.shadow);
   }
 
   public onTargetHit(target: StageObject, hit: Hit): void {
@@ -310,6 +325,15 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       return currentAttackLevel < nextAttackLevel;
     } else {
       return false;
+    }
+  }
+
+  protected beforeStateTransition(nextKey: CharacterState<AeroState>): void {
+    super.beforeStateTransition(nextKey);
+    this.cancelFlag = false;
+    if (nextKey === AeroState.ROLL) {
+      this.preRollState = this.stateManager.current.key;
+      console.log(this.preRollState);
     }
   }
 }
