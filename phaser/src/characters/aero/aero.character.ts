@@ -166,6 +166,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       type: [StateType.ATTACK, StateType.STAND],
       onHitSound: 'hitHeavy',
       update: () => {
+        this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
           this.playSound('punch2', { volume: 0.5 });
         }
@@ -239,10 +240,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('*6+a', 1),
         trigger: () => {
-          if (
-            this.canBeatCancel() &&
-            this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState!)
-          ) {
+          if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState!)) {
             return true;
           } else if (this.canChainFrom(AeroState.STAND_LIGHT_R_1) || this.canChainFrom(AeroState.STAND_LIGHT_R_2)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
@@ -263,10 +261,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('b', 1),
         trigger: () => {
-          if (
-            this.canBeatCancel() &&
-            this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState!)
-          ) {
+          if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState!)) {
             return true;
           } else if (this.canChainFrom(AeroState.STAND_MED_R_2)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
@@ -281,7 +276,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       },
       {
         command: new Command('*6+b', 1),
-        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.STAND_MED_R_2)),
+        trigger: () =>
+          (!this.isAirborne && (this.isIdle || this.canCancel(AeroState.STAND_MED_R_2))) || this.canBeatCancel(),
         state: AeroState.STAND_MED_R_2,
         priority: 3
       },
@@ -290,7 +286,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         trigger: () => {
           if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState!)) {
             return true;
-          }else if (this.canChainFrom(AeroState.STAND_MED_R_2) || this.canChainFrom(AeroState.STAND_MED_R_1)) {
+          } else if (this.canChainFrom(AeroState.STAND_MED_R_2) || this.canChainFrom(AeroState.STAND_MED_R_1)) {
             return () => {
               const i = this.stateManager.current.key === AeroState.STAND_MED_R_1 ? 4 : 5;
               return this.sprite.anims.currentFrame.index >= i;
@@ -299,7 +295,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             return false;
           }
         },
-        priority: 3,
+        priority: 3.5,
         state: AeroState.STAND_MED_L_2
       },
       {
@@ -326,6 +322,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     super.create();
     this.shadow = new AeroShadow(this, aero);
     this.shadow.create();
+    this.colliderManager.ignoreCollisionsWith(this.shadow.tag);
     PS.stage.addStageObject(this.shadow);
   }
 

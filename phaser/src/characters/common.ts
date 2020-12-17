@@ -1,13 +1,14 @@
-import { BaseCharacter, CommandTrigger } from 'src/characters/index';
+import { BaseCharacterWithFrameDefinition, CommandTrigger } from 'src/characters/index';
 import { StateDefinition } from 'src/state';
 import { Command } from 'src/command';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import * as _ from 'lodash';
 import { GameInput } from 'src/plugins/gameInput.plugin';
-import { FrameDefinitionMap } from 'src/characters/frameData';
+import { FrameDefinitionMap, getFrameIndexFromSpriteIndex } from 'src/characters/frameData';
 import { PS } from 'src/global';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
+import { FrameDefinitionColliderManager } from 'src/collider/manager';
 
 export enum StateType {
   AIR = 'AIR',
@@ -42,12 +43,15 @@ export type CharacterStateConfig<T> = Partial<T> & StateDefinition<CommonStateCo
 export type StateMap<S extends string, D> = { [key in S]: CharacterStateConfig<D> } &
   { [key in CommonState]?: CharacterStateConfig<D> };
 
-export class CommonCharacter<S extends string, D> extends BaseCharacter<CharacterState<S>, CharacterStateConfig<D>> {
+export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrameDefinition<
+  CharacterState<S>,
+  CharacterStateConfig<D>
+> {
   public static sfx = {
     land: 'sfx/land.ogg'
   };
 
-  protected states: StateMap<S,D>;
+  protected states: StateMap<S, D>;
 
   private commonStates: { [key in CommonState]: StateDefinition<CommonStateConfig> } = {
     [CommonState.STAND]: {
@@ -186,6 +190,14 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
   constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
     super(playerIndex, frameDefinitionMap);
     this.commandList = this.getCommandList();
+    this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
+      const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
+      return {
+        index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap[anim.key].animDef, frame.index),
+        direction: { x: !this.sprite.flipX, y: true },
+        frameKey: anim.key
+      };
+    });
   }
 
   protected getCommandList(): Array<CommandTrigger<CharacterState<S>>> {
@@ -284,7 +296,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
     return this.checkStateType(StateType.IDLE);
   }
 
-  protected checkStateType(toMatch: string | string[], state: CharacterState<S> = this.stateManager.current.key): boolean {
+  protected checkStateType(
+    toMatch: string | string[],
+    state: CharacterState<S> = this.stateManager.current.key
+  ): boolean {
     const { type } = this.states[state]!;
     const toMatchArray = _.isArray(toMatch) ? toMatch : [toMatch];
     const typeSet = _.isArray(type) ? new Set(type) : new Set([type]);

@@ -1,40 +1,39 @@
 import * as _ from 'lodash';
 import { StageObject } from 'src/stage/stageObject';
-import { StateDefinition } from 'src/state';
 import { Hit, Hurtbox, HurtboxData } from 'src/collider';
 import { PolarVector, Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 import { BaseCharacter } from 'src/characters/index';
+import { ColliderManager } from 'src/collider/manager';
 
 export class Dummy extends BaseCharacter {
   public position = new Vector2(400, 250);
   protected velocity = Vector2.ZERO;
   private hitstun = 0;
-  protected states: { [key: string]: StateDefinition } = {
-    basic: {
-      hurtDefinition: (__, hurtboxData: HurtboxData) => {
-        return hurtboxData.isEmpty
-          ? new HurtboxData(
-              [
-                { x: 0, y: -20, r: 10 },
-                { x: 0, y: -35, r: 5 }
-              ].map(({ x, y, r }) => Hurtbox.generateCircular({ x, y: y * Unit.toPx, r: r * Unit.toPx })),
-
-              'basic',
-              this.tag,
-              0,
-              {
-                persist: true
-              }
-            )
-          : null;
-      }
-    }
+  protected states = {
+    basic: {}
   };
 
   constructor(playerIndex = 1) {
     super(playerIndex);
     this.defaultState = 'basic';
+    this.colliderManager = new ColliderManager((hurtboxData: HurtboxData) => {
+      return hurtboxData.isEmpty
+        ? new HurtboxData(
+            [
+              { x: 0, y: -20, r: 10 },
+              { x: 0, y: -35, r: 5 }
+            ].map(({ x, y, r }) => Hurtbox.generateCircular({ x, y: y * Unit.toPx, r: r * Unit.toPx })),
+
+            'basic',
+            this.tag,
+            0,
+            {
+              persist: true
+            }
+          )
+        : null;
+    });
   }
 
   public update(params: { time: number; delta: number }) {
@@ -62,7 +61,7 @@ export class Dummy extends BaseCharacter {
   }
 
   private setHitstun(hit: Hit): void {
-    this.hitstun = hit.knockback * .1;
+    this.hitstun = hit.knockback * 0.1;
     this.velocity = new PolarVector(hit.knockback, hit.angle).toCartesian();
   }
 }

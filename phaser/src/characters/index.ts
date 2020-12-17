@@ -10,6 +10,7 @@ import { Hit } from 'src/collider';
 import { Unit } from 'src/unit';
 import * as Phaser from 'phaser';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
+import { ColliderManager, FrameDefinitionColliderManager } from 'src/collider/manager';
 
 export interface CommandTrigger<S extends string> {
   command: Command;
@@ -20,9 +21,9 @@ export interface CommandTrigger<S extends string> {
 
 export class BaseCharacter<S extends string = string, D extends StateDefinition = StateDefinition> extends StageObject {
   protected stateManager: StateManager<S, D>;
+  protected colliderManager: ColliderManager;
   protected nextStates: Array<{ state: S; executionTrigger: () => boolean }> = [];
   protected defaultState: S;
-  protected frameDefinitionMap: FrameDefinitionMap;
 
   protected sprite: Phaser.GameObjects.Sprite;
 
@@ -44,19 +45,11 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected states: { [key in S]?: D };
   private sounds: Set<string> = new Set<string>();
 
-  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
+  constructor(playerIndex = 0) {
     super();
-    this.frameDefinitionMap = frameDefinitionMap;
+    this.colliderManager = new ColliderManager();
     this.playerIndex = playerIndex;
-    this.stateManager = new StateManager<S, D>(this, () => {
-      const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
-      return {
-        index: anim ? getFrameIndexFromSpriteIndex(this.frameDefinitionMap[anim.key].animDef, frame.index) : -1,
-        direction: { x: !this.sprite.flipX, y: true },
-        frameDefinition: anim && this.frameDefinitionMap[anim.key],
-        frameKey: anim && anim.key
-      };
-    });
+    this.stateManager = new StateManager<S, D>(this);
     this.stateManager.onBeforeTransition((key: S) => this.beforeStateTransition(key));
     this.stateManager.onAfterTransition(config => this.afterStateTransition(config));
   }
@@ -72,9 +65,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     _.forEach(this.states, (value: D, key: S) => {
       this.stateManager.addState(key, value);
     });
-    this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
-    this.sprite.depth = 20;
-    addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
+    this.setupSprite();
     this.stateManager.setState(this.defaultState);
     this.commandList = this.commandList.sort((a, b) => {
       const p1 = a.priority || 0;
@@ -98,6 +89,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   public update(params: { time: number; delta: number }): void {
     super.update(params);
     this.updateState();
+    this.colliderManager.update();
     if (!this.isHitlagged) {
       this.updateKinematics(params.delta);
       this.updateSprite();
@@ -144,6 +136,11 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
       this.position.y = PS.stage.ground;
       this.velocity.y = 0;
     }
+  }
+
+  protected setupSprite(): void {
+    this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
+    this.sprite.depth = 20;
   }
 
   protected isNextStateBuffered(state: S): boolean {
@@ -198,10 +195,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     }
   }
 
-  protected playAnimation(key: string, force = false) {
-    playAnimation(this.sprite, key, force);
-  }
-
   protected isCurrentState(state: S): boolean {
     return this.stateManager.current.key === state;
   }
@@ -220,5 +213,35 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   protected get currentAnimation(): string {
     return this.sprite.anims.currentAnim.key;
+  }
+}
+
+export class BaseCharacterWithFrameDefinition<
+  S extends string = string,
+  D extends StateDefinition = StateDefinition
+> extends BaseCharacter<S, D> {
+  protected frameDefinitionMap: FrameDefinitionMap;
+  protected colliderManager: FrameDefinitionColliderManager;
+
+  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
+    super(playerIndex);
+    this.frameDefinitionMap = frameDefinitionMap;
+    this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
+      const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
+      return {
+        index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap[anim.key].animDef, frame.index),
+        direction: { x: !this.sprite.flipX, y: true },
+        frameKey: anim.key
+      };
+    })
+  }
+
+  protected setupSprite(): void {
+    super.setupSprite();
+    addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
+  }
+
+  protected playAnimation(key: string, force = false) {
+    playAnimation(this.sprite, key, force);
   }
 }

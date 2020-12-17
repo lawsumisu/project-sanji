@@ -27,7 +27,7 @@ export abstract class StageObject {
 
   public abstract onTargetHit(stageObject: StageObject, hit: Hit): void;
 
-  protected setHitlag(hit: Hit, m = 1): void {
+  protected setHitlag(__: Hit, m = 1): void {
     this.hitlag = Math.floor(5 * m);
   }
 

@@ -170,7 +170,7 @@ export class Stage extends Phaser.Scene{
 
     _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
       const p = this.getStageObject(hurtboxData.owner).position;
-      if (hurtboxData.owner !== this.p1.tag) {
+      if (hurtboxData.owner === this.p2.tag) {
         hurtboxData.data.forEach((hurtbox: Hurtbox) => {
           if (hurtbox.isCircular()) {
             const { x, y, radius: r } = hurtbox.transformBox(p);

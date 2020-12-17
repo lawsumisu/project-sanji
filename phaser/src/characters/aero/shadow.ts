@@ -1,4 +1,4 @@
-import { BaseCharacter } from 'src/characters';
+import { BaseCharacterWithFrameDefinition } from 'src/characters';
 import Aero from 'src/characters/aero/aero.character';
 import { StateDefinition } from 'src/state';
 import { FrameDefinitionMap } from 'src/characters/frameData';
@@ -12,7 +12,7 @@ export enum AeroShadowState {
   STAND_R = 'STAND_R'
 }
 
-export class AeroShadow extends BaseCharacter<AeroShadowState> {
+export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState> {
   private readonly aero: Aero;
   private range = 20 * Unit.toPx;
   private speed = 4 * Unit.toPx;
@@ -20,23 +20,33 @@ export class AeroShadow extends BaseCharacter<AeroShadowState> {
   protected defaultState = AeroShadowState.STAND_R;
   protected states: { [key in AeroShadowState]: StateDefinition } = {
     [AeroShadowState.STAND_L]: {
-      update: (tick: number) => {
+      update: (tick: number, localState: { finishTimer: number }) => {
         if (tick === 0) {
           this.playAnimation('MACHINE_GUN_L', true);
           this.move();
         }
         if (!this.sprite.anims.isPlaying) {
+          this.playAnimation('STAND');
+          localState.finishTimer = tick;
+        }
+        const { finishTimer = tick} = localState;
+        if (tick - finishTimer >= 15) {
           this.stop();
         }
       }
     },
     [AeroShadowState.STAND_R]: {
-      update: (tick: number) => {
+      update: (tick: number, localState: { finishTimer: number }) => {
         if (tick === 0) {
           this.playAnimation('MACHINE_GUN_R', true);
           this.move();
         }
         if (!this.sprite.anims.isPlaying) {
+          this.playAnimation('STAND');
+          localState.finishTimer = tick;
+        }
+        const { finishTimer = tick} = localState;
+        if (tick - finishTimer >= 15) {
           this.stop();
         }
       }
@@ -53,7 +63,7 @@ export class AeroShadow extends BaseCharacter<AeroShadowState> {
     this.sprite.alpha = 0.6;
     this.stop();
     this.sprite.depth = 10;
-    this.stateManager.ignoreCollisionsWith(this.aero.tag);
+    this.colliderManager.ignoreCollisionsWith(this.aero.tag);
   }
 
   public start(params: Partial<{ state: AeroShadowState }> = {}): void {
