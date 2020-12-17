@@ -75,7 +75,7 @@ export class Stage extends Phaser.Scene{
   private updateHits(): void {
     _.forEach(this.hitData, (hitboxData: HitboxData) => {
       _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
-        if (!hitboxData.hasCollided(hurtboxData) && hitboxData.owner !== hurtboxData.owner) {
+        if (!hitboxData.hasCollided(hurtboxData) && !hitboxData.canIgnoreCollision(hurtboxData.owner)) {
           const hitOffset = this.getStageObject(hitboxData.owner).position;
           const hurtOffset = this.getStageObject(hurtboxData.owner).position;
           for (let hitbox of hitboxData.data) {

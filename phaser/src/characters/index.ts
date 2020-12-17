@@ -73,6 +73,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
       this.stateManager.addState(key, value);
     });
     this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
+    this.sprite.depth = 20;
     addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
     this.stateManager.setState(this.defaultState);
     this.commandList = this.commandList.sort((a, b) => {

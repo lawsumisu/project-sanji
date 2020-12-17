@@ -1,6 +1,11 @@
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Hit } from 'src/collider';
 
+export interface UpdateParams {
+  time: number;
+  delta: number; // Number of ms since last update
+}
+
 export abstract class StageObject {
   public position: Vector2;
   private static objectCounter = 1;
@@ -12,7 +17,7 @@ export abstract class StageObject {
     StageObject.objectCounter++;
   }
 
-  public update(_params: { time: number; delta: number }): void {
+  public update(_params: UpdateParams): void {
     if (this.hitlag > 0) {
       this.hitlag = Math.max(0, this.hitlag - 1);
     }

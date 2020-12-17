@@ -177,16 +177,20 @@ export class HitboxData extends CollisionData<Hitbox> {
   }
 
   protected readonly _registeredCollisions: Set<string> = new Set();
+  protected readonly ignoreCollisionTags: Set<string>;
 
   constructor(
     data: Hitbox[],
     tag: string,
     owner: string,
     index: number,
-    options: Partial<CollisionDataOptions & { registeredCollisions: Set<string> }> = {}
+    options: Partial<
+      CollisionDataOptions & { registeredCollisions: Set<string>; ignoreCollisionTags: Set<string> }
+    > = {}
   ) {
     super(data, tag, owner, index, options);
     this._registeredCollisions = new Set(options.registeredCollisions);
+    this.ignoreCollisionTags = new Set(options.ignoreCollisionTags);
   }
 
   public registerCollision(collisionData: CollisionData<Collider>): void {
@@ -195,6 +199,10 @@ export class HitboxData extends CollisionData<Hitbox> {
 
   public hasCollided(collisionData: CollisionData<Collider>): boolean {
     return this._registeredCollisions.has(collisionData.owner);
+  }
+
+  public canIgnoreCollision(tag: string): boolean {
+    return this.ignoreCollisionTags.has(tag);
   }
 
   public get registeredCollisions(): Set<string> {

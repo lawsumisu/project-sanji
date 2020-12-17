@@ -39,14 +39,15 @@ export enum CommonState {
 
 export type CharacterState<T extends string> = T | CommonState;
 export type CharacterStateConfig<T> = Partial<T> & StateDefinition<CommonStateConfig>;
+export type StateMap<S extends string, D> = { [key in S]: CharacterStateConfig<D> } &
+  { [key in CommonState]?: CharacterStateConfig<D> };
 
 export class CommonCharacter<S extends string, D> extends BaseCharacter<CharacterState<S>, CharacterStateConfig<D>> {
   public static sfx = {
     land: 'sfx/land.ogg'
   };
 
-  protected states: { [key in S]: CharacterStateConfig<D> } &
-    { [key in CommonState]?: StateDefinition<CommonStateConfig> };
+  protected states: StateMap<S,D>;
 
   private commonStates: { [key in CommonState]: StateDefinition<CommonStateConfig> } = {
     [CommonState.STAND]: {
@@ -283,9 +284,11 @@ export class CommonCharacter<S extends string, D> extends BaseCharacter<Characte
     return this.checkStateType(StateType.IDLE);
   }
 
-  protected checkStateType(toMatch: string): boolean {
-    const { type } = this.states[this.stateManager.current.key]!;
-    return _.isArray(type) ? _.some(type, t => t === toMatch) : type === toMatch;
+  protected checkStateType(toMatch: string | string[], state: CharacterState<S> = this.stateManager.current.key): boolean {
+    const { type } = this.states[state]!;
+    const toMatchArray = _.isArray(toMatch) ? toMatch : [toMatch];
+    const typeSet = _.isArray(type) ? new Set(type) : new Set([type]);
+    return _.every(toMatchArray, m => typeSet.has(m));
   }
 
   /**
