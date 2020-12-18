@@ -3,7 +3,8 @@ import { PS } from 'src/global';
 import {
   Collider,
   CollisionData,
-  CollisionDataMap, Direction,
+  CollisionDataMap,
+  Direction,
   Hitbox,
   HitboxData,
   Hurtbox,
@@ -13,7 +14,8 @@ import {
   BoxConfig,
   BoxDefinition,
   BoxType,
-  FrameDefinitionMap, HitboxDefinition,
+  FrameDefinitionMap,
+  HitboxDefinition,
   isCircleBox
 } from 'src/characters/frameData';
 import { StageObject } from 'src/stage/stageObject';
@@ -29,7 +31,10 @@ export class ColliderManager {
   protected hurtboxDataGenerator: HurtboxDataGenerator;
   protected hitboxDataGenerator: HitboxDataGenerator;
 
-  public constructor(hurtDefinition: HurtboxDataGenerator = () => null, hitDefinition: HitboxDataGenerator = () => null) {
+  public constructor(
+    hurtDefinition: HurtboxDataGenerator = () => null,
+    hitDefinition: HitboxDataGenerator = () => null
+  ) {
     this.hitboxDataGenerator = hitDefinition;
     this.hurtboxDataGenerator = hurtDefinition;
   }
@@ -119,6 +124,7 @@ export class FrameDefinitionColliderManager extends ColliderManager {
       const { direction, frameKey } = this.getAnimInfo();
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
       const frameDefinition = this.frameDefinitionMap[frameKey];
+      // TODO allow hitbox data to be overwritten at runtime
       const hit = { ...frameDefinition!.hitboxDef!.hit, ...frameBoxDef.hit };
       return new HitboxData(
         frameBoxDef.boxes.map((box: BoxConfig) => {

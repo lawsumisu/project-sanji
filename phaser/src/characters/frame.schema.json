@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "",
+  "title": "Frame Definition",
+  "description": "frame data for a collection of animations",
+  "type": "object",
+  "patternProperties": {
+    "^[A-Z][A-Z0-9_]*$": {
+      "type": "object",
+      "properties": {
+        "animDef": {
+          "type": "object",
+          "properties": {
+            "frames": { "type": ["array", "integer"], "items": {"type": ["integer", "object"] }},
+            "assetKey": {"type": "string"},
+            "prefix": {"type": "string"},
+            "frameRate": {"type": "integer"}
+          }
+        }
+      }
+    }
+  }
+}

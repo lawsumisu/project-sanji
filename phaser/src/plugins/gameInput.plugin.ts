@@ -5,19 +5,19 @@ import { RingBuffer } from '@lawsumisu/common-utilities';
 const keyCodes = Phaser.Input.Keyboard.KeyCodes;
 
 export enum GameInput {
-  LEFT = 'LEFT',
-  RIGHT = 'RIGHT',
-  UP = 'UP',
-  DOWN = 'DOWN',
-  UP_LEFT = 'UP_LEFT',
-  UP_RIGHT = 'UP_RIGHT',
-  DOWN_LEFT = 'DOWN_LEFT',
-  DOWN_RIGHT = 'DOWN_RIGHT',
-  INPUT1 = 'INPUT1',
-  INPUT2 = 'INPUT2',
-  INPUT3 = 'INPUT3',
-  INPUT4 = 'INPUT4',
-  INPUT5 = 'INPUT5',
+  LEFT = '←',
+  RIGHT = '→',
+  UP = '↑',
+  DOWN = '↓',
+  UP_LEFT = '↖',
+  UP_RIGHT = '↗',
+  DOWN_LEFT = '↙',
+  DOWN_RIGHT = '↘',
+  INPUT1 = 'S',
+  INPUT2 = 'C',
+  INPUT3 = 'A',
+  INPUT4 = 'B',
+  INPUT5 = 'G',
   INPUT6 = 'INPUT6'
 }
 
@@ -63,17 +63,6 @@ type InputMap = {
 export let GI: GameInputPlugin;
 
 export class InputHistory {
-  private static inputStringMap = {
-    [GameInput.DOWN]: '↓',
-    [GameInput.UP]: '↑',
-    [GameInput.RIGHT]: '→',
-    [GameInput.LEFT]: '←',
-    [GameInput.UP_RIGHT]: '↗',
-    [GameInput.UP_LEFT]: '↖',
-    [GameInput.DOWN_RIGHT]: '↘',
-    [GameInput.DOWN_LEFT]: '↙'
-  };
-
   public readonly historyLength: number;
   private readonly pad: 'pad1' | 'pad2' | 'pad3' | 'pad4' | null;
   private readonly mapping: InputMap;
@@ -183,7 +172,6 @@ export class InputHistory {
   public toString(): string {
     const inputs = this.inputHistory.at(-1);
     return Array.from(inputs)
-      .map((gi: GameInput) => InputHistory.inputStringMap[gi] || gi)
       .sort()
       .join(',');
   }

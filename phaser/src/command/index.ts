@@ -40,6 +40,10 @@ export class SimpleInput {
     const input = _.isFunction(this.input) ? this.input(facingRight) : this.input;
     return history.isInputDown(input, historyIndex) || history.isInputReleased(input, historyIndex);
   }
+
+  public toString(): string {
+    return (_.isFunction(this.input) ? this.input(true) : this.input).toString();
+  }
 }
 
 class JunctiveInput {
@@ -72,6 +76,10 @@ class JunctiveInput {
       return this.isAnd ? c1 && c2 : c2;
     }
   }
+
+  public toString(): string {
+    return this.input1.toString() + (this.isAnd ? '+' : '/') + this.input2.toString();
+  }
 }
 
 export class Command {
@@ -93,7 +101,9 @@ export class Command {
 
   private static reverseGameInputMap: { [key in GameInput]?: GameInput } = {
     [GameInput.RIGHT]: GameInput.LEFT,
-    [GameInput.LEFT]: GameInput.RIGHT
+    [GameInput.LEFT]: GameInput.RIGHT,
+    [GameInput.DOWN_RIGHT]: GameInput.DOWN_LEFT,
+    [GameInput.DOWN_LEFT]: GameInput.DOWN_RIGHT,
   };
 
   public static registry = {
@@ -108,6 +118,7 @@ export class Command {
   constructor(cmd: string, inputTime: number) {
     this.inputs = Command.parse(cmd);
     this.inputTime = inputTime;
+    console.log(this.toString());
   }
 
   public isExecuted(playerIndex: number, facingRight = true): boolean {
@@ -198,5 +209,9 @@ export class Command {
           return new JunctiveInput(accumulator, simpleInput);
         }
       });
+  }
+
+  public toString(): string {
+    return this.inputs.map(ci => ci.input.toString()).join('');
   }
 }

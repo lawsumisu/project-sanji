@@ -24,8 +24,10 @@ enum AeroState {
   STAND_MED_L_2 = 'STAND_MED_L_2',
   STAND_MED_R_1 = 'STAND_MED_R_1',
   STAND_MED_R_2 = 'STAND_MED_R_2',
-  STAND_HEAVY = 'STAND_HEAVY',
-  ROLL = 'ROLL'
+  STAND_HEAVY_R = 'STAND_HEAVY_R',
+  STAND_HEAVY_L = 'STAND_HEAVY_L',
+  ROLL = 'ROLL',
+  DASH = 'DASH'
 }
 
 interface AeroStateConfig {
@@ -43,10 +45,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     jabVoice: 'sfx/vanessa/001.ogg'
   };
 
-  protected defaultState = CommonState.STAND;
   private cancelFlag = false;
   private shadow: AeroShadow;
-  private preRollState: CharacterState<AeroState> | null;
+  private preRollState: CharacterState<AeroState> = CommonState.NULL;
 
   protected states: StateMap<AeroState, AeroStateConfig> = {
     [AeroState.STAND_LIGHT_L_1]: {
@@ -160,13 +161,27 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         }
       }
     },
-    [AeroState.STAND_HEAVY]: {
-      startAnimation: 'STRAIGHT',
+    [AeroState.STAND_HEAVY_R]: {
+      startAnimation: 'STAND_HEAVY_R',
       attackLevel: 3,
-      type: [StateType.ATTACK, StateType.STAND],
+      type: [StateType.ATTACK, StateType.STAND, AeroStateType.RIGHT_ARM],
       onHitSound: 'hitHeavy',
       update: () => {
         this.velocity.x = 0;
+        if (this.sprite.anims.currentFrame.index === 3) {
+          this.playSound('punch2', { volume: 0.5 });
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.stateManager.setState(CommonState.STAND);
+        }
+      }
+    },
+    [AeroState.STAND_HEAVY_L]: {
+      startAnimation: 'STAND_HEAVY_L',
+      attackLevel: 3,
+      type: [StateType.ATTACK, StateType.STAND, AeroStateType.LEFT_ARM],
+      onHitSound: 'hitHeavy',
+      update: () => {
         if (this.sprite.anims.currentFrame.index === 3) {
           this.playSound('punch2', { volume: 0.5 });
         }
@@ -186,19 +201,36 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             this.shadow.start();
             playAnimation(this.sprite, 'ROLL_1');
           } else if (localState.continue) {
+            this.cancelFlag = false;
             playAnimation(this.sprite, this.currentAnimation === 'ROLL_1' ? 'ROLL_2' : 'ROLL_1');
             this.shadow.start();
             localState.continue = false;
           } else {
             this.stateManager.setState(CommonState.STAND);
-            this.preRollState = null;
+            this.preRollState = CommonState.NULL;
           }
         }
         if (tick > 0 && this.input.isInputPressed(GameInput.INPUT1)) {
           localState.continue = true;
         }
-        if (this.sprite.anims.currentFrame.index >= 3 && this.preRollState) {
-          this.cancelFlag = true;
+      }
+    },
+    [AeroState.DASH]: {
+      startAnimation: 'DASH',
+      attackLevel: 4,
+      type: [StateType.STAND],
+      update: (tick: number, localState: { strength: number }) => {
+        const { strength = 0 } = localState;
+        if (tick === 0) {
+          this.velocity.x = (105 + 10 * strength) * this.direction;
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.velocity.x = 0;
+          if (this.currentAnimation === 'DASH') {
+            this.playAnimation('DASH_BODY')
+          } else {
+            this.goToNextState(CommonState.STAND);
+          }
         }
       }
     }
@@ -261,7 +293,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('b', 1),
         trigger: () => {
-          if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState!)) {
+          if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState)) {
             return true;
           } else if (this.canChainFrom(AeroState.STAND_MED_R_2)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
@@ -284,7 +316,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('*6+b', 1),
         trigger: () => {
-          if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState!)) {
+          if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState)) {
             return true;
           } else if (this.canChainFrom(AeroState.STAND_MED_R_2) || this.canChainFrom(AeroState.STAND_MED_R_1)) {
             return () => {
@@ -301,14 +333,35 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('c', 1),
         trigger: () =>
-          !this.isAirborne && (this.isIdle || this.canCancel(AeroState.STAND_HEAVY) || this.canBeatCancel()),
-        state: AeroState.STAND_HEAVY
+          !this.isAirborne && (this.isIdle || this.canCancel(AeroState.STAND_HEAVY_R) || this.canBeatCancel()),
+        priority: 4,
+        state: AeroState.STAND_HEAVY_R
+      },
+      {
+        command: new Command('c', 1),
+        trigger: () => {
+          if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState)) {
+            return true;
+          } else if (this.canChainFrom(AeroState.STAND_HEAVY_R)) {
+            return () => this.sprite.anims.currentFrame.index >= 6;
+          } else {
+            return false;
+          }
+        },
+        priority: 4.5,
+        state: AeroState.STAND_HEAVY_L
       },
       {
         command: new Command('d', 3),
         trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
         state: AeroState.ROLL,
         priority: 2
+      },
+      {
+        command: new Command('236a', 18),
+        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.DASH)),
+        state: AeroState.DASH,
+        priority: 10
       }
     ];
   }
@@ -320,7 +373,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
 
   public create(): void {
     super.create();
-    this.shadow = new AeroShadow(this, aero);
+    this.shadow = new AeroShadow(this, aero, () => {
+      this.cancelFlag = true;
+    });
     this.shadow.create();
     this.colliderManager.ignoreCollisionsWith(this.shadow.tag);
     PS.stage.addStageObject(this.shadow);

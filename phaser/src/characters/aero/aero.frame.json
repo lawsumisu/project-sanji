@@ -135,6 +135,31 @@
       "hit": { "damage": 20, "angle": 0, "knockback": 50 }
     }
   },
+  "STAND_HEAVY_R": {
+    "animDef": {
+      "frames": [1, 2, 3, 4, 5, 6, 7],
+      "assetKey": "vanessa",
+      "prefix": "attacks/sonicfang",
+      "frameRate": 15
+    },
+    "hitboxDef": {
+      "2": { "boxes": [{ "x1": 36.6, "y1": -53.2, "x2": 20.2, "y2": -48.2, "r": 8.5 }] },
+      "3": { "boxes": [{ "x": 40.6, "y": -81, "r": 9.5 }] },
+      "hit": { "damage": 20, "angle": 0, "knockback": 50 }
+    }
+  },
+  "STAND_HEAVY_L": {
+    "animDef": {
+      "frames": [8, 9, 10, 11, 12, 13, 14, 15],
+      "assetKey": "vanessa",
+      "prefix": "attacks/sonicfang",
+      "frameRate": 15
+    },
+    "hitboxDef": {
+      "1": { "boxes": [{ "x": 44.4, "y": -51.8, "r": 16 }], "persistThroughFrame": 2 },
+      "hit": { "damage": 20, "angle": 0, "knockback": 50 }
+    }
+  },
   "MACHINE_GUN_R": {
     "animDef": {
       "frames": [1, 2, 3, 4, 5, { "index": 11, "prefix": "attacks/gutpunch" }],
@@ -181,6 +206,30 @@
       "frames": [1, 2],
       "assetKey": "vanessa",
       "prefix": "block/crouch",
+      "frameRate": 15
+    }
+  },
+  "DASH": {
+    "animDef": {
+      "frames": [1, 2, 3, 4, 5],
+      "assetKey": "vanessa",
+      "prefix": "attacks/uppercut",
+      "frameRate": 20
+    }
+  },
+  "DASH_UPPER": {
+    "animDef": {
+      "frames": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+      "assetKey": "vanessa",
+      "prefix": "attacks/uppercut",
+      "frameRate": 15
+    }
+  },
+  "DASH_BODY": {
+    "animDef": {
+      "frames": [15, 16, 17, { "prefix": "attacks/light3", "index": 4 }, { "prefix": "attacks/light3", "index": 5 }],
+      "assetKey": "vanessa",
+      "prefix": "attacks/uppercut",
       "frameRate": 15
     }
   }

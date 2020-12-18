@@ -49,7 +49,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     super();
     this.colliderManager = new ColliderManager();
     this.playerIndex = playerIndex;
-    this.stateManager = new StateManager<S, D>(this);
+    this.stateManager = new StateManager<S, D>();
     this.stateManager.onBeforeTransition((key: S) => this.beforeStateTransition(key));
     this.stateManager.onAfterTransition(config => this.afterStateTransition(config));
   }
@@ -107,6 +107,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
         } else if (canTransition && !this.isCurrentState(state)) {
           // Immediately transition to next state.
           this.goToNextState(state);
+          console.log(command.toString());
           break;
         }
       }

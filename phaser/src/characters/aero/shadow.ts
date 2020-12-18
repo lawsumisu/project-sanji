@@ -6,6 +6,7 @@ import { StageObject, UpdateParams } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { Scalar } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
+import * as _ from 'lodash';
 
 export enum AeroShadowState {
   STAND_L = 'STAND_L',
@@ -16,6 +17,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
   private readonly aero: Aero;
   private range = 20 * Unit.toPx;
   private speed = 4 * Unit.toPx;
+  private readonly onHit: () => void;
 
   protected defaultState = AeroShadowState.STAND_R;
   protected states: { [key in AeroShadowState]: StateDefinition } = {
@@ -52,9 +54,10 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       }
     }
   };
-  constructor(aero: Aero, frameDefinitionMap: FrameDefinitionMap) {
+  constructor(aero: Aero, frameDefinitionMap: FrameDefinitionMap, onHit: () => void = _.noop) {
     super(aero.playerIndex, frameDefinitionMap);
     this.aero = aero;
+    this.onHit = onHit;
   }
 
   public create(): void {
@@ -89,6 +92,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
   public onTargetHit(target: StageObject, hit: Hit): void {
     super.onTargetHit(target, hit);
     this.playSound('hitMed', {}, true);
+    this.onHit();
   }
 
   public update(params: UpdateParams): void {

@@ -26,6 +26,7 @@ export interface CommonStateConfig {
 }
 
 export enum CommonState {
+  NULL = 'NULL',
   STAND = 'STAND',
   WALK = 'WALK',
   DASH_BACK = 'DASH_BACK',
@@ -54,6 +55,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   protected states: StateMap<S, D>;
 
   private commonStates: { [key in CommonState]: StateDefinition<CommonStateConfig> } = {
+    [CommonState.NULL]: {type: []},
     [CommonState.STAND]: {
       startAnimation: 'STAND',
       type: [StateType.IDLE, StateType.STAND],
@@ -189,6 +191,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
     super(playerIndex, frameDefinitionMap);
+    this.defaultState = CommonState.STAND;
     this.commandList = this.getCommandList();
     this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
       const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
