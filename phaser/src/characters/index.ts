@@ -134,6 +134,11 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
 
     // TODO handle this in a separate function?
+    if (this.position.x < PS.stage.left) {
+      this.position.x = PS.stage.left;
+    } else if (this.position.x > PS.stage.right) {
+      this.position.x = PS.stage.right;
+    }
     if (this.position.y > PS.stage.ground) {
       this.position.y = PS.stage.ground;
       this.velocity.y = 0;

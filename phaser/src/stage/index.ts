@@ -10,12 +10,13 @@ import { Dummy } from 'src/characters/dummy';
 import Aero from 'src/characters/aero/aero.character';
 import { Vector2 } from '@lawsumisu/common-utilities';
 
-export class Stage extends Phaser.Scene{
+export class Stage extends Phaser.Scene {
   protected hitData: { [tag: string]: HitboxData } = {};
   protected hurtData: { [tag: string]: HurtboxData } = {};
   private stageObjects: StageObject[] = [];
   p1: BaseCharacter;
   p2: BaseCharacter;
+  bounds: Phaser.Geom.Rectangle;
 
   public ground = 0;
 
@@ -26,6 +27,7 @@ export class Stage extends Phaser.Scene{
     this.addStageObject(this.p1);
     this.addStageObject(this.p2);
     PS.stage = this;
+    this.bounds = new Phaser.Geom.Rectangle(0, 0, 386, 200);
   }
 
   public preload(): void {
@@ -47,10 +49,11 @@ export class Stage extends Phaser.Scene{
   }
 
   public update(time: number, delta: number): void {
-    this.draw();
     this.stageObjects.forEach((so: StageObject) => so.update({ time, delta: delta / 1000 }));
+    this.updateBounds();
     this.updateHits();
     this.updateCamera();
+    this.draw();
   }
 
   public addStageObject(stageObject: StageObject): void {
@@ -66,10 +69,37 @@ export class Stage extends Phaser.Scene{
     this.p2.position = new Vector2(400, this.ground - 25);
   }
 
+  private updateBounds(): void {
+    const margin = new Vector2(25, 0);
+    this.bounds = new Phaser.Geom.Rectangle(0, 0, 386 - margin.x * 2, 200);
+    const c = this.p1.position.add(this.p2.position).scale(0.5);
+    this.bounds.centerX = c.x;
+    this.bounds.centerY = c.y;
+    const cameraBounds = this.cameras.main.getBounds();
+    this.bounds.right = Math.min(this.bounds.right, cameraBounds.right - margin.x);
+    this.bounds.left = Math.max(this.bounds.left, cameraBounds.left + margin.x);
+  }
+
   private updateCamera(): void {
+    const offset = new Vector2(0, -40);
+    const padding = new Vector2(50, 0);
     const camera = this.cameras.main;
-    camera.scrollX = this.p1.position.x - camera.width / 2;
-    camera.scrollY = this.p1.position.y - camera.height / 2 - 40;
+    const { x: x1 } = this.p1.position;
+    const { x: x2 } = this.p2.position;
+    const minX = Math.min(x1, x2);
+    const maxX = Math.max(x1, x2);
+    const distance = maxX - minX;
+    const p = this.p1.position.add(this.p2.position).scale(0.5);
+    if (distance >= 386 - padding.x * 2) {
+      camera.scrollX = p.x - camera.width / 2 + offset.x;
+    } else {
+      if (minX <= camera.worldView.left + padding.x) {
+        camera.scrollX += minX - camera.worldView.left - padding.x;
+      } else if (maxX >= camera.worldView.right - padding.x) {
+        camera.scrollX += maxX - camera.worldView.right + padding.x;
+      }
+    }
+    camera.scrollY = p.y - camera.height / 2 + offset.y;
   }
 
   private updateHits(): void {
@@ -89,7 +119,7 @@ export class Stage extends Phaser.Scene{
                 hitObject.onTargetHit(hurtObject, hitbox.hit);
                 if (hurtbox.isCircular()) {
                   const { x, y, radius: r } = hurtbox.transformBox(hurtOffset);
-                  this.debug.drawCircle(
+                  this.debugDraw.drawCircle(
                     { x, y, r },
                     {
                       fill: {
@@ -135,12 +165,20 @@ export class Stage extends Phaser.Scene{
     }
   }
 
-  public get debug(): DebugDrawPlugin {
+  public get debugDraw(): DebugDrawPlugin {
     return (<any>this.sys).debug;
   }
 
   public get gameInput(): GameInputPlugin {
     return (<any>this.sys).GI;
+  }
+
+  public get left(): number {
+    return this.bounds.left;
+  }
+
+  public get right(): number {
+    return this.bounds.right;
   }
 
   private draw(): void {
@@ -161,9 +199,9 @@ export class Stage extends Phaser.Scene{
       hitboxData.data.forEach((hitbox: Collider) => {
         if (hitbox.isCircular()) {
           const { x, y, radius: r } = hitbox.transformBox(p);
-          this.debug.drawCircle({ x, y, r }, hitboxOptions);
+          this.debugDraw.drawCircle({ x, y, r }, hitboxOptions);
         } else if (hitbox.isCapsular()) {
-          this.debug.drawCapsule(hitbox.transformBox(p), hitboxOptions);
+          this.debugDraw.drawCapsule(hitbox.transformBox(p), hitboxOptions);
         }
       });
     });
@@ -174,13 +212,15 @@ export class Stage extends Phaser.Scene{
         hurtboxData.data.forEach((hurtbox: Hurtbox) => {
           if (hurtbox.isCircular()) {
             const { x, y, radius: r } = hurtbox.transformBox(p);
-            this.debug.drawCircle({ x, y, r }, hurtboxOptions);
+            this.debugDraw.drawCircle({ x, y, r }, hurtboxOptions);
           } else if (hurtbox.isCapsular()) {
-            this.debug.drawCapsule(hurtbox.transformBox(p), hurtboxOptions);
+            this.debugDraw.drawCapsule(hurtbox.transformBox(p), hurtboxOptions);
           }
         });
       }
     });
+
+    this.debugDraw.drawRect(this.bounds, { lineColor: 0xffff00 });
   }
 
   private getStageObject(owner: string): StageObject {

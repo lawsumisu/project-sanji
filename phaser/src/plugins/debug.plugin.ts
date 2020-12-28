@@ -101,7 +101,7 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
     configs.push(<LineConfig>{ type: ConfigType.LINE, x1, y1, x2, y2, lineColor, lineWidth });
   }
 
-  public drawRect(rect: RectLike, options: Partial<DebugOptions>): void {
+  public drawRect(rect: RectLike, options: Partial<DebugOptions> = {}): void {
     const { x, y, width, height } = rect;
     const { lineColor = 0xffffff, lineWidth = 1, persist } = options;
     const configs = persist ? this.persistentConfigs : this.configs;
