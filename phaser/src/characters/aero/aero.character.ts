@@ -27,11 +27,14 @@ enum AeroState {
   STAND_HEAVY_R = 'STAND_HEAVY_R',
   STAND_HEAVY_L = 'STAND_HEAVY_L',
   ROLL = 'ROLL',
-  DASH = 'DASH'
+  DASH_BODY = 'DASH_BODY',
+  DASH_STRAIGHT = 'DASH_STRAIGHT',
+  DASH_UPPER = 'DASH_UPPER',
+  UPPER = 'UPPER',
 }
 
 interface AeroStateConfig {
-  attackLevel: number;
+  cancelPotential: number;
 }
 
 export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
@@ -53,7 +56,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     [AeroState.STAND_LIGHT_L_1]: {
       startAnimation: 'LIGHT_JAB_1',
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.LEFT_ARM],
-      attackLevel: 1,
+      cancelPotential: 1,
       onHitSound: 'hitLight',
       update: () => {
         this.velocity.x = 0;
@@ -64,7 +67,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_LIGHT_L_2]: {
       startAnimation: 'LIGHT_JAB_2',
-      attackLevel: 1,
+      cancelPotential: 1,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.LEFT_ARM],
       onHitSound: 'hitLight',
       update: () => {
@@ -78,7 +81,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_LIGHT_R_1]: {
       startAnimation: 'LIGHT_3',
-      attackLevel: 1,
+      cancelPotential: 1,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.RIGHT_ARM],
       onHitSound: 'hitLight',
       update: () => {
@@ -90,7 +93,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_LIGHT_R_2]: {
       startAnimation: 'LIGHT_4',
-      attackLevel: 1,
+      cancelPotential: 1,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.RIGHT_ARM],
       onHitSound: 'hitLight',
       update: () => {
@@ -104,7 +107,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_MED_R_1]: {
       startAnimation: 'GUT_PUNCH_1',
-      attackLevel: 2,
+      cancelPotential: 2,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.RIGHT_ARM, AeroStateType.MED],
       onHitSound: 'hitMed',
       update: () => {
@@ -119,7 +122,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_MED_L_1]: {
       startAnimation: 'GUT_PUNCH_2',
-      attackLevel: 2,
+      cancelPotential: 2,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.LEFT_ARM],
       onHitSound: 'hitMed',
       update: () => {
@@ -133,7 +136,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_MED_R_2]: {
       startAnimation: 'STAND_MED_R_2',
-      attackLevel: 2,
+      cancelPotential: 2,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.RIGHT_ARM, AeroStateType.MED],
       onHitSound: 'hitMed',
       update: () => {
@@ -148,7 +151,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_MED_L_2]: {
       startAnimation: 'STAND_MED_L_2',
-      attackLevel: 2,
+      cancelPotential: 2,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.LEFT_ARM],
       onHitSound: 'hitMed',
       update: () => {
@@ -163,7 +166,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_HEAVY_R]: {
       startAnimation: 'STAND_HEAVY_R',
-      attackLevel: 3,
+      cancelPotential: 3,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.RIGHT_ARM],
       onHitSound: 'hitHeavy',
       update: () => {
@@ -178,7 +181,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.STAND_HEAVY_L]: {
       startAnimation: 'STAND_HEAVY_L',
-      attackLevel: 3,
+      cancelPotential: 3,
       type: [StateType.ATTACK, StateType.STAND, AeroStateType.LEFT_ARM],
       onHitSound: 'hitHeavy',
       update: () => {
@@ -192,7 +195,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     },
     [AeroState.ROLL]: {
       startAnimation: 'ROLL_STARTUP',
-      attackLevel: 4,
+      cancelPotential: 4,
       type: [StateType.ATTACK, StateType.STAND],
       update: (tick: number, localState: { continue: boolean }) => {
         this.velocity.x = 0;
@@ -215,14 +218,14 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         }
       }
     },
-    [AeroState.DASH]: {
+    [AeroState.DASH_BODY]: {
       startAnimation: 'DASH',
-      attackLevel: 4,
+      cancelPotential: 4,
       type: [StateType.STAND],
-      update: (tick: number, localState: { strength: number }) => {
-        const { strength = 0 } = localState;
+      update: (tick: number, params: { strength: number }) => {
+        const { strength = 0 } = params;
         if (tick === 0) {
-          this.velocity.x = (105 + 10 * strength) * this.direction;
+          this.velocity.x = (105 + 20 * strength) * this.direction;
         }
         if (!this.sprite.anims.isPlaying) {
           this.velocity.x = 0;
@@ -231,6 +234,16 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           } else {
             this.goToNextState(CommonState.STAND);
           }
+        }
+      }
+    },
+    [AeroState.DASH_STRAIGHT]: {
+      startAnimation: 'DASH_STRAIGHT',
+      type: [StateType.STAND, StateType.ATTACK],
+      update: () => {
+        this.velocity.x = 0;
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.STAND)
         }
       }
     }
@@ -359,9 +372,35 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       },
       {
         command: new Command('236a', 18),
-        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.DASH)),
-        state: AeroState.DASH,
+        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.DASH_BODY)),
+        state: AeroState.DASH_BODY,
+        stateParams: { strength: 1 },
         priority: 10
+      },
+      {
+        command: new Command('236b', 18),
+        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.DASH_BODY)),
+        state: AeroState.DASH_BODY,
+        stateParams: { strength: 2 },
+        priority: 10
+      },
+      {
+        command: new Command('236c', 18),
+        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.DASH_BODY)),
+        state: AeroState.DASH_BODY,
+        stateParams: { strength: 3 },
+        priority: 10
+      },
+      {
+        command: new Command('236a', 18),
+        trigger: () => {
+          if (this.isCurrentState(AeroState.DASH_BODY))  {
+            return () => this.currentAnimation === 'DASH_BODY' && this.sprite.anims.currentFrame.index >= 4;
+          } else {
+            return false;
+          }
+        },
+        state: AeroState.DASH_STRAIGHT,
       }
     ];
   }
@@ -397,9 +436,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
 
   private canCancel(nextState: CharacterState<AeroState>): boolean {
     if (this.cancelFlag) {
-      const { attackLevel: currentAttackLevel = 0 } = this.states[this.stateManager.current.key]!;
-      const { attackLevel: nextAttackLevel = 0 } = this.states[nextState]!;
-      return currentAttackLevel < nextAttackLevel;
+      const { cancelPotential: currentPotential = 0 } = this.states[this.stateManager.current.key]!;
+      const { cancelPotential: nextPotential = 0 } = this.states[nextState]!;
+      return currentPotential < nextPotential;
     } else {
       return false;
     }

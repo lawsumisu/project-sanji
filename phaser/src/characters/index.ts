@@ -16,13 +16,14 @@ export interface CommandTrigger<S extends string> {
   command: Command;
   trigger?: () => boolean | (() => boolean);
   state: S;
+  stateParams?: object;
   priority?: number;
 }
 
 export class BaseCharacter<S extends string = string, D extends StateDefinition = StateDefinition> extends StageObject {
   protected stateManager: StateManager<S, D>;
   protected colliderManager: ColliderManager;
-  protected nextStates: Array<{ state: S; executionTrigger: () => boolean }> = [];
+  protected nextStates: Array<{ state: S; executionTrigger: () => boolean, stateParams: object }> = [];
   protected defaultState: S;
 
   protected sprite: Phaser.GameObjects.Sprite;
@@ -97,16 +98,16 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   }
 
   protected updateState(): void {
-    for (const { command, trigger = () => true, state } of this.commandList) {
+    for (const { command, trigger = () => true, state, stateParams = {} } of this.commandList) {
       if (this.isCommandExecuted(command)) {
         const canTransition = trigger();
         if (_.isFunction(canTransition)) {
           // chainable state, so add to queue
-          this.queueNextState(state, canTransition);
+          this.queueNextState(state, stateParams, canTransition);
           break;
         } else if (canTransition && !this.isCurrentState(state)) {
           // Immediately transition to next state.
-          this.goToNextState(state);
+          this.goToNextState(state, stateParams);
           console.log(command.toString());
           break;
         }
@@ -148,9 +149,9 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     return !!this.nextStates.find(nextState => nextState.state === state);
   }
 
-  protected queueNextState(state: S, executionTrigger: () => boolean = () => true): void {
+  protected queueNextState(state: S, stateParams: object = {}, executionTrigger: () => boolean = () => true): void {
     if (this.stateManager.current.key !== state && !this.nextStates.find(nextState => nextState.state === state)) {
-      this.nextStates.push({ state, executionTrigger });
+      this.nextStates.push({ state, executionTrigger, stateParams });
     }
   }
 
@@ -158,11 +159,12 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
    * Transition to the next state in the state transition queue.
    * If a state is provided directly, transition to that state immediately (this will clear the transition queue).
    * @param state
+   * @param stateParams
    */
-  protected goToNextState(state?: S): void {
+  protected goToNextState(state?: S, stateParams: object = {}): void {
     if (state) {
       this.nextStates = [];
-      this.stateManager.setState(state);
+      this.stateManager.setState(state, stateParams);
     } else if (this.nextStates.length >= 1) {
       const [nextState, ...rest] = this.nextStates;
       if (nextState.executionTrigger()) {
@@ -170,7 +172,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
           nextState.state,
           rest.map(i => i.state)
         );
-        this.stateManager.setState(nextState.state);
+        this.stateManager.setState(nextState.state, nextState.stateParams);
         this.nextStates = rest;
       }
     }

@@ -15,7 +15,7 @@
   "WALK_BACK": {
     "animDef": { "frames": 8, "assetKey": "vanessa", "prefix": "walkback", "frameRate": 15, "repeat": -1 }
   },
-  "SQUAT": { "animDef": { "frames": 2, "assetKey": "vanessa", "prefix": "crouch", "frameRate": 25 } },
+  "SQUAT": { "animDef": { "frames": 2, "assetKey": "vanessa", "prefix": "crouch", "frameRate": 30 } },
   "CROUCH": {
     "animDef": {
       "frames": [{ "index": 3, "endIndex": 12 }],
@@ -25,7 +25,7 @@
       "repeat": -1
     }
   },
-  "STAND_UP": { "animDef": { "frames": [2, 1], "assetKey": "vanessa", "prefix": "crouch", "frameRate": 15 } },
+  "STAND_UP": { "animDef": { "frames": [2, 1], "assetKey": "vanessa", "prefix": "crouch", "frameRate": 30 } },
   "RUN": { "animDef": { "frames": 6, "assetKey": "vanessa", "prefix": "run", "frameRate": 15, "repeat": -1 } },
   "DASH_BACK": { "animDef": { "frames": 3, "assetKey": "vanessa", "prefix": "dashback", "frameRate": 15 } },
   "JUMP": { "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "jump", "frameRate": 15 } },
@@ -219,7 +219,7 @@
   },
   "DASH_UPPER": {
     "animDef": {
-      "frames": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+      "frames": [6, 7, 8, 9, 10, 11, 12, 13, 14],
       "assetKey": "vanessa",
       "prefix": "attacks/uppercut",
       "frameRate": 15
@@ -230,7 +230,15 @@
       "frames": [15, 16, 17, { "prefix": "attacks/light3", "index": 4 }, { "prefix": "attacks/light3", "index": 5 }],
       "assetKey": "vanessa",
       "prefix": "attacks/uppercut",
-      "frameRate": 15
+      "frameRate": 20
+    }
+  },
+  "DASH_STRAIGHT": {
+    "animDef": {
+      "frames": [23,24,25,26,27,28,29,30,31],
+      "assetKey": "vanessa",
+      "prefix": "attacks/uppercut",
+      "frameRate": 20
     }
   }
 }
