@@ -31,6 +31,9 @@ enum AeroState {
   DASH_STRAIGHT = 'DASH_STRAIGHT',
   DASH_UPPER = 'DASH_UPPER',
   UPPER = 'UPPER',
+  CROUCH_LIGHT = 'CROUCH_LIGHT',
+  CROUCH_MED = 'CROUCH_MED',
+  CROUCH_HEAVY = 'CROUCH_HEAVY',
 }
 
 interface AeroStateConfig {
@@ -246,6 +249,36 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           this.goToNextState(CommonState.STAND)
         }
       }
+    },
+    [AeroState.CROUCH_LIGHT]: {
+      startAnimation: 'CROUCH_LIGHT',
+      type: [StateType.CROUCH, StateType.ATTACK],
+      update: () => {
+        this.velocity.x = 0;
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.CROUCH)
+        }
+      }
+    },
+    [AeroState.CROUCH_MED]: {
+      startAnimation: 'CROUCH_MED',
+      type: [StateType.CROUCH, StateType.ATTACK],
+      update: () => {
+        this.velocity.x = 0;
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.CROUCH)
+        }
+      }
+    },
+    [AeroState.CROUCH_HEAVY]: {
+      startAnimation: 'CROUCH_HEAVY',
+      type: [StateType.CROUCH, StateType.ATTACK],
+      update: () => {
+        this.velocity.x = 0;
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.CROUCH)
+        }
+      }
     }
   };
 
@@ -347,7 +380,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         command: new Command('c', 1),
         trigger: () =>
           !this.isAirborne && (this.isIdle || this.canCancel(AeroState.STAND_HEAVY_R) || this.canBeatCancel()),
-        priority: 4,
+        priority: 2,
         state: AeroState.STAND_HEAVY_R
       },
       {
@@ -361,7 +394,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             return false;
           }
         },
-        priority: 4.5,
+        priority: 2.5,
         state: AeroState.STAND_HEAVY_L
       },
       {
@@ -369,6 +402,24 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
         state: AeroState.ROLL,
         priority: 2
+      },
+      {
+        command: new Command('*1|*2|*3+a', 1),
+        trigger: () => this.isIdle,
+        state: AeroState.CROUCH_LIGHT,
+        priority: 3,
+      },
+      {
+        command: new Command('*1|*2|*3+b', 1),
+        trigger: () => this.isIdle,
+        state: AeroState.CROUCH_MED,
+        priority: 3,
+      },
+      {
+        command: new Command('*1|*2|*3+c', 1),
+        trigger: () => this.isIdle,
+        state: AeroState.CROUCH_HEAVY,
+        priority: 3,
       },
       {
         command: new Command('236a', 18),

@@ -240,5 +240,29 @@
       "prefix": "attacks/uppercut",
       "frameRate": 20
     }
+  },
+  "CROUCH_LIGHT": {
+    "animDef": {
+      "frames": 5,
+      "assetKey": "vanessa",
+      "prefix": "attacks/crouch/jab",
+      "frameRate": 15
+    }
+  },
+  "CROUCH_MED": {
+    "animDef": {
+      "frames": 4,
+      "assetKey": "vanessa",
+      "prefix": "attacks/crouch/low",
+      "frameRate": 15
+    }
+  },
+  "CROUCH_HEAVY": {
+    "animDef": {
+      "frames": 12,
+      "assetKey": "vanessa",
+      "prefix": "attacks/crouch/upper",
+      "frameRate": 15
+    }
   }
 }
