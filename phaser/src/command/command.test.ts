@@ -5,7 +5,7 @@ import * as sinonChai from 'sinon-chai';
 import { GameInput, InputHistory } from 'src/plugins/gameInput.plugin';
 import { Command, CommandInputType, SimpleInput } from 'src/command';
 import { PS } from 'src/global';
-import { CommandParser, NonTerminalToken, Token, TokenType } from 'src/command/parser';
+import { CommandParser, isNonTerminal, NonTerminalToken, Token, TokenType } from 'src/command/parser';
 
 chai.use(sinonChai);
 
@@ -74,7 +74,7 @@ describe('Command Tests', () => {
         ]);
       });
 
-      it('tokenizes parenthetical string', () => {
+      it('tokenizes parentheticized string', () => {
         const tokens1 = CommandParser.tokenize('(*1|*2|*3)');
         expect(tokens1.length).to.equal(7);
         expect(tokens1).to.deep.equal([
@@ -89,6 +89,21 @@ describe('Command Tests', () => {
       });
     });
     describe('parse', () => {
+      function compareToken(actual: Token, expected: Token, depth = 0): void {
+        expect(actual.type).to.equal(expected.type, `Type mismatch at depth = ${depth}`);
+        if (isNonTerminal(actual) && isNonTerminal(expected)) {
+          expect(actual.nestedTokens.length).to.equal(
+            expected.nestedTokens.length,
+            `${actual.type}.nestedToken length mismatch at depth = ${depth}`
+          );
+          for (let i = 0; i < actual.nestedTokens.length; ++i) {
+            compareToken(actual.nestedTokens[i], expected.nestedTokens[i], depth + 1);
+          }
+        } else {
+          expect(actual.value).to.equal(expected.value);
+        }
+      }
+
       it('parses BASE input', () => {
         const parsed = CommandParser.parse(CommandParser.tokenize('*4'));
         assert.isNotNull(parsed);
@@ -122,64 +137,82 @@ describe('Command Tests', () => {
           { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: '*3' }] }
         ]);
       });
-      it('parses parenthentical inputs', () => {
-        const parsed = CommandParser.parse(CommandParser.tokenize('(a+b)|c'));
-        assert.isNotNull(parsed);
-        const { type, nestedTokens } = parsed as NonTerminalToken;
-        expect(type).to.equal(TokenType.OR_INPUT);
-        expect(nestedTokens).to.deep.equal([
-          {
-            type: TokenType.INPUT,
-            nestedTokens: [
-              { type: TokenType.LP },
-              { type: TokenType.BASE_INPUT, value: 'a' },
-              { type: TokenType.AND },
-              { type: TokenType.BASE_INPUT, value: 'b' },
-              { type: TokenType.RP }
-            ]
-          },
-          { type: TokenType.OR },
-          { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'c' }] }
-        ]);
+      it('parses parenthenticized inputs', () => {
+        const actual = CommandParser.parse(CommandParser.tokenize('(a+b)|c'));
+        assert.isNotNull(actual);
+        compareToken(actual as NonTerminalToken, {
+          type: TokenType.OR_INPUT,
+          nestedTokens: [
+            {
+              type: TokenType.INPUT,
+              nestedTokens: [
+                { type: TokenType.LP },
+                {
+                  type: TokenType.AND_INPUT,
+                  nestedTokens: [
+                    { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'a' }] },
+                    { type: TokenType.AND },
+                    { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'b' }] }
+                  ]
+                },
+                { type: TokenType.RP }
+              ]
+            },
+            { type: TokenType.OR },
+            { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'c' }] }
+          ]
+        });
 
-        const parsed2 = CommandParser.parse(CommandParser.tokenize('b+(c|d)'));
-        assert.isNotNull(parsed2);
-        const { type: type2, nestedTokens: nestedTokens2 } = parsed2 as NonTerminalToken;
-        expect(type2).to.equal(TokenType.AND_INPUT);
-        expect(nestedTokens2).to.deep.equal([
-          { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'b' }] },
-          { type: TokenType.AND },
-          {
-            type: TokenType.INPUT,
-            nestedTokens: [
-              { type: TokenType.LP },
-              { type: TokenType.BASE_INPUT, value: 'c' },
-              { type: TokenType.OR },
-              { type: TokenType.BASE_INPUT, value: 'd' },
-              { type: TokenType.RP }
-            ]
-          }
-        ]);
+        const actual2 = CommandParser.parse(CommandParser.tokenize('b+(c|d)'));
+        assert.isNotNull(actual2);
+        compareToken(actual2 as NonTerminalToken, {
+          type: TokenType.AND_INPUT,
+          nestedTokens: [
+            { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'b' }] },
+            { type: TokenType.AND },
+            {
+              type: TokenType.INPUT,
+              nestedTokens: [
+                { type: TokenType.LP },
+                {
+                  type: TokenType.OR_INPUT,
+                  nestedTokens: [
+                    { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'c' }] },
+                    { type: TokenType.OR },
+                    { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'd' }] }
+                  ]
+                },
+                { type: TokenType.RP }
+              ]
+            }
+          ]
+        });
       });
       it('groups ands before ors', () => {
-        const parsed = CommandParser.parse(CommandParser.tokenize('1|2|3+b'));
-        assert.isNotNull(parsed);
-        const { type, nestedTokens } = parsed as NonTerminalToken;
-        expect(type).to.equal(TokenType.AND_INPUT);
-        expect(nestedTokens).to.deep.equal([
-          {
-            type: TokenType.INPUT,
-            nestedTokens: [
-              { type: TokenType.BASE_INPUT, value: '1' },
-              { type: TokenType.OR },
-              { type: TokenType.BASE_INPUT, value: '2' },
-              { type: TokenType.OR },
-              { type: TokenType.BASE_INPUT, value: '3' }
-            ]
-          },
-          { type: TokenType.AND },
-          { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'b' }] }
-        ]);
+        const actual = CommandParser.parse(CommandParser.tokenize('1|2|3+b'));
+        assert.isNotNull(actual);
+        compareToken(actual as NonTerminalToken, {
+          type: TokenType.AND_INPUT,
+          nestedTokens: [
+            {
+              type: TokenType.INPUT,
+              nestedTokens: [
+                {
+                  type: TokenType.OR_INPUT,
+                  nestedTokens: [
+                    { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: '1' }] },
+                    { type: TokenType.OR },
+                    { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: '2' }] },
+                    { type: TokenType.OR },
+                    { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: '3' }] }
+                  ]
+                }
+              ]
+            },
+            { type: TokenType.AND },
+            { type: TokenType.INPUT, nestedTokens: [{ type: TokenType.BASE_INPUT, value: 'b' }] }
+          ]
+        });
       });
     });
   });

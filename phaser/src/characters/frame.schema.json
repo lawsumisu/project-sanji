@@ -11,10 +11,36 @@
         "animDef": {
           "type": "object",
           "properties": {
-            "frames": { "type": ["array", "integer"], "items": {"type": ["integer", "object"] }},
-            "assetKey": {"type": "string"},
-            "prefix": {"type": "string"},
-            "frameRate": {"type": "integer"}
+            "frames": { "type": ["array", "integer"], "items": { "type": ["integer", "object"] } },
+            "assetKey": { "type": "string" },
+            "prefix": { "type": "string" },
+            "frameRate": { "type": "integer" }
+          }
+        },
+        "hitboxDef": {
+          "type": "object",
+          "properties": {
+            "hit": {
+              "type": "object",
+              "properties": {
+                "damage": { "type": "number" },
+                "angle": { "type": "number" },
+                "knockback": { "type": "number" }
+              }
+            }
+          },
+          "patternProperties": {
+            "^[1-9][0-9]*$": {
+              "properties": {
+                "boxes": {
+                  "type": "array",
+                  "items": {"type": "object"}
+                },
+                "tag": {
+                  "type": ["string", "number"]
+                }
+              }
+            }
           }
         }
       }

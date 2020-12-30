@@ -253,9 +253,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     [AeroState.CROUCH_LIGHT]: {
       startAnimation: 'CROUCH_LIGHT',
       type: [StateType.CROUCH, StateType.ATTACK],
+      onHitSound: 'hitLight',
+      cancelPotential: 1,
       update: () => {
         this.velocity.x = 0;
-        if (!this.sprite.anims.isPlaying) {
+        if (this.sprite.anims.currentFrame.index === 1) {
+          this.playSound('jabVoice', { volume: 0.5 });
+        } else if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.CROUCH)
         }
       }
@@ -263,9 +267,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     [AeroState.CROUCH_MED]: {
       startAnimation: 'CROUCH_MED',
       type: [StateType.CROUCH, StateType.ATTACK],
+      onHitSound: 'hitLight',
+      cancelPotential: 2,
       update: () => {
         this.velocity.x = 0;
-        if (!this.sprite.anims.isPlaying) {
+        if (this.sprite.anims.currentFrame.index === 1) {
+          this.playSound('jabVoice', { volume: 0.5 });
+        } else if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.CROUCH)
         }
       }
@@ -273,6 +281,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     [AeroState.CROUCH_HEAVY]: {
       startAnimation: 'CROUCH_HEAVY',
       type: [StateType.CROUCH, StateType.ATTACK],
+      onHitSound: 'hitMed',
+      cancelPotential: 3,
       update: () => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
@@ -411,13 +421,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       },
       {
         command: new Command('*1|*2|*3+b', 1),
-        trigger: () => this.isIdle,
+        trigger: () => this.isIdle || this.canCancel(AeroState.CROUCH_MED),
         state: AeroState.CROUCH_MED,
         priority: 3,
       },
       {
         command: new Command('*1|*2|*3+c', 1),
-        trigger: () => this.isIdle,
+        trigger: () => this.isIdle || this.canCancel(AeroState.CROUCH_HEAVY),
         state: AeroState.CROUCH_HEAVY,
         priority: 3,
       },

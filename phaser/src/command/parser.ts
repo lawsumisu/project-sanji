@@ -26,6 +26,7 @@ export enum TokenType {
 export interface Token {
   value?: string;
   type: TokenType;
+  [x: string]: unknown;
 }
 
 export interface NonTerminalToken extends Token {
@@ -61,7 +62,9 @@ export class CommandParser {
   }
 
   public static parse(tokens: Token[]): Token | null {
-    if (tokens.length === 1 && tokens[0].type === TokenType.BASE_INPUT) {
+    if (tokens.length === 0) {
+      return null;
+    }else if (tokens.length === 1 && tokens[0].type === TokenType.BASE_INPUT) {
       return tokens[0];
     } else {
       return CommandParser.parseAndInput(tokens) || CommandParser.parseOrInput(tokens);
@@ -75,10 +78,13 @@ export class CommandParser {
       const rest = tokens.filter((__, i) => i !== 0 && i !== tokens.length -1);
       const token = CommandParser.parseAndInput(rest) || CommandParser.parseOrInput(rest);
       if (token) {
-        return { type: TokenType.INPUT, nestedTokens: [...tokens] }
+        return { type: TokenType.INPUT, nestedTokens: [tokens[0], token, tokens[tokens.length - 1]] }
       }
     } else if (tokens.length >= 3) {
-      return CommandParser.parseOrInput(tokens);
+      const orInput = CommandParser.parseOrInput(tokens);
+      if (orInput) {
+        return { type: TokenType.INPUT, nestedTokens: [orInput] } ;
+      }
     }
     return null;
   }

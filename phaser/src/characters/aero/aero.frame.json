@@ -247,6 +247,14 @@
       "assetKey": "vanessa",
       "prefix": "attacks/crouch/jab",
       "frameRate": 15
+    },
+    "hitboxDef": {
+      "1": {
+        "boxes": [
+          { "x1": 50.8, "y1": -62.4, "x2": 16.6, "y2": -54.4, "r": 6 }
+        ],
+        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+      }
     }
   },
   "CROUCH_MED": {
@@ -255,6 +263,14 @@
       "assetKey": "vanessa",
       "prefix": "attacks/crouch/low",
       "frameRate": 15
+    },
+    "hitboxDef": {
+      "1": {
+        "boxes": [
+          { "x1": 25.6, "y1": -47.8, "x2": 58.4, "y2": -24.8, "r": 6.5 }
+        ],
+        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+      }
     }
   },
   "CROUCH_HEAVY": {
@@ -263,6 +279,36 @@
       "assetKey": "vanessa",
       "prefix": "attacks/crouch/upper",
       "frameRate": 15
+    },
+    "hitboxDef": {
+      "2": {
+        "boxes": [
+          { "x1": 49.6, "y1": -42.8, "x2": 33.6, "y2": -38.8, "r": 8 }
+        ]
+      },
+      "3": {
+        "boxes": [
+          { "x": 49.8, "y": -44.4, "r": 10 }
+        ]
+      },
+      "4": {
+        "boxes": [
+          { "x1": 46.8, "y1": -41.4, "x2": 37.6, "y2": -88.4, "r": 9.5 },
+          { "x": 18.6, "y": -90.2, "r": 13.5 }
+        ],
+        "tag": 1
+      },
+      "5": {
+        "boxes": [
+          { "x": 27.8, "y": -90.2, "r": 10 }
+        ],
+        "tag": 1
+      },
+      "hit": {
+        "damage": 20,
+        "angle": 0,
+        "knockback": 35
+      }
     }
   }
 }

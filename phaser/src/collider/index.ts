@@ -194,11 +194,13 @@ export class HitboxData extends CollisionData<Hitbox> {
   }
 
   public registerCollision(collisionData: CollisionData<Collider>): void {
-    this._registeredCollisions.add(collisionData.owner);
+    const tag = [this.tag, collisionData.owner].join('-');
+    this._registeredCollisions.add(tag);
   }
 
   public hasCollided(collisionData: CollisionData<Collider>): boolean {
-    return this._registeredCollisions.has(collisionData.owner);
+    const tag = [this.tag, collisionData.owner].join('-');
+    return this._registeredCollisions.has(tag);
   }
 
   public canIgnoreCollision(tag: string): boolean {
