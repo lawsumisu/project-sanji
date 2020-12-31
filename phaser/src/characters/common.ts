@@ -138,18 +138,18 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.JUMP]: {
       startAnimation: 'SQUAT',
       type: [StateType.IDLE, StateType.STAND],
-      update: (tick: number, state: { d: -1 | 1 | undefined }) => {
+      update: (tick: number, params: { d: -1 | 1 | undefined }) => {
         if (tick <= 2) {
           if (tick === 0) {
             this.velocity.x = 0;
           }
           if (_.some([GameInput.UP_RIGHT, GameInput.UP_LEFT], (gi: GameInput) => this.input.isInputDown(gi))) {
             const jumpDirection = this.input.isInputDown(GameInput.UP_RIGHT) ? 1 : -1;
-            state.d = jumpDirection === this.direction ? 1 : -1;
+            params.d = jumpDirection === this.direction ? 1 : -1;
           }
         } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
           this.velocity.y = -this.jumpSpeed;
-          this.velocity.x = this.walkSpeed * this.direction * (state.d || 0);
+          this.velocity.x = this.walkSpeed * this.direction * (params.d || 0);
           playAnimation(this.sprite, 'JUMP');
         }
         if (this.velocity.y > 0) {
@@ -159,7 +159,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     },
     [CommonState.FALL]: {
       startAnimation: 'FALL',
-      type: [StateType.IDLE, StateType.AIR]
+      type: [StateType.IDLE, StateType.AIR],
     },
     [CommonState.BLOCK_STAND]: {
       startAnimation: 'BLOCK_STAND',
@@ -250,6 +250,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   public preload() {
     this.states = { ...this.commonStates, ...this.states };
     super.preload();
+    console.log(this.sfx);
   }
 
   public create() {
@@ -274,21 +275,24 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     } else if (this.position.x > PS.stage.right) {
       this.position.x = PS.stage.right;
     }
-    if (this.position.y > PS.stage.ground) {
-      this.position.y = PS.stage.ground;
-      this.velocity.y = 0;
-      if (this.stateManager.current.key === CommonState.FALL) {
+    if (this.isAirborne) {
+      const bounds = this.bounds;
+      if (bounds.bottom > PS.stage.ground) {
+        this.position.y = PS.stage.ground;
+        this.velocity.y = 0;
         this.stateManager.setState(CommonState.STAND);
         this.playSound('land', { volume: 0.5 }, true);
       }
+    } else if (this.position.y > PS.stage.ground) {
+      this.position.y = PS.stage.ground;
     }
   }
 
-  protected afterStateTransition(config: CharacterStateConfig<D>): void {
-    super.afterStateTransition(config);
+  protected afterStateTransition(config: CharacterStateConfig<D>, params: { startFrame?: number} = {}): void {
+    super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, startAnimation, true);
+      playAnimation(this.sprite, startAnimation, { force: true, startFrame: params.startFrame });
     }
   }
 
@@ -302,6 +306,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   protected get isIdle(): boolean {
     return this.checkStateType(StateType.IDLE);
+  }
+
+  protected get isAirborne(): boolean {
+    return super.isAirborne || this.checkStateType(StateType.AIR);
   }
 
   protected checkStateType(
@@ -323,5 +331,15 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       (lastQueuedState && lastQueuedState.state === fromState) ||
       (this.isCurrentState(fromState) && this.sprite.anims.currentFrame.index <= throughFrame)
     );
+  }
+
+  protected get bounds(): Phaser.Geom.Rectangle {
+    const { flipX } = this.sprite;
+    const { width, height, centerX, centerY, pivotX, pivotY, x, y, realHeight, realWidth } = this.sprite.anims.currentFrame.frame;
+    const fx = flipX ? -1 : 1;
+    const rect = new Phaser.Geom.Rectangle(0, 0, width, height);
+    rect.centerX = this.position.x - (pivotX * realWidth - centerX - x) * fx;
+    rect.centerY = this.position.y - pivotY * realHeight + centerY + y;
+    return rect;
   }
 }

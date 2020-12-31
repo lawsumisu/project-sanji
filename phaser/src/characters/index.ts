@@ -52,7 +52,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.playerIndex = playerIndex;
     this.stateManager = new StateManager<S, D>();
     this.stateManager.onBeforeTransition((key: S) => this.beforeStateTransition(key));
-    this.stateManager.onAfterTransition(config => this.afterStateTransition(config));
+    this.stateManager.onAfterTransition((config, params) => this.afterStateTransition(config, params));
   }
 
   public preload(): void {
@@ -183,8 +183,8 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     }
   }
 
-  protected afterStateTransition(config: D): void {
-    _.noop(config);
+  protected afterStateTransition(config: D, params: object): void {
+    _.noop(config, params);
     this.sounds.clear();
   }
 
@@ -250,6 +250,6 @@ export class BaseCharacterWithFrameDefinition<
   }
 
   protected playAnimation(key: string, force = false) {
-    playAnimation(this.sprite, key, force);
+    playAnimation(this.sprite, key, { force });
   }
 }

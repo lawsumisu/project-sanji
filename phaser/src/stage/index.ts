@@ -119,7 +119,7 @@ export class Stage extends Phaser.Scene {
                 hitObject.onTargetHit(hurtObject, hitbox.hit);
                 if (hurtbox.isCircular()) {
                   const { x, y, radius: r } = hurtbox.transformBox(hurtOffset);
-                  this.debugDraw.drawCircle(
+                  this.debugDraw.circle(
                     { x, y, r },
                     {
                       fill: {
@@ -166,7 +166,7 @@ export class Stage extends Phaser.Scene {
   }
 
   public get debugDraw(): DebugDrawPlugin {
-    return (<any>this.sys).debug;
+    return (<any>this.sys).debugDraw;
   }
 
   public get gameInput(): GameInputPlugin {
@@ -199,9 +199,9 @@ export class Stage extends Phaser.Scene {
       hitboxData.data.forEach((hitbox: Collider) => {
         if (hitbox.isCircular()) {
           const { x, y, radius: r } = hitbox.transformBox(p);
-          this.debugDraw.drawCircle({ x, y, r }, hitboxOptions);
+          this.debugDraw.circle({ x, y, r }, hitboxOptions);
         } else if (hitbox.isCapsular()) {
-          this.debugDraw.drawCapsule(hitbox.transformBox(p), hitboxOptions);
+          this.debugDraw.capsule(hitbox.transformBox(p), hitboxOptions);
         }
       });
     });
@@ -212,15 +212,15 @@ export class Stage extends Phaser.Scene {
         hurtboxData.data.forEach((hurtbox: Hurtbox) => {
           if (hurtbox.isCircular()) {
             const { x, y, radius: r } = hurtbox.transformBox(p);
-            this.debugDraw.drawCircle({ x, y, r }, hurtboxOptions);
+            this.debugDraw.circle({ x, y, r }, hurtboxOptions);
           } else if (hurtbox.isCapsular()) {
-            this.debugDraw.drawCapsule(hurtbox.transformBox(p), hurtboxOptions);
+            this.debugDraw.capsule(hurtbox.transformBox(p), hurtboxOptions);
           }
         });
       }
     });
 
-    this.debugDraw.drawRect(this.bounds, { lineColor: 0xffff00 });
+    this.debugDraw.rect(this.bounds, { lineColor: 0xffff00 });
   }
 
   private getStageObject(owner: string): StageObject {

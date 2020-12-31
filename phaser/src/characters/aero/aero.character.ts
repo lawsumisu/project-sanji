@@ -1,6 +1,6 @@
 import { PS } from 'src/global';
 import { Command } from 'src/command';
-import { StageObject } from 'src/stage/stageObject';
+import { StageObject, UpdateParams } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { GameInput } from 'src/plugins/gameInput.plugin';
@@ -34,6 +34,8 @@ enum AeroState {
   CROUCH_LIGHT = 'CROUCH_LIGHT',
   CROUCH_MED = 'CROUCH_MED',
   CROUCH_HEAVY = 'CROUCH_HEAVY',
+  AIR_LIGHT = 'AIR_LIGHT',
+  AIR_MED = 'AIR_MED',
 }
 
 interface AeroStateConfig {
@@ -289,6 +291,29 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           this.goToNextState(CommonState.CROUCH)
         }
       }
+    },
+    [AeroState.AIR_LIGHT]: {
+      startAnimation: 'AIR_LIGHT',
+      type: [StateType.AIR, StateType.ATTACK],
+      onHitSound: 'hitLight',
+      update: () => {
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.FALL, { startFrame: 2 })
+        }
+      }
+    },
+    [AeroState.AIR_MED]: {
+      startAnimation: 'AIR_MED',
+      type: [StateType.AIR, StateType.ATTACK],
+      onHitSound: 'hitMed',
+      update: () => {
+        if (this.sprite.anims.currentFrame.index === 2) {
+          this.playSound('punch1', { volume: 0.5 });
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.FALL)
+        }
+      }
     }
   };
 
@@ -318,6 +343,11 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         },
         state: AeroState.STAND_LIGHT_L_1,
         priority: 2
+      },
+      {
+        command: new Command('a', 1),
+        trigger: () => this.isAirborne && this.isIdle,
+        state: AeroState.AIR_LIGHT,
       },
       {
         command: new Command('*6+a', 1),
@@ -361,6 +391,11 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         },
         state: AeroState.STAND_MED_L_1,
         priority: 2.5
+      },
+      {
+        command: new Command('b', 1),
+        trigger: () => this.isAirborne && this.isIdle,
+        state: AeroState.AIR_MED,
       },
       {
         command: new Command('*6+b', 1),

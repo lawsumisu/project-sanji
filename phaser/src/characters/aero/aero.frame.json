@@ -310,5 +310,21 @@
         "knockback": 35
       }
     }
+  },
+  "AIR_LIGHT": {
+    "animDef": {
+      "frames": [1, 2, 2, 2, 2, 3],
+      "assetKey": "vanessa",
+      "prefix": "attacks/air/light",
+      "frameRate": 15
+    }
+  },
+  "AIR_MED": {
+    "animDef": {
+      "frames": [1, 2, 2, 2, 3],
+      "assetKey": "vanessa",
+      "prefix": "attacks/air/med",
+      "frameRate": 15
+    }
   }
 }

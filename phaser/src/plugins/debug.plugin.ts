@@ -95,27 +95,27 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
       .once('destroy', this.onSceneDestroy);
   }
 
-  public drawLine(x1: number, y1: number, x2: number, y2: number, options: Partial<DebugOptions>): void {
+  public line(x1: number, y1: number, x2: number, y2: number, options: Partial<DebugOptions>): void {
     const { lineColor = 0xffffff, lineWidth = 1, persist } = options;
     const configs = persist ? this.persistentConfigs : this.configs;
     configs.push(<LineConfig>{ type: ConfigType.LINE, x1, y1, x2, y2, lineColor, lineWidth });
   }
 
-  public drawRect(rect: RectLike, options: Partial<DebugOptions> = {}): void {
+  public rect(rect: RectLike, options: Partial<DebugOptions> = {}): void {
     const { x, y, width, height } = rect;
     const { lineColor = 0xffffff, lineWidth = 1, persist } = options;
     const configs = persist ? this.persistentConfigs : this.configs;
     configs.push(<RectConfig>{ type: ConfigType.RECT, x, y, width, height, lineColor, lineWidth });
   }
 
-  public drawCircle(circle: { x: number, y: number, r: number }, options: Partial<DebugOptions> = {}): void {
+  public circle(circle: { x: number, y: number, r: number }, options: Partial<DebugOptions> = {}): void {
     const { lineColor = 0xffffff, fill, lineWidth = 1, persist } = options;
     const { x, y, r } = circle;
     const configs = persist ? this.persistentConfigs : this.configs;
     configs.push(<CircleConfig>{ type: ConfigType.CIRCLE, x, y, r, lineColor, lineWidth, fill });
   }
 
-  public drawCapsule(
+  public capsule(
     capsule: { x1: number; y1: number; x2: number; y2: number; r: number },
     options: Partial<DebugOptions> = {}
   ): void {

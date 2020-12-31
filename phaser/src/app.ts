@@ -16,7 +16,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   },
   plugins: {
     scene: [
-      { key: 'debug', plugin: DebugDrawPlugin, mapping: 'debug' },
+      { key: 'debugDraw', plugin: DebugDrawPlugin, mapping: 'debugDraw' },
       { key: 'GI', plugin: GameInputPlugin, mapping: 'GI' },
     ],
   },

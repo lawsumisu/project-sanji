@@ -15,12 +15,12 @@ export class StateManager<K extends string, C = {}> {
   private onBeforeTransitionFn: (key: K) => void = _.noop;
   private states: { [key in K]?: StateDefinition<C> } = {};
   private currentState: State<K, C>;
-  private localState = {};
+  private stateParams = {};
 
   // TODO: separate out collider management from state management via a colliderManager object.
   public update(): void {
     if (this.currentState.update) {
-      this.currentState.update(this.tick, this.localState);
+      this.currentState.update(this.tick, this.stateParams);
     }
     this.tick++;
   }
@@ -29,7 +29,7 @@ export class StateManager<K extends string, C = {}> {
    * Set callback that is called after a state transitions to a new state.
    * @param fn
    */
-  public onAfterTransition(fn: (config: C) => void): void {
+  public onAfterTransition(fn: (config: C, params: object) => void): void {
     this.onAfterTransitionFn = fn;
   }
 
@@ -48,10 +48,10 @@ export class StateManager<K extends string, C = {}> {
   /**
    * Updates the current player state.
    * @param key
-   * @param localState
+   * @param stateParams
    * @param force: Forces the state to transition, even if the new state would be the same as the current one.
    */
-  public setState(key: K, localState = {}, force?: boolean): void {
+  public setState(key: K, stateParams = {}, force?: boolean): void {
     if (!this.states[key]) {
       console.error(`${key} is not a valid state key; ignoring transition`);
       return;
@@ -62,9 +62,9 @@ export class StateManager<K extends string, C = {}> {
         ...currentStateDef,
         key
       };
-      this.onAfterTransitionFn(this.currentState);
+      this.onAfterTransitionFn(this.currentState, stateParams);
       this.tick = 0;
-      this.localState = { ...localState };
+      this.stateParams = { ...stateParams };
       // console.log(this.currentState.key);
     }
   }

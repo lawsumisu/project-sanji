@@ -49,8 +49,9 @@ export function addAnimationByFrames(
   sprite.anims.animationManager.create({ key, frames, frameRate, repeat });
 }
 
-export function playAnimation(sprite: Phaser.GameObjects.Sprite, key: string, force = false): void {
+export function playAnimation(sprite: Phaser.GameObjects.Sprite, key: string, params: { force?: boolean, startFrame?: number } = {}): void {
+  const { force = false, startFrame = 0} = params;
   if (sprite.anims.animationManager.exists(key) && (sprite.anims.getCurrentKey() !== key || force)) {
-    sprite.anims.play(key);
+    sprite.anims.play(key, true, startFrame);
   }
 }

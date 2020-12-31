@@ -2,10 +2,10 @@ import * as _ from 'lodash';
 
 /**
  * Grammar:
- * start: =     AND_INPUT | OR_INPUT | BASE_INPUT
- * INPUT:=      BASE_INPUT | (LP (AND_INPUT | OR_INPUT) RP) | OR_INPUT
- * AND_INPUT:=  INPUT ('+' INPUT)+
- * OR_INPUT:=   AND_INPUT ('|' AND_INPUT)+
+ * start: =     andInput | orInput | BASE_INPUT
+ * input:=      BASE_INPUT | (LP (andInput | orInput) RP) | orInput
+ * andInput:=   input ('+' input)+
+ * orInput:=    andInput ('|' andInput)+
  * BASE_INPUT:= '*'?[1,2,3,4,5,6,7,8,9,a,b,c,d,l,r]
  * OP:=         '+' | '|'
  * LP:=         '('
