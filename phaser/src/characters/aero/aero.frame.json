@@ -257,11 +257,11 @@
       }
     }
   },
-  "CROUCH_MED": {
+  "CROUCH_LIGHT_2": {
     "animDef": {
       "frames": 4,
       "assetKey": "vanessa",
-      "prefix": "attacks/crouch/low",
+      "prefix": "attacks/crouch/low1",
       "frameRate": 15
     },
     "hitboxDef": {
@@ -271,6 +271,14 @@
         ],
         "hit": { "damage": 10, "angle": 0, "knockback": 10 }
       }
+    }
+  },
+  "CROUCH_MED": {
+    "animDef": {
+      "frames": 11,
+      "assetKey": "vanessa",
+      "prefix": "attacks/crouch/low2",
+      "frameRate": 15
     }
   },
   "CROUCH_HEAVY": {
@@ -324,6 +332,14 @@
       "frames": [1, 2, 2, 2, 3],
       "assetKey": "vanessa",
       "prefix": "attacks/air/med",
+      "frameRate": 15
+    }
+  },
+  "AIR_HEAVY": {
+    "animDef": {
+      "frames": 6,
+      "assetKey": "vanessa",
+      "prefix": "attacks/air/heavy",
       "frameRate": 15
     }
   }

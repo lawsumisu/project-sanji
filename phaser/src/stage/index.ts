@@ -32,11 +32,9 @@ export class Stage extends Phaser.Scene {
 
   public preload(): void {
     this.load.image('background', 'assets/stages/makoto.jpg');
-    _.forEach(Aero.sfx, (path, key) => {
-      this.load.audio(key, `assets/audio/${path}`);
-    });
     this.p1.preload();
     this.p2.preload();
+    PS.soundLibrary.load();
   }
 
   public create(): void {

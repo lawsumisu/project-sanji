@@ -11,6 +11,7 @@ import { Unit } from 'src/unit';
 import * as Phaser from 'phaser';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { ColliderManager, FrameDefinitionColliderManager } from 'src/collider/manager';
+import { AudioKey } from 'src/assets/audio';
 
 export interface CommandTrigger<S extends string> {
   command: Command;
@@ -44,7 +45,8 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected commandList: Array<CommandTrigger<S>> = [];
 
   protected states: { [key in S]?: D };
-  private sounds: Set<string> = new Set<string>();
+  private playedSounds: Set<string> = new Set<string>();
+  protected audioKeys: AudioKey[] = [];
 
   constructor(playerIndex = 0) {
     super();
@@ -56,7 +58,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   }
 
   public preload(): void {
-    _.noop();
+    this.audioKeys.forEach(key => PS.soundLibrary.register(key));
   }
 
   /**
@@ -185,7 +187,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   protected afterStateTransition(config: D, params: object): void {
     _.noop(config, params);
-    this.sounds.clear();
+    this.playedSounds.clear();
   }
 
   protected beforeStateTransition(nextKey: S): void {
@@ -193,13 +195,13 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   }
 
   protected playSound(
-    key: string,
+    key: AudioKey,
     extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
     force?: boolean
   ): void {
-    if (!(PS.stage.sound.get(key) && this.sounds.has(key)) || force) {
+    if (!(PS.stage.sound.get(key) && this.playedSounds.has(key)) || force) {
       PS.stage.sound.play(key, extra);
-      this.sounds.add(key);
+      this.playedSounds.add(key);
     }
   }
 

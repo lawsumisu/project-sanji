@@ -1,6 +1,6 @@
 import { PS } from 'src/global';
 import { Command } from 'src/command';
-import { StageObject, UpdateParams } from 'src/stage/stageObject';
+import { StageObject } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { GameInput } from 'src/plugins/gameInput.plugin';
@@ -8,6 +8,7 @@ import aero from 'src/characters/aero/aero.frame.json';
 import { CharacterState, CommonCharacter, CommonState, StateMap, StateType } from 'src/characters/common';
 import { CommandTrigger } from 'src/characters';
 import { AeroShadow } from 'src/characters/aero/shadow';
+import { AudioKey } from 'src/assets/audio';
 
 enum AeroStateType {
   RIGHT_ARM = 'RIGHT_ARM',
@@ -36,6 +37,7 @@ enum AeroState {
   CROUCH_HEAVY = 'CROUCH_HEAVY',
   AIR_LIGHT = 'AIR_LIGHT',
   AIR_MED = 'AIR_MED',
+  AIR_HEAVY = 'AIR_HEAVY',
 }
 
 interface AeroStateConfig {
@@ -43,15 +45,7 @@ interface AeroStateConfig {
 }
 
 export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
-  public static sfx = {
-    ...CommonCharacter.sfx,
-    hitLight: 'sfx/hits/SE_00007.ogg',
-    hitMed: 'sfx/hits/SE_00008.ogg',
-    hitHeavy: 'sfx/hits/SE_00009.ogg',
-    punch1: 'sfx/hits/SE_00025.ogg',
-    punch2: 'sfx/hits/SE_00026.ogg',
-    jabVoice: 'sfx/vanessa/001.ogg'
-  };
+  protected audioKeys: AudioKey[] = ['hitLight', 'hitMed', 'hitHeavy', 'punch1', 'punch2', 'jabVoice'];
 
   private cancelFlag = false;
   private shadow: AeroShadow;
@@ -314,11 +308,27 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           this.goToNextState(CommonState.FALL)
         }
       }
+    },
+    [AeroState.AIR_HEAVY]: {
+      startAnimation: 'AIR_HEAVY',
+      type: [StateType.AIR, StateType.ATTACK],
+      onHitSound: 'hitHeavy',
+      update: () => {
+        if (this.sprite.anims.currentFrame.index === 2) {
+          this.playSound('punch1', { volume: 0.5 });
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.FALL, { startFrame: 2 });
+        }
+      }
     }
   };
 
   constructor(playerIndex = 0) {
     super(playerIndex, aero);
+    this.shadow = new AeroShadow(this, aero, () => {
+      this.cancelFlag = true;
+    });
   }
 
   protected getCommandList(): Array<CommandTrigger<CharacterState<AeroState>>> {
@@ -443,6 +453,11 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         state: AeroState.STAND_HEAVY_L
       },
       {
+        command: new Command('c', 1),
+        trigger: () => this.isAirborne && this.isIdle,
+        state: AeroState.AIR_HEAVY,
+      },
+      {
         command: new Command('d', 3),
         trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
         state: AeroState.ROLL,
@@ -504,13 +519,12 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   public preload(): void {
     super.preload();
     PS.stage.load.multiatlas('vanessa', 'characters/aero/vanessa.json', 'characters/aero');
+    this.shadow.preload();
   }
 
   public create(): void {
     super.create();
-    this.shadow = new AeroShadow(this, aero, () => {
-      this.cancelFlag = true;
-    });
+
     this.shadow.create();
     this.colliderManager.ignoreCollisionsWith(this.shadow.tag);
     PS.stage.addStageObject(this.shadow);

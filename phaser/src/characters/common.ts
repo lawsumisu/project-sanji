@@ -9,6 +9,7 @@ import { PS } from 'src/global';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 import { FrameDefinitionColliderManager } from 'src/collider/manager';
+import { AudioKey } from 'src/assets/audio';
 
 export enum StateType {
   AIR = 'AIR',
@@ -21,7 +22,7 @@ export enum StateType {
 
 export interface CommonStateConfig {
   startAnimation?: string;
-  onHitSound?: string;
+  onHitSound?: AudioKey;
   type: string[] | string;
 }
 
@@ -48,14 +49,11 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   CharacterState<S>,
   CharacterStateConfig<D>
 > {
-  public static sfx = {
-    land: 'sfx/land.ogg'
-  };
-
   protected states: StateMap<S, D>;
+  protected audioKeys: AudioKey[] = [];
 
   private commonStates: { [key in CommonState]: StateDefinition<CommonStateConfig> } = {
-    [CommonState.NULL]: {type: []},
+    [CommonState.NULL]: { type: [] },
     [CommonState.STAND]: {
       startAnimation: 'STAND',
       type: [StateType.IDLE, StateType.STAND],
@@ -159,7 +157,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     },
     [CommonState.FALL]: {
       startAnimation: 'FALL',
-      type: [StateType.IDLE, StateType.AIR],
+      type: [StateType.IDLE, StateType.AIR]
     },
     [CommonState.BLOCK_STAND]: {
       startAnimation: 'BLOCK_STAND',
@@ -188,6 +186,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       }
     }
   };
+  private commonAudioKeys: AudioKey[] = ['land'];
 
   constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
     super(playerIndex, frameDefinitionMap);
@@ -249,8 +248,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   public preload() {
     this.states = { ...this.commonStates, ...this.states };
+    this.audioKeys = [ ...this.commonAudioKeys, ...this.audioKeys ];
     super.preload();
-    console.log(this.sfx);
   }
 
   public create() {
@@ -288,7 +287,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     }
   }
 
-  protected afterStateTransition(config: CharacterStateConfig<D>, params: { startFrame?: number} = {}): void {
+  protected afterStateTransition(config: CharacterStateConfig<D>, params: { startFrame?: number } = {}): void {
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
@@ -335,7 +334,18 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   protected get bounds(): Phaser.Geom.Rectangle {
     const { flipX } = this.sprite;
-    const { width, height, centerX, centerY, pivotX, pivotY, x, y, realHeight, realWidth } = this.sprite.anims.currentFrame.frame;
+    const {
+      width,
+      height,
+      centerX,
+      centerY,
+      pivotX,
+      pivotY,
+      x,
+      y,
+      realHeight,
+      realWidth
+    } = this.sprite.anims.currentFrame.frame;
     const fx = flipX ? -1 : 1;
     const rect = new Phaser.Geom.Rectangle(0, 0, width, height);
     rect.centerX = this.position.x - (pivotX * realWidth - centerX - x) * fx;

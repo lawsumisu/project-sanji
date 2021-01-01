@@ -7,6 +7,7 @@ import { Hit } from 'src/collider';
 import { Scalar } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 import * as _ from 'lodash';
+import { AudioKey } from 'src/assets/audio';
 
 export enum AeroShadowState {
   STAND_L = 'STAND_L',
@@ -20,12 +21,16 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
   private readonly onHit: () => void;
 
   protected defaultState = AeroShadowState.STAND_R;
+  protected audioKeys: AudioKey[] = ['rush1'];
   protected states: { [key in AeroShadowState]: StateDefinition } = {
     [AeroShadowState.STAND_L]: {
       update: (tick: number, localState: { finishTimer: number }) => {
         if (tick === 0) {
           this.playAnimation('MACHINE_GUN_L', true);
           this.move();
+        }
+        if (this.sprite.anims.currentFrame.index === 2 ){
+          this.playSound('rush1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.playAnimation('STAND');
@@ -42,6 +47,9 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
         if (tick === 0) {
           this.playAnimation('MACHINE_GUN_R', true);
           this.move();
+        }
+        if (this.sprite.anims.currentFrame.index === 2 ){
+          this.playSound('rush1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.playAnimation('STAND');
