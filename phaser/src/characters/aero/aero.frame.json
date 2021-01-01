@@ -278,7 +278,7 @@
       "frames": 11,
       "assetKey": "vanessa",
       "prefix": "attacks/crouch/low2",
-      "frameRate": 15
+      "frameRate": 20
     }
   },
   "CROUCH_HEAVY": {

@@ -24,7 +24,7 @@ export interface CommandTrigger<S extends string> {
 export class BaseCharacter<S extends string = string, D extends StateDefinition = StateDefinition> extends StageObject {
   protected stateManager: StateManager<S, D>;
   protected colliderManager: ColliderManager;
-  protected nextStates: Array<{ state: S; executionTrigger: () => boolean, stateParams: object }> = [];
+  protected nextStates: Array<{ state: S; executionTrigger: () => boolean; stateParams: object }> = [];
   protected defaultState: S;
 
   protected sprite: Phaser.GameObjects.Sprite;
@@ -45,7 +45,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected commandList: Array<CommandTrigger<S>> = [];
 
   protected states: { [key in S]?: D };
-  private playedSounds: Set<string> = new Set<string>();
   protected audioKeys: AudioKey[] = [];
 
   constructor(playerIndex = 0) {
@@ -55,6 +54,15 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.stateManager = new StateManager<S, D>();
     this.stateManager.onBeforeTransition((key: S) => this.beforeStateTransition(key));
     this.stateManager.onAfterTransition((config, params) => this.afterStateTransition(config, params));
+    this.stateManager.addEventListener(
+      'playSound',
+      (
+        stateParams: { playedSounds?: Set<AudioKey> },
+        key: AudioKey,
+        extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
+        force = false
+      ) => this.onPlaySoundEvent(stateParams, key, extra, force)
+    );
   }
 
   public preload(): void {
@@ -187,22 +195,34 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   protected afterStateTransition(config: D, params: object): void {
     _.noop(config, params);
-    this.playedSounds.clear();
   }
 
   protected beforeStateTransition(nextKey: S): void {
     _.noop(nextKey);
   }
 
+  protected onPlaySoundEvent(
+    stateParams: { playedSounds?: Set<AudioKey> },
+    key: AudioKey,
+    extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
+    force = false
+  ): void {
+    const { playedSounds = new Set() } = stateParams;
+    if (!(PS.stage.sound.get(key) && playedSounds.has(key)) || force) {
+      PS.stage.sound.play(key, extra);
+      if (!stateParams.playedSounds) {
+        stateParams.playedSounds = new Set();
+      }
+      stateParams.playedSounds!.add(key);
+    }
+  }
+
   protected playSound(
     key: AudioKey,
     extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
-    force?: boolean
+    force = false
   ): void {
-    if (!(PS.stage.sound.get(key) && this.playedSounds.has(key)) || force) {
-      PS.stage.sound.play(key, extra);
-      this.playedSounds.add(key);
-    }
+    this.stateManager.dispatchEvent('playSound', key, extra, force);
   }
 
   protected isCurrentState(state: S): boolean {
@@ -243,7 +263,7 @@ export class BaseCharacterWithFrameDefinition<
         direction: { x: !this.sprite.flipX, y: true },
         frameKey: anim.key
       };
-    })
+    });
   }
 
   protected setupSprite(): void {

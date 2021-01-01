@@ -267,8 +267,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       cancelPotential: 2,
       update: () => {
         this.velocity.x = 0;
-        if (this.sprite.anims.currentFrame.index === 1) {
-          this.playSound('jabVoice', { volume: 0.5 });
+        if (this.sprite.anims.currentFrame.index === 3) {
+          this.playSound('punch1', { volume: 0.5 });
         } else if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.CROUCH)
         }

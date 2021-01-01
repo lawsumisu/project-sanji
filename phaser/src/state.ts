@@ -16,6 +16,12 @@ export class StateManager<K extends string, C = {}> {
   private states: { [key in K]?: StateDefinition<C> } = {};
   private currentState: State<K, C>;
   private stateParams = {};
+  private eventManager: {
+    [key: string]: {
+      nextId: number;
+      [key: number]: (params: StateManager<K, C>['stateParams'], ...args: any[]) => void;
+    };
+  } = {};
 
   // TODO: separate out collider management from state management via a colliderManager object.
   public update(): void {
@@ -75,5 +81,25 @@ export class StateManager<K extends string, C = {}> {
 
   public getStateDefinition(key: K): StateDefinition<C> {
     return { ...(this.states[key] as StateDefinition<C>) };
+  }
+
+  public addEventListener(key: string, listener: (params: StateManager<K, C>['stateParams'], ...args: any[]) => void) {
+    if (!this.eventManager[key]) {
+      this.eventManager[key] = { nextId: 0 };
+    }
+    const listeners = this.eventManager[key]!;
+    listeners[listeners.nextId] = listener;
+    listeners.nextId++;
+    return () => delete listeners[listeners.nextId - 1];
+  }
+
+  public dispatchEvent(key: string, ...args: any[]): void {
+    if (this.eventManager[key]) {
+      _.forEach(this.eventManager[key], fn => {
+        if (!_.isNumber(fn)) {
+          fn(this.stateParams, ...args);
+        }
+      });
+    }
   }
 }

@@ -32,6 +32,7 @@ export enum CommonState {
   WALK = 'WALK',
   DASH_BACK = 'DASH_BACK',
   JUMP = 'JUMP',
+  JUMP_SQUAT = 'JUMP_SQUAT',
   FALL = 'FALL',
   CROUCH_TRANSITION = 'CROUCH_TRANSITION',
   CROUCH = 'CROUCH',
@@ -60,13 +61,12 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       update: () => {
         this.velocity.y = 0;
         this.velocity.x = 0;
-        this.sprite.flipX = this.direction === -1;
+
       }
     },
     [CommonState.WALK]: {
       type: [StateType.IDLE, StateType.STAND],
       update: () => {
-        this.sprite.flipX = this.direction === -1;
         if (!this.isCommandExecuted(Command.registry.FORWARD) && !this.isCommandExecuted(Command.registry.BACK)) {
           this.stateManager.setState(CommonState.STAND);
         } else {
@@ -133,10 +133,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         }
       }
     },
-    [CommonState.JUMP]: {
+    [CommonState.JUMP_SQUAT]: {
       startAnimation: 'SQUAT',
-      type: [StateType.IDLE, StateType.STAND],
-      update: (tick: number, params: { d: -1 | 1 | undefined }) => {
+      type: [StateType.STAND],
+      update: (tick: number, params: { d?: -1 | 1 }) => {
         if (tick <= 2) {
           if (tick === 0) {
             this.velocity.x = 0;
@@ -148,8 +148,14 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
           this.velocity.y = -this.jumpSpeed;
           this.velocity.x = this.walkSpeed * this.direction * (params.d || 0);
-          playAnimation(this.sprite, 'JUMP');
+          this.goToNextState(CommonState.JUMP);
         }
+      }
+    },
+    [CommonState.JUMP]: {
+      startAnimation: 'JUMP',
+      type: [StateType.IDLE, StateType.AIR],
+      update: () => {
         if (this.velocity.y > 0) {
           this.stateManager.setState(CommonState.FALL);
         }
@@ -207,7 +213,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       {
         command: new Command('*7|*8|*9', 1),
         trigger: () => !this.isAirborne && (this.isIdle || this.checkStateType(StateType.BLOCK)),
-        state: CommonState.JUMP
+        state: CommonState.JUMP_SQUAT
       },
       {
         command: new Command('6~6', 12),
@@ -233,7 +239,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       },
       {
         command: Command.registry.GUARD,
-        trigger: () => !this.isAirborne && this.isIdle && this.isStanding && !this.isCurrentState(CommonState.JUMP),
+        trigger: () =>  this.isIdle && this.isStanding,
         state: CommonState.BLOCK_STAND,
         priority: 1
       },
@@ -281,9 +287,17 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         this.velocity.y = 0;
         this.stateManager.setState(CommonState.STAND);
         this.playSound('land', { volume: 0.5 }, true);
+        this.sprite.flipX = this.direction === -1;
       }
     } else if (this.position.y > PS.stage.ground) {
       this.position.y = PS.stage.ground;
+    }
+  }
+
+  protected updateSprite(): void {
+    super.updateSprite();
+    if (this.isIdle && !this.isAirborne) {
+      this.sprite.flipX = this.direction === -1;
     }
   }
 
