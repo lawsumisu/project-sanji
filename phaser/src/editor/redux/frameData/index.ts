@@ -1,7 +1,9 @@
 import { FrameConfigTP, TextureDataTP } from 'src/assets';
 import { FrameDefinitionMap, getSpriteIndexFromDefinition } from 'src/characters/frameData';
 import spriteSheet from 'src/characters/aero/vanessa.png';
+import spriteSheet2 from 'src/assets/sprites/rock.png';
 import data from 'src/characters/aero/vanessa.json';
+import data2 from 'src/assets/sprites/rock.json';
 import actionCreatorFactory, { isType } from 'typescript-fsa';
 import { Action } from 'redux';
 import { Vector2 } from '@lawsumisu/common-utilities';
@@ -17,7 +19,7 @@ function processTextureData(textureData: TextureDataTP): TextureDataMap {
   }, {});
 }
 
-export function getSpriteConfig(frameData: FrameDataState, frameKey: string, frameIndex: number): FrameConfigTP {
+export function getSpriteConfig(frameData: FrameDataState, frameKey: string, frameIndex: number): FrameConfigTP | null {
   const animDef = frameData.definitionMap[frameKey].animDef;
   const texture = frameData.texture;
   const { prefix } = animDef;
@@ -27,7 +29,8 @@ export function getSpriteConfig(frameData: FrameDataState, frameKey: string, fra
   if (config) {
     return config;
   } else {
-    throw new Error(`Config for ${filename} not Found`);
+    console.warn(`Config for ${filename} not Found`);
+    return null
   }
 }
 
@@ -45,8 +48,8 @@ export interface FrameDataState {
 }
 
 const initialState: FrameDataState = {
-  source: spriteSheet,
-  texture: processTextureData(data.textures[0]),
+  source: spriteSheet2,
+  texture: processTextureData(data2.textures[0]),
   definitionMap: {},
   selection: null
 };

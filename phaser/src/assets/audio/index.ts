@@ -27,7 +27,7 @@ export class SoundLibrary {
   }
 
   public load(): void {
-    _.forEach(this.registeredSounds, (value, key: AudioKey) => {
+    _.forEach(this.registeredSounds, (_value, key: AudioKey) => {
       const path = audio[key];
       this.scene.load.audio(key, `assets/audio/${path}`);
     })

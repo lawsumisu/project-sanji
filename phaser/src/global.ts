@@ -1,6 +1,6 @@
 import { GI, GameInputPlugin } from 'src/plugins/gameInput.plugin';
 import { Stage } from 'src/stage';
-import { SoundLibrary } from 'src/assets/audio/index';
+import { SoundLibrary } from 'src/assets/audio';
 
 let stage: Stage;
 let soundLibrary: SoundLibrary;

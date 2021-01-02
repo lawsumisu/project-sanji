@@ -38,7 +38,8 @@
                 },
                 "tag": {
                   "type": ["string", "number"]
-                }
+                },
+                "persistThroughFrame": { "type": "number" }
               }
             }
           }

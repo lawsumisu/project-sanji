@@ -72,7 +72,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         } else {
           const animation = this.isCommandExecuted(Command.registry.FORWARD) ? 'WALK_FWD' : 'WALK_BACK';
           const d = this.isCommandExecuted(Command.registry.FORWARD) ? 1 : -1;
-          playAnimation(this.sprite, animation);
+          this.playAnimation(animation);
           this.velocity.x = this.walkSpeed * this.direction * d;
         }
       }
@@ -82,9 +82,9 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       update: (tick: number) => {
         this.velocity.x = 0;
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
-          playAnimation(this.sprite, 'STAND_UP');
+          this.playAnimation('STAND_UP');
         } else if (tick === 0) {
-          playAnimation(this.sprite, 'SQUAT');
+          this.playAnimation('SQUAT');
         } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
           this.stateManager.setState(CommonState.CROUCH);
         }
@@ -99,7 +99,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       update: () => {
         this.velocity.x = 0;
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
-          playAnimation(this.sprite, 'STAND_UP');
+          this.playAnimation('STAND_UP');
         }
         if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
           this.stateManager.setState(CommonState.STAND);

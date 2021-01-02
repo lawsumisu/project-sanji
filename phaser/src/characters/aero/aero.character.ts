@@ -2,12 +2,10 @@ import { PS } from 'src/global';
 import { Command } from 'src/command';
 import { StageObject } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
-import { playAnimation } from 'src/utilitiesPF/animation.util';
-import { GameInput } from 'src/plugins/gameInput.plugin';
 import aero from 'src/characters/aero/aero.frame.json';
 import { CharacterState, CommonCharacter, CommonState, StateMap, StateType } from 'src/characters/common';
 import { CommandTrigger } from 'src/characters';
-import { AeroShadow } from 'src/characters/aero/shadow';
+import { AeroShadow, AeroShadowState } from 'src/characters/aero/shadow';
 import { AudioKey } from 'src/assets/audio';
 
 enum AeroStateType {
@@ -37,7 +35,7 @@ enum AeroState {
   CROUCH_HEAVY = 'CROUCH_HEAVY',
   AIR_LIGHT = 'AIR_LIGHT',
   AIR_MED = 'AIR_MED',
-  AIR_HEAVY = 'AIR_HEAVY',
+  AIR_HEAVY = 'AIR_HEAVY'
 }
 
 interface AeroStateConfig {
@@ -196,24 +194,32 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       startAnimation: 'ROLL_STARTUP',
       cancelPotential: 4,
       type: [StateType.ATTACK, StateType.STAND],
-      update: (tick: number, localState: { continue: boolean }) => {
+      update: (tick: number, stateParams: { shadowState?: AeroShadowState }) => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
           if (this.currentAnimation === 'ROLL_STARTUP') {
-            this.shadow.start();
-            playAnimation(this.sprite, 'ROLL_1');
-          } else if (localState.continue) {
-            this.cancelFlag = false;
-            playAnimation(this.sprite, this.currentAnimation === 'ROLL_1' ? 'ROLL_2' : 'ROLL_1');
-            this.shadow.start();
-            localState.continue = false;
+            this.playAnimation('ROLL_1');
+            this.shadow.start({ state: stateParams.shadowState });
+            delete stateParams.shadowState;
+          } else if (stateParams.shadowState || !this.shadow.canCancel(0)) {
+            // Prepare to roll again
+            this.playAnimation(this.currentAnimation === 'ROLL_1' ? 'ROLL_2' : 'ROLL_1');
+            if (this.shadow.canCancel(0)) {
+              this.cancelFlag = false;
+              this.shadow.start({ state: stateParams.shadowState });
+              delete stateParams.shadowState;
+            }
           } else {
+            // Exiting roll
             this.stateManager.setState(CommonState.STAND);
             this.preRollState = CommonState.NULL;
           }
         }
-        if (tick > 0 && this.input.isInputPressed(GameInput.INPUT1)) {
-          localState.continue = true;
+        if (tick > 0 && !stateParams.shadowState && this.shadow.canCancel(20)) {
+          const rollState = this.rollStates.find(s => this.isCommandExecuted(s.command));
+          if (rollState) {
+            stateParams.shadowState = rollState.state;
+          }
         }
       }
     },
@@ -229,7 +235,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         if (!this.sprite.anims.isPlaying) {
           this.velocity.x = 0;
           if (this.currentAnimation === 'DASH') {
-            this.playAnimation('DASH_BODY')
+            this.playAnimation('DASH_BODY');
           } else {
             this.goToNextState(CommonState.STAND);
           }
@@ -242,7 +248,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
-          this.goToNextState(CommonState.STAND)
+          this.goToNextState(CommonState.STAND);
         }
       }
     },
@@ -256,7 +262,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         if (this.sprite.anims.currentFrame.index === 1) {
           this.playSound('jabVoice', { volume: 0.5 });
         } else if (!this.sprite.anims.isPlaying) {
-          this.goToNextState(CommonState.CROUCH)
+          this.goToNextState(CommonState.CROUCH);
         }
       }
     },
@@ -270,7 +276,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         if (this.sprite.anims.currentFrame.index === 3) {
           this.playSound('punch1', { volume: 0.5 });
         } else if (!this.sprite.anims.isPlaying) {
-          this.goToNextState(CommonState.CROUCH)
+          this.goToNextState(CommonState.CROUCH);
         }
       }
     },
@@ -282,7 +288,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
-          this.goToNextState(CommonState.CROUCH)
+          this.goToNextState(CommonState.CROUCH);
         }
       }
     },
@@ -292,7 +298,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitLight',
       update: () => {
         if (!this.sprite.anims.isPlaying) {
-          this.goToNextState(CommonState.FALL, { startFrame: 2 })
+          this.goToNextState(CommonState.FALL, { startFrame: 2 });
         }
       }
     },
@@ -305,7 +311,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           this.playSound('punch1', { volume: 0.5 });
         }
         if (!this.sprite.anims.isPlaying) {
-          this.goToNextState(CommonState.FALL)
+          this.goToNextState(CommonState.FALL);
         }
       }
     },
@@ -323,6 +329,17 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       }
     }
   };
+
+  private rollStates = [
+    {
+      command: new Command('*7|*8|*9+d', 1),
+      state: AeroShadowState.STAND_ATK_UP
+    },
+    {
+      command: new Command('d', 1),
+      state: AeroShadowState.STAND_R
+    }
+  ];
 
   constructor(playerIndex = 0) {
     super(playerIndex, aero);
@@ -357,7 +374,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('a', 1),
         trigger: () => this.isAirborne && this.isIdle,
-        state: AeroState.AIR_LIGHT,
+        state: AeroState.AIR_LIGHT
       },
       {
         command: new Command('*6+a', 1),
@@ -405,7 +422,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('b', 1),
         trigger: () => this.isAirborne && this.isIdle,
-        state: AeroState.AIR_MED,
+        state: AeroState.AIR_MED
       },
       {
         command: new Command('*6+b', 1),
@@ -455,31 +472,40 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('c', 1),
         trigger: () => this.isAirborne && this.isIdle,
-        state: AeroState.AIR_HEAVY,
+        state: AeroState.AIR_HEAVY
       },
       {
-        command: new Command('d', 3),
+        command: new Command('d', 1),
         trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
         state: AeroState.ROLL,
         priority: 2
       },
       {
+        command: new Command('*7|*8|*9+d', 1),
+        trigger: () =>
+          !this.isAirborne &&
+          (this.isIdle || this.canCancel(AeroState.ROLL) || this.isCurrentState(CommonState.JUMP_SQUAT)),
+        state: AeroState.ROLL,
+        stateParams: { shadowState: AeroShadowState.STAND_ATK_UP },
+        priority: 3
+      },
+      {
         command: new Command('*1|*2|*3+a', 1),
         trigger: () => this.isIdle,
         state: AeroState.CROUCH_LIGHT,
-        priority: 3,
+        priority: 3
       },
       {
         command: new Command('*1|*2|*3+b', 1),
         trigger: () => this.isIdle || this.canCancel(AeroState.CROUCH_MED),
         state: AeroState.CROUCH_MED,
-        priority: 3,
+        priority: 3
       },
       {
         command: new Command('*1|*2|*3+c', 1),
         trigger: () => this.isIdle || this.canCancel(AeroState.CROUCH_HEAVY),
         state: AeroState.CROUCH_HEAVY,
-        priority: 3,
+        priority: 3
       },
       {
         command: new Command('236a', 18),
@@ -505,13 +531,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       {
         command: new Command('236a', 18),
         trigger: () => {
-          if (this.isCurrentState(AeroState.DASH_BODY))  {
+          if (this.isCurrentState(AeroState.DASH_BODY)) {
             return () => this.currentAnimation === 'DASH_BODY' && this.sprite.anims.currentFrame.index >= 4;
           } else {
             return false;
           }
         },
-        state: AeroState.DASH_STRAIGHT,
+        state: AeroState.DASH_STRAIGHT
       }
     ];
   }
@@ -519,12 +545,12 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   public preload(): void {
     super.preload();
     PS.stage.load.multiatlas('vanessa', 'characters/aero/vanessa.json', 'characters/aero');
+    PS.stage.load.multiatlas('rock', 'assets/sprites/rock.json', 'assets/sprites');
     this.shadow.preload();
   }
 
   public create(): void {
     super.create();
-
     this.shadow.create();
     this.colliderManager.ignoreCollisionsWith(this.shadow.tag);
     PS.stage.addStageObject(this.shadow);
@@ -563,7 +589,6 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     this.cancelFlag = false;
     if (nextKey === AeroState.ROLL && this.checkStateType(StateType.ATTACK)) {
       this.preRollState = this.stateManager.current.key;
-      console.log(this.preRollState);
     }
   }
 }

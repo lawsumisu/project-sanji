@@ -235,7 +235,7 @@
   },
   "DASH_STRAIGHT": {
     "animDef": {
-      "frames": [23,24,25,26,27,28,29,30,31],
+      "frames": [23, 24, 25, 26, 27, 28, 29, 30, 31],
       "assetKey": "vanessa",
       "prefix": "attacks/uppercut",
       "frameRate": 20
@@ -250,9 +250,7 @@
     },
     "hitboxDef": {
       "1": {
-        "boxes": [
-          { "x1": 50.8, "y1": -62.4, "x2": 16.6, "y2": -54.4, "r": 6 }
-        ],
+        "boxes": [{ "x1": 50.8, "y1": -62.4, "x2": 16.6, "y2": -54.4, "r": 6 }],
         "hit": { "damage": 10, "angle": 0, "knockback": 10 }
       }
     }
@@ -266,9 +264,7 @@
     },
     "hitboxDef": {
       "1": {
-        "boxes": [
-          { "x1": 25.6, "y1": -47.8, "x2": 58.4, "y2": -24.8, "r": 6.5 }
-        ],
+        "boxes": [{ "x1": 25.6, "y1": -47.8, "x2": 58.4, "y2": -24.8, "r": 6.5 }],
         "hit": { "damage": 10, "angle": 0, "knockback": 10 }
       }
     }
@@ -290,14 +286,10 @@
     },
     "hitboxDef": {
       "2": {
-        "boxes": [
-          { "x1": 49.6, "y1": -42.8, "x2": 33.6, "y2": -38.8, "r": 8 }
-        ]
+        "boxes": [{ "x1": 49.6, "y1": -42.8, "x2": 33.6, "y2": -38.8, "r": 8 }]
       },
       "3": {
-        "boxes": [
-          { "x": 49.8, "y": -44.4, "r": 10 }
-        ]
+        "boxes": [{ "x": 49.8, "y": -44.4, "r": 10 }]
       },
       "4": {
         "boxes": [
@@ -307,9 +299,7 @@
         "tag": 1
       },
       "5": {
-        "boxes": [
-          { "x": 27.8, "y": -90.2, "r": 10 }
-        ],
+        "boxes": [{ "x": 27.8, "y": -90.2, "r": 10 }],
         "tag": 1
       },
       "hit": {
@@ -341,6 +331,75 @@
       "assetKey": "vanessa",
       "prefix": "attacks/air/heavy",
       "frameRate": 15
+    }
+  },
+  "SHADOW_STAND": {
+    "animDef": {
+      "frames": 23,
+      "assetKey": "rock",
+      "prefix": "idle",
+      "frameRate": 15
+    }
+  },
+  "SHADOW_STAND_ATK_L": {
+    "animDef": {
+      "frames": [9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+      "assetKey": "rock",
+      "prefix": "attacks/reppuken",
+      "frameRate": 20
+    },
+    "hitboxDef": {
+      "2": {
+        "boxes": [{ "x": 50.6, "y": -54.2, "r": 13.5 }]
+      },
+      "3": {
+        "boxes": [{ "x1": 25.8, "y1": -114.6, "x2": 39.2, "y2": -57.6, "r": 12 }]
+      },
+      "hit": {
+        "damage": 20,
+        "angle": 0,
+        "knockback": 35
+      }
+    }
+  },
+  "SHADOW_STAND_ATK_R": {
+    "animDef": {
+      "frames": [2, 3, 4, 5, 6, 7, 8],
+      "assetKey": "rock",
+      "prefix": "attacks/reppuken",
+      "frameRate": 20
+    },
+    "hitboxDef": {
+      "3": {
+        "boxes": [{ "x1": 52.2, "y1": -48.4, "x2": 31, "y2": -31.8, "r": 10 }]
+      },
+      "4": {
+        "boxes": [{ "x1": 48.4, "y1": -51.6, "x2": 29.8, "y2": -105.6, "r": 10 }]
+      },
+      "hit": {
+        "damage": 20,
+        "angle": 0,
+        "knockback": 35
+      }
+    }
+  },
+  "SHADOW_DUNK": {
+    "animDef": {
+      "frames": 12,
+      "assetKey": "rock",
+      "prefix": "attacks/dunk",
+      "frameRate": 15
+    },
+    "hitboxDef": {
+      "5": {
+        "boxes": [{ "x1": 25.2, "y1": -84.2, "x2": 56.2, "y2": -57.6, "r": 10 }],
+        "persistThroughFrame": 6
+      },
+      "hit": {
+        "damage": 20,
+        "angle": 15,
+        "knockback": 35
+      }
     }
   }
 }

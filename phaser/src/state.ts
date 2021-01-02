@@ -26,9 +26,8 @@ export class StateManager<K extends string, C = {}> {
   // TODO: separate out collider management from state management via a colliderManager object.
   public update(): void {
     if (this.currentState.update) {
-      this.currentState.update(this.tick, this.stateParams);
+      this.currentState.update(this.tick++, this.stateParams);
     }
-    this.tick++;
   }
 
   /**
