@@ -8,85 +8,107 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 interface Props {
-  className?: string
+  className?: string;
 }
 
 interface DispatchMappedProps {
   actions: {
-    loadSpriteSheet: typeof frameDataActionCreators.loadSpriteSheet,
-  }
+    loadSpriteSheet: typeof frameDataActionCreators.loadSpriteSheet;
+  };
 }
 
 interface State {
-  texture: TextureDataTP | null
+  texture: TextureDataTP | null;
 }
 
 class SpriteSheetLoader extends React.PureComponent<Props & DispatchMappedProps, State> {
   public state: State = { texture: null };
 
-  private sourceRef: HTMLInputElement | null;
-  private textureRef: HTMLInputElement | null;
+  private ref: HTMLInputElement | null;
 
   public static mapDispatchToProps(dispatch: Dispatch): DispatchMappedProps {
     return {
-      actions: bindActionCreators({
-        loadSpriteSheet: frameDataActionCreators.loadSpriteSheet,
-      }, dispatch)
-    }
+      actions: bindActionCreators(
+        {
+          loadSpriteSheet: frameDataActionCreators.loadSpriteSheet
+        },
+        dispatch
+      )
+    };
   }
 
   public render(): React.ReactNode {
     return (
       <React.Fragment>
-        <Icon className={cx('icon', this.props.className)} icon="file-image" size="lg" onClick={this.onClick} hint="Load Sprite Sheet"/>
-        <input ref={this.getSetRefFn('textureRef')} type="file" accept=".json" onChange={this.onLoadTexture} onClick={this.clear}/>
-        <input ref={this.getSetRefFn('sourceRef')} type="file" accept=".png" onChange={this.onLoadSource} onClick={this.clear}/>
+        <Icon
+          className={cx('icon', this.props.className)}
+          icon="file-image"
+          size="lg"
+          onClick={this.onClick}
+          hint="Load Sprite Sheet"
+        />
+        <input
+          ref={this.setRef}
+          type="file"
+          accept=".json, .png"
+          onChange={this.onLoadTexture}
+          onClick={this.clear}
+          multiple
+        />
       </React.Fragment>
-    )
+    );
   }
 
   private onLoadTexture = ({ target }: { target: HTMLInputElement }) => {
-    const fileReader = new FileReader();
-    fileReader.onload = (e => {
-      if (e.target && e.target.result) {
-        this.setState({ texture: (JSON.parse(e.target.result as string).textures[0]) as TextureDataTP});
-        this.sourceRef && this.sourceRef.click();
+    if (target.files) {
+      const textureFiles = [];
+      const sourceFiles: File[] = [];
+      for (let i = 0; i < target.files.length; ++i) {
+        target.files[i].name.endsWith('.png') ? sourceFiles.push(target.files[i]) : textureFiles.push(target.files[i]);
       }
-    });
-    fileReader.readAsText(target.files![0])
+      textureFiles.forEach(f => this.loadSpriteSheet(f, sourceFiles));
+    }
   };
 
-  private onLoadSource = ({ target }: { target: HTMLInputElement }) => {
-    const fileReader = new FileReader();
-    fileReader.onload = (e => {
-      if (e.target && e.target.result) {
-        if (!_.isNil(this.state.texture)) {
-          const key = target.files![0].name.replace('.png', '');
-          this.props.actions.loadSpriteSheet({ key, textureData: this.state.texture!, source: e.target.result as string });
+  private loadSpriteSheet(file: File, sourceFiles: File[]) {
+    this.readFile(file, textureFile => {
+      const textureData = JSON.parse(textureFile as string).textures[0] as TextureDataTP;
+      const imageFile = sourceFiles.find(f => f.name === textureData.image);
+      if (imageFile) {
+        this.readFile(imageFile, (source: string) => {
+          const key = file.name.replace('.json', '');
+          this.props.actions.loadSpriteSheet({ key, textureData, source });
           this.setState({ texture: null });
-        }
+        });
+      } else {
+        alert(`Error while loading ${file.name}: Could not find image ${textureData.image}`);
       }
     });
-    fileReader.readAsDataURL(target.files![0])
-  };
+  }
+
+  private readFile(file: File, onload: (loadedFile: string | ArrayBuffer) => void): void {
+    const fileReader = new FileReader();
+    fileReader.onload = e => {
+      if (e.target && e.target.result) {
+        onload(e.target.result);
+      }
+    };
+    file.name.endsWith('.png') ? fileReader.readAsDataURL(file) : fileReader.readAsText(file);
+  }
 
   private onClick = () => {
-    this.textureRef && this.textureRef.click();
+    this.ref && this.ref.click();
   };
 
   private clear = () => {
-    [this.sourceRef, this.textureRef].forEach(ref => {
-      if (ref) {
-        ref.value = '';
-      }
-    });
+    if (this.ref) {
+      this.ref.value = '';
+    }
   };
 
-  private getSetRefFn(key: 'sourceRef' | 'textureRef') {
-    return (ref: HTMLInputElement | null) => {
-      this[key] = ref;
-    }
-  }
+  private setRef = (ref: HTMLInputElement | null) => {
+    this.ref = ref;
+  };
 }
 
 export const ReduxConnectedSpriteSheetLoader = connect(null, SpriteSheetLoader.mapDispatchToProps)(SpriteSheetLoader);
