@@ -544,7 +544,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   public preload(): void {
     super.preload();
     PS.stage.load.multiatlas('vanessa', 'characters/aero/sprites/vanessa.json', 'characters/aero/sprites');
-    PS.stage.load.multiatlas('rock', 'charactersF/aero/sprites/rock.json', 'characters/aero/sprites');
+    PS.stage.load.multiatlas('rock', 'characters/aero/sprites/rock.json', 'characters/aero/sprites');
     this.shadow.preload();
   }
 
