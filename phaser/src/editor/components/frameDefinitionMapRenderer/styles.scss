@@ -2,12 +2,14 @@
   .frame-definition-item--tab{
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: stretch;
     justify-content: stretch;
 
     .tab--name {
       cursor: pointer;
       flex-grow: 1;
+      display: flex;
+      align-items: center;
     }
   }
 
