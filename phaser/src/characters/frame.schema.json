@@ -26,7 +26,8 @@
                 "damage": { "type": "number" },
                 "angle": { "type": "number" },
                 "knockback": { "type": "number" }
-              }
+              },
+              "required": ["damage", "angle", "knockback"]
             }
           },
           "patternProperties": {
@@ -42,7 +43,8 @@
                 "persistThroughFrame": { "type": "number" }
               }
             }
-          }
+          },
+          "required": ["hit"]
         }
       }
     }

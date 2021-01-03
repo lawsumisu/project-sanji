@@ -54,6 +54,10 @@ export class ColliderManager {
     }
   }
 
+  public clearHitboxData(): void {
+    this.setHitData(HitboxData.EMPTY);
+  }
+
   private setHitData(data: HitboxData): void {
     PS.stage.removeHitboxData(this.collisionData.hitData.tag);
     this.collisionData.hitData = data;

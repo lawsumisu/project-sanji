@@ -17,7 +17,7 @@ export interface CommandTrigger<S extends string> {
   command: Command;
   trigger?: () => boolean | (() => boolean);
   state: S;
-  stateParams?: object;
+  stateParams?: { [key: string]: unknown };
   priority?: number;
 }
 
@@ -100,7 +100,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   public update(params: { time: number; delta: number }): void {
     super.update(params);
     this.updateState();
-    this.colliderManager.update();
     if (!this.isHitlagged) {
       this.updateKinematics(params.delta);
       this.updateSprite();
@@ -129,6 +128,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
       this.sprite.anims.resume();
       this.goToNextState();
       this.stateManager.update();
+      this.colliderManager.update();
     }
   }
 

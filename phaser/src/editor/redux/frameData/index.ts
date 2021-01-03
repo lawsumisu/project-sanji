@@ -48,8 +48,8 @@ export interface FrameDataState {
 }
 
 const initialState: FrameDataState = {
-  source: spriteSheet2,
-  texture: processTextureData(data2.textures[0]),
+  source: spriteSheet,
+  texture: processTextureData(data.textures[0]),
   definitionMap: {},
   selection: null
 };

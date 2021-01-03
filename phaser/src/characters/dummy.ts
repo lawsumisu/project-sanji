@@ -42,8 +42,7 @@ export class Dummy extends BaseCharacter {
       return;
     }
 
-    this.stateManager.update();
-    this.updateKinematics(params.delta);
+    // TODO handle hitstun in super class
     this.hitstun = Math.max(0, this.hitstun - 1);
     if (this.hitstun === 0 && !this.isAirborne) {
       this.velocity.x = 0;

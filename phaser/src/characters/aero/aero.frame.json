@@ -250,23 +250,23 @@
     },
     "hitboxDef": {
       "1": {
-        "boxes": [{ "x1": 50.8, "y1": -62.4, "x2": 16.6, "y2": -54.4, "r": 6 }],
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
-      }
+        "boxes": [{ "x1": 50.8, "y1": -62.4, "x2": 16.6, "y2": -54.4, "r": 6 }]
+      },
+      "hit": { "damage": 10, "angle": 0, "knockback": 10 }
     }
   },
   "CROUCH_LIGHT_2": {
     "animDef": {
       "frames": 4,
       "assetKey": "vanessa",
-      "prefix": "attacks/crouch/low1",
+      "prefix": "attacks/crouch/low",
       "frameRate": 15
     },
     "hitboxDef": {
       "1": {
-        "boxes": [{ "x1": 25.6, "y1": -47.8, "x2": 58.4, "y2": -24.8, "r": 6.5 }],
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
-      }
+        "boxes": [{ "x1": 25.6, "y1": -47.8, "x2": 58.4, "y2": -24.8, "r": 6.5 }]
+      },
+      "hit": { "damage": 10, "angle": 0, "knockback": 10 }
     }
   },
   "CROUCH_MED": {
@@ -275,6 +275,15 @@
       "assetKey": "vanessa",
       "prefix": "attacks/crouch/low2",
       "frameRate": 20
+    },
+    "hitboxDef": {
+      "3": {
+        "boxes": [{ "x1": 69.6, "y1": -20.8, "x2": 7, "y2": -19.6, "r": 10 }]
+      },
+      "4": {
+        "boxes": [{ "x": 61, "y": -30, "r": 12.5 }]
+      },
+      "hit": { "damage": 10, "angle": 0, "knockback": 10 }
     }
   },
   "CROUCH_HEAVY": {
@@ -380,6 +389,25 @@
         "damage": 20,
         "angle": 0,
         "knockback": 35
+      }
+    }
+  },
+  "SHADOW_UPPER": {
+    "animDef": {
+      "frames": 11,
+      "assetKey": "rock",
+      "prefix": "attacks/uppercut",
+      "frameRate": 15
+    },
+    "hitboxDef": {
+      "3": {
+        "boxes": [{ "x1": 35.4, "y1": -77.2, "x2": 55.2, "y2": -84.6, "r": 8.5 }],
+        "persistThroughFrame": 7
+      },
+      "hit": {
+        "damage": 20,
+        "angle": -85,
+        "knockback": 125
       }
     }
   },

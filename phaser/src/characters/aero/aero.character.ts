@@ -28,8 +28,8 @@ enum AeroState {
   ROLL = 'ROLL',
   DASH_BODY = 'DASH_BODY',
   DASH_STRAIGHT = 'DASH_STRAIGHT',
-  DASH_UPPER = 'DASH_UPPER',
-  UPPER = 'UPPER',
+  // DASH_UPPER = 'DASH_UPPER',
+  // UPPER = 'UPPER',
   CROUCH_LIGHT = 'CROUCH_LIGHT',
   CROUCH_MED = 'CROUCH_MED',
   CROUCH_HEAVY = 'CROUCH_HEAVY',
@@ -199,14 +199,14 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         if (!this.sprite.anims.isPlaying) {
           if (this.currentAnimation === 'ROLL_STARTUP') {
             this.playAnimation('ROLL_1');
-            this.shadow.start({ state: stateParams.shadowState });
+            this.shadow.enable({ state: stateParams.shadowState });
             delete stateParams.shadowState;
           } else if (stateParams.shadowState || !this.shadow.canCancel(0)) {
             // Prepare to roll again
             this.playAnimation(this.currentAnimation === 'ROLL_1' ? 'ROLL_2' : 'ROLL_1');
             if (this.shadow.canCancel(0)) {
               this.cancelFlag = false;
-              this.shadow.start({ state: stateParams.shadowState });
+              this.shadow.enable({ state: stateParams.shadowState });
               delete stateParams.shadowState;
             }
           } else {
@@ -216,9 +216,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           }
         }
         if (tick > 0 && !stateParams.shadowState && this.shadow.canCancel(20)) {
-          const rollState = this.rollStates.find(s => this.isCommandExecuted(s.command));
-          if (rollState) {
-            stateParams.shadowState = rollState.state;
+          const shadowState = this.shadowStates.find(s => this.isCommandExecuted(s.command));
+          if (shadowState) {
+            stateParams.shadowState = shadowState.state;
           }
         }
       }
@@ -330,16 +330,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     }
   };
 
-  private rollStates = [
-    {
-      command: new Command('*7|*8|*9+d', 1),
-      state: AeroShadowState.STAND_ATK_UP
-    },
-    {
-      command: new Command('d', 1),
-      state: AeroShadowState.STAND_R
-    }
-  ];
+  private shadowStates: Array<{ command: Command; state: AeroShadowState }>;
 
   constructor(playerIndex = 0) {
     super(playerIndex, aero);
@@ -478,6 +469,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         command: new Command('d', 1),
         trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
         state: AeroState.ROLL,
+        stateParams: { shadowState: AeroShadowState.STAND_R },
         priority: 2
       },
       {
@@ -486,7 +478,14 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           !this.isAirborne &&
           (this.isIdle || this.canCancel(AeroState.ROLL) || this.isCurrentState(CommonState.JUMP_SQUAT)),
         state: AeroState.ROLL,
-        stateParams: { shadowState: AeroShadowState.STAND_ATK_UP },
+        stateParams: { shadowState: AeroShadowState.STAND_UPPER },
+        priority: 3
+      },
+      {
+        command: new Command('*1|*2|*3+d', 1),
+        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
+        state: AeroState.ROLL,
+        stateParams: { shadowState: AeroShadowState.STAND_DUNK },
         priority: 3
       },
       {
@@ -551,9 +550,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
 
   public create(): void {
     super.create();
-    this.shadow.create();
-    this.colliderManager.ignoreCollisionsWith(this.shadow.tag);
-    PS.stage.addStageObject(this.shadow);
+    this.setupShadow();
   }
 
   public setTarget(so: StageObject): void {
@@ -582,6 +579,18 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
 
   private canBeatCancel(): boolean {
     return this.cancelFlag && this.isCurrentState(AeroState.ROLL);
+  }
+
+  private setupShadow(): void {
+    this.shadow.create();
+    this.shadowStates = this.commandList
+      .filter(cmdTrigger => cmdTrigger.stateParams && cmdTrigger.stateParams.shadowState)
+      .map(cmdTrigger => ({
+        command: cmdTrigger.command,
+        state: cmdTrigger.stateParams!.shadowState as AeroShadowState
+      }));
+    this.colliderManager.ignoreCollisionsWith(this.shadow.tag);
+    PS.stage.addStageObject(this.shadow);
   }
 
   protected beforeStateTransition(nextKey: CharacterState<AeroState>): void {

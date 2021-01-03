@@ -20,7 +20,8 @@ export enum AeroShadowState {
   STAND_L = 'STAND_L',
   STAND_R = 'STAND_R',
   STAND = 'STAND',
-  STAND_ATK_UP = 'STAND_ATK_UP'
+  STAND_UPPER = 'STAND_UPPER',
+  STAND_DUNK = 'STAND_DUNK'
 }
 
 export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState, StateDefinition<AeroShadowStateConfig>> {
@@ -38,7 +39,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       cancelLock: 0,
       update: () => {
         if (this.sprite.anims.currentFrame.index > 9) {
-          this.stop();
+          this.disable();
         }
       }
     },
@@ -74,7 +75,20 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
         }
       }
     },
-    [AeroShadowState.STAND_ATK_UP]: {
+    [AeroShadowState.STAND_UPPER]: {
+      startAnimation: 'SHADOW_UPPER',
+      onHitSound: 'hitMed',
+      cancelLock: 24,
+      update: () => {
+        if (this.sprite.anims.currentFrame.index === 5) {
+          this.playSound('rush1');
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(AeroShadowState.STAND);
+        }
+      }
+    },
+    [AeroShadowState.STAND_DUNK]: {
       startAnimation: 'SHADOW_DUNK',
       onHitSound: 'hitMed',
       cancelLock: 24,
@@ -102,12 +116,12 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     super.create();
     this.sprite.tint = 0x222222;
     this.sprite.alpha = 0.6;
-    this.stop();
+    this.disable();
     this.sprite.depth = 10;
     this.colliderManager.ignoreCollisionsWith(this.aero.tag);
   }
 
-  public start(params: Partial<{ state: AeroShadowState }> = {}): void {
+  public enable(params: Partial<{ state: AeroShadowState }> = {}): void {
     let state;
     if (this.cancelLock > 0) {
       return;
@@ -131,7 +145,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     }
   }
 
-  public stop(): void {
+  public disable(): void {
     this.sprite.setActive(false).setVisible(false);
   }
 
@@ -171,6 +185,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       playAnimation(this.sprite, startAnimation, { force: true, startFrame: params.startFrame });
     }
     this.cancelLock = config.cancelLock;
+    this.colliderManager.clearHitboxData();
   }
 
   public canCancel(inFrames: number = 0): boolean {
