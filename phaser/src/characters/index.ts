@@ -252,26 +252,38 @@ export class BaseCharacterWithFrameDefinition<
 > extends BaseCharacter<S, D> {
   protected frameDefinitionMap: FrameDefinitionMap;
   protected colliderManager: FrameDefinitionColliderManager;
+  protected readonly name: string;
 
-  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
+  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap, name: string) {
     super(playerIndex);
+    this.name = name;
+    // TODO update frameDefinitionMap to include properties like name.
     this.frameDefinitionMap = frameDefinitionMap;
     this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
       const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
-      return {
-        index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap[anim.key].animDef, frame.index),
-        direction: { x: !this.sprite.flipX, y: true },
-        frameKey: anim.key
-      };
+      const animKey = anim.key.split('-')[1];
+      if (this.frameDefinitionMap[animKey]) {
+        return {
+          index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap[animKey].animDef, frame.index),
+          direction: { x: !this.sprite.flipX, y: true },
+          frameKey: animKey
+        };
+      } else {
+        return null;
+      }
     });
   }
 
   protected setupSprite(): void {
     super.setupSprite();
-    addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
+    addAnimationsByDefinition(this.sprite, this.frameDefinitionMap, this.name);
   }
 
   protected playAnimation(key: string, force = false) {
-    playAnimation(this.sprite, key, { force });
+    playAnimation(this.sprite, [this.name, key].join('-'), { force });
+  }
+
+  protected get currentAnimation(): string {
+    return this.sprite.anims.currentAnim.key.split('-')[1];
   }
 }

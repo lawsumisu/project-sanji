@@ -6,9 +6,9 @@ import { Collider, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
 import { PS } from 'src/global';
 import { BaseCharacter } from 'src/characters';
 import { StageObject } from 'src/stage/stageObject';
-import { Dummy } from 'src/characters/dummy';
 import Aero from 'src/characters/aero/aero.character';
 import { Vector2 } from '@lawsumisu/common-utilities';
+import Jack from 'src/characters/jack/jack.character';
 
 export class Stage extends Phaser.Scene {
   protected hitData: { [tag: string]: HitboxData } = {};
@@ -22,8 +22,8 @@ export class Stage extends Phaser.Scene {
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
-    this.p1 = new Aero();
-    this.p2 = new Dummy();
+    this.p1 = new Aero(0);
+    this.p2 = new Jack(1);
     this.addStageObject(this.p1);
     this.addStageObject(this.p2);
     PS.stage = this;

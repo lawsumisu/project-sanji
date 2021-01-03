@@ -1,0 +1,345 @@
+{
+	"textures": [
+		{
+			"image": "hugo.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 111,
+				"h": 1973
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "stand/idle/01.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 109,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 109,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/02.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 109,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 153,
+						"w": 109,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/03.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 109,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 305,
+						"w": 109,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/06.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 109,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 457,
+						"w": 109,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/04.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 1,
+						"w": 109,
+						"h": 149
+					},
+					"frame": {
+						"x": 1,
+						"y": 609,
+						"w": 109,
+						"h": 149
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/05.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 1,
+						"w": 109,
+						"h": 149
+					},
+					"frame": {
+						"x": 1,
+						"y": 760,
+						"w": 109,
+						"h": 149
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/07.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 1,
+						"w": 109,
+						"h": 149
+					},
+					"frame": {
+						"x": 1,
+						"y": 911,
+						"w": 109,
+						"h": 149
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/10.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 108,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 1062,
+						"w": 108,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/11.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 108,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 1214,
+						"w": 108,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/12.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 108,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 1366,
+						"w": 108,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/13.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 108,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 1518,
+						"w": 108,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/08.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 107,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 1670,
+						"w": 107,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "stand/idle/09.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 109,
+						"h": 150
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 107,
+						"h": 150
+					},
+					"frame": {
+						"x": 1,
+						"y": 1822,
+						"w": 107,
+						"h": 150
+					},
+					"anchor": {
+						"x": 0.35,
+						"y": 0.95
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:192fc34792c28f7cf5ad843990cc9e3c:b7fcfc9d60faf46a4bae5f7ab848fbab:2e6f9666db7c58a86cebbf89015d5bcc$"
+	}
+}

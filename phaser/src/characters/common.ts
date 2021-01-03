@@ -4,11 +4,10 @@ import { Command } from 'src/command';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import * as _ from 'lodash';
 import { GameInput } from 'src/plugins/gameInput.plugin';
-import { FrameDefinitionMap, getFrameIndexFromSpriteIndex } from 'src/characters/frameData';
+import { FrameDefinitionMap } from 'src/characters/frameData';
 import { PS } from 'src/global';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
-import { FrameDefinitionColliderManager } from 'src/collider/manager';
 import { AudioKey } from 'src/assets/audio';
 
 export enum StateType {
@@ -85,10 +84,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
           this.playAnimation('STAND_UP');
         } else if (tick === 0) {
           this.playAnimation('SQUAT');
-        } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
+        } else if (!this.sprite.anims.isPlaying && this.currentAnimation === 'SQUAT') {
           this.stateManager.setState(CommonState.CROUCH);
         }
-        if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
+        if (!this.sprite.anims.isPlaying && this.currentAnimation === 'STAND_UP') {
           this.stateManager.setState(CommonState.STAND);
         }
       }
@@ -101,7 +100,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
           this.playAnimation('STAND_UP');
         }
-        if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
+        if (!this.sprite.anims.isPlaying && this.currentAnimation === 'STAND_UP') {
           this.stateManager.setState(CommonState.STAND);
         }
       }
@@ -145,7 +144,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
             const jumpDirection = this.input.isInputDown(GameInput.UP_RIGHT) ? 1 : -1;
             params.d = jumpDirection === this.direction ? 1 : -1;
           }
-        } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
+        } else if (!this.sprite.anims.isPlaying && this.currentAnimation === 'SQUAT') {
           this.velocity.y = -this.jumpSpeed;
           this.velocity.x = this.walkSpeed * this.direction * (params.d || 0);
           this.goToNextState(CommonState.JUMP);
@@ -194,18 +193,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   };
   private commonAudioKeys: AudioKey[] = ['land'];
 
-  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
-    super(playerIndex, frameDefinitionMap);
+  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap, name: string) {
+    super(playerIndex, frameDefinitionMap, name);
     this.defaultState = CommonState.STAND;
     this.commandList = this.getCommandList();
-    this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
-      const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
-      return {
-        index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap[anim.key].animDef, frame.index),
-        direction: { x: !this.sprite.flipX, y: true },
-        frameKey: anim.key
-      };
-    });
   }
 
   protected getCommandList(): Array<CommandTrigger<CharacterState<S>>> {
@@ -305,7 +296,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, startAnimation, { force: true, startFrame: params.startFrame });
+      playAnimation(this.sprite, [this.name, startAnimation].join('-'), { force: true, startFrame: params.startFrame });
     }
   }
 

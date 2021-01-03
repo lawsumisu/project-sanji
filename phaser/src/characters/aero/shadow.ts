@@ -116,7 +116,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     }
   };
   constructor(aero: Aero, frameDefinitionMap: FrameDefinitionMap, onHit: () => void = _.noop) {
-    super(aero.playerIndex, frameDefinitionMap);
+    super(aero.playerIndex, frameDefinitionMap, 'shadow');
     this.aero = aero;
     this.onHit = onHit;
   }
@@ -192,7 +192,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, startAnimation, { force: true, startFrame: params.startFrame });
+      playAnimation(this.sprite, [this.name,startAnimation].join('-'), { force: true, startFrame: params.startFrame });
     }
     this.cancelLock = config.cancelLock;
     this.colliderManager.clearHitboxData();

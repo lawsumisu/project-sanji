@@ -333,7 +333,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   private shadowStates: Array<{ command: Command; state: AeroShadowState }>;
 
   constructor(playerIndex = 0) {
-    super(playerIndex, aero);
+    super(playerIndex, aero, 'aero');
     this.shadow = new AeroShadow(this, aero, () => {
       this.cancelFlag = true;
     });

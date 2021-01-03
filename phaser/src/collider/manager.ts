@@ -80,10 +80,10 @@ export interface AnimInfo {
 export class FrameDefinitionColliderManager extends ColliderManager {
   private stageObject: StageObject;
   private readonly frameDefinitionMap: FrameDefinitionMap;
-  private readonly getAnimInfo: () => AnimInfo;
+  private readonly getAnimInfo: () => AnimInfo | null;
   private ignoreCollisionTags: Set<string>;
 
-  public constructor(stageObject: StageObject, frameDefinitionMap: FrameDefinitionMap, getAnimInfo: () => AnimInfo) {
+  public constructor(stageObject: StageObject, frameDefinitionMap: FrameDefinitionMap, getAnimInfo: () => AnimInfo | null) {
     super();
     this.stageObject = stageObject;
     this.hitboxDataGenerator = this.generateHitboxData;
@@ -122,10 +122,11 @@ export class FrameDefinitionColliderManager extends ColliderManager {
 
   private generateHitboxData(hitboxData: HitboxData): HitboxData | null {
     const boxDefinitionData = this.generateBoxDefinitionData(hitboxData, BoxType.HIT);
+    const animInfo = this.getAnimInfo();
     if (_.isNil(boxDefinitionData)) {
       return null;
-    } else {
-      const { direction, frameKey } = this.getAnimInfo();
+    } else if (animInfo){
+      const { direction, frameKey } = animInfo;
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
       const frameDefinition = this.frameDefinitionMap[frameKey];
       // TODO allow hitbox data to be overwritten at runtime
@@ -148,6 +149,7 @@ export class FrameDefinitionColliderManager extends ColliderManager {
         }
       );
     }
+    return null;
   }
 
   private generateBoxDefinitionData<T extends CollisionData<Collider>>(
@@ -159,25 +161,27 @@ export class FrameDefinitionColliderManager extends ColliderManager {
     frameBoxDef: T extends HitboxData ? HitboxDefinition : BoxDefinition;
     index: number;
   } | null {
-    const { index, frameKey } = this.getAnimInfo();
-    const frameDefinition = this.frameDefinitionMap[frameKey];
-    const key = boxType === BoxType.HIT ? 'hitboxDef' : 'hurtboxDef';
-    if (
-      frameDefinition &&
-      frameDefinition[key] &&
-      frameDefinition[key]![index] &&
-      (data.index !== index || data.isEmpty)
-    ) {
-      const frameBoxDef = frameDefinition[key]![index] as T extends HitboxData ? HitboxDefinition : BoxDefinition;
-      const persist = (): boolean => {
-        const { index: i, frameKey: currentFrameKey } = this.getAnimInfo();
-        const { persistThroughFrame = index + 1 } = frameBoxDef;
-        return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
-      };
-      const tag = frameBoxDef.tag ? [frameKey, frameBoxDef.tag].join('-') : frameKey;
-      return { persist, tag, frameBoxDef, index };
-    } else {
-      return null;
+    const animInfo = this.getAnimInfo();
+    if (animInfo) {
+      const { index, frameKey } = animInfo;
+      const frameDefinition = this.frameDefinitionMap[frameKey];
+      const key = boxType === BoxType.HIT ? 'hitboxDef' : 'hurtboxDef';
+      if (
+        frameDefinition &&
+        frameDefinition[key] &&
+        frameDefinition[key]![index] &&
+        (data.index !== index || data.isEmpty)
+      ) {
+        const frameBoxDef = frameDefinition[key]![index] as T extends HitboxData ? HitboxDefinition : BoxDefinition;
+        const persist = (): boolean => {
+          const { index: i, frameKey: currentFrameKey } = this.getAnimInfo()!;
+          const { persistThroughFrame = index + 1 } = frameBoxDef;
+          return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
+        };
+        const tag = frameBoxDef.tag ? [frameKey, frameBoxDef.tag].join('-') : frameKey;
+        return { persist, tag, frameBoxDef, index };
+      }
     }
+    return null;
   }
 }

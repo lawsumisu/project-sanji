@@ -1,0 +1,11 @@
+{
+  "STAND": {
+    "animDef": {
+      "frames": 13,
+      "assetKey": "hugo",
+      "prefix": "stand/idle",
+      "frameRate": 12,
+      "repeat": -1
+    }
+  }
+}

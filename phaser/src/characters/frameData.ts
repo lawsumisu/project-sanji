@@ -67,13 +67,13 @@ export type FrameDefinitionMap<T extends string = string> = {
   [key in T]: FrameDefinition;
 };
 
-export function addAnimationsByDefinition(sprite: Phaser.GameObjects.Sprite, definitionMap: FrameDefinitionMap): void {
+export function addAnimationsByDefinition(sprite: Phaser.GameObjects.Sprite, definitionMap: FrameDefinitionMap, name: string): void {
   _.forEach(definitionMap, (definition, key: string) => {
     const { frames, prefix, frameRate, repeat = 0, assetKey } = definition.animDef;
     if (_.isNumber(frames)) {
-      addAnimation(sprite, key, assetKey, frames, prefix, frameRate, repeat);
+      addAnimation(sprite, [name, key].join('-'), assetKey, frames, prefix, frameRate, repeat);
     } else {
-      addAnimationByFrames(sprite, key, assetKey, frames, prefix, frameRate, repeat);
+      addAnimationByFrames(sprite, [name, key].join('-'), assetKey, frames, prefix, frameRate, repeat);
     }
   });
 }
