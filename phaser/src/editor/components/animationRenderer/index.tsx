@@ -2,7 +2,7 @@ import * as React from 'react';
 import { AnimationFrameConfig } from 'src/characters/frameData';
 import * as _ from 'lodash';
 import { SpriteRenderer } from 'src/editor/components';
-import { FrameDataState, getSpriteConfig } from 'src/editor/redux/frameData';
+import { FrameDataState, getSpriteConfig, getSpriteSource } from 'src/editor/redux/frameData';
 import 'src/editor/components/animationRenderer/styles.scss';
 
 interface Props {
@@ -19,12 +19,12 @@ export default class AnimationRenderer extends React.PureComponent<Props, State>
     currentIndex: 0
   };
 
-  private interval = 0;
-  private uniqueFrameCount = 0;
+  private requestId = 0;
+  private start = -1;
 
   public componentDidMount(): void {
     const { frames, frameRate } = this.props.frameData.definitionMap[this.props.frameKey].animDef;
-    this.uniqueFrameCount = _.isNumber(frames)
+    const uniqueFrameCount = _.isNumber(frames)
       ? frames
       : _.reduce(
           frames,
@@ -38,21 +38,32 @@ export default class AnimationRenderer extends React.PureComponent<Props, State>
           },
           0
         );
-    this.interval = window.setInterval(() => {
-      this.setState({ currentIndex: (this.state.currentIndex + 1) % this.uniqueFrameCount });
-    }, 1000 / frameRate);
+    window.requestAnimationFrame(timestamp => this.animate(timestamp, frameRate, uniqueFrameCount))
   }
 
   public componentWillUnmount(): void {
-    window.clearInterval(this.interval);
+    window.cancelAnimationFrame(this.requestId);
   }
 
   public render(): React.ReactNode {
     const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.state.currentIndex);
+    const source = getSpriteSource(this.props.frameData, this.props.frameKey);
     return (
       <div className="cn--animation-renderer">
-        {config && <SpriteRenderer config={config} source={this.props.frameData.source} scale={0.5} />}
+        {config && source && <SpriteRenderer config={config} source={source} scale={0.5} />}
       </div>
     );
+  }
+
+  private animate(timestamp: number, frameRate: number, uniqueFrameCount: number) {
+    if (this.start < 0) {
+      this.start = timestamp;
+    }
+    const elapsed = timestamp - this.start;
+    if (elapsed >= 1000 / frameRate) {
+      this.start = timestamp;
+      this.setState({ currentIndex: (this.state.currentIndex + 1) % uniqueFrameCount });
+    }
+    this.requestId = window.requestAnimationFrame(timestamp => this.animate(timestamp, frameRate, uniqueFrameCount));
   }
 }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { DefinitionLoader, FrameDefinitionEditor } from 'src/editor/components';
+import { DefinitionLoader, FrameDefinitionEditor, SpriteSheetLoader } from 'src/editor/components';
 import 'src/editor/components/root/styles.scss';
 import FrameDefinitionMapRenderer from 'src/editor/components/frameDefinitionMapRenderer';
 import cx from 'classnames';
@@ -27,7 +27,7 @@ class Root extends React.PureComponent<MappedStateProps> {
     return (
       <div className="cn--root">
         <div className={cx('root--section', 'mod--animations')}>
-          <Header name="Configuration"><DefinitionLoader/></Header>
+          <Header name="Configuration"><SpriteSheetLoader/><DefinitionLoader/></Header>
           <FrameDefinitionMapRenderer keys={this.props.keys} className="cn--animations" />
         </div>
         <div className="root--section">

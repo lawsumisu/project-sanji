@@ -4,10 +4,11 @@ import { BoxConfig, BoxType } from 'src/characters/frameData';
 import { Box, SpriteRenderer } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
-import { FrameDataState, getAnchorPosition, getSpriteConfig } from 'src/editor/redux/frameData';
+import { FrameDataState, getAnchorPosition, getSpriteConfig, getSpriteSource } from 'src/editor/redux/frameData';
 import { bindActionCreators, Dispatch } from 'redux';
 import { frameEditActionCreators, FrameEditState } from 'src/editor/redux/frameEdit';
 import cx from 'classnames';
+import { Vector2 } from '@lawsumisu/common-utilities';
 
 export interface SpriteFrameProps {
   frameKey: string;
@@ -57,11 +58,12 @@ class FrameRenderer extends React.PureComponent<
 
   public render(): React.ReactNode {
     const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.props.frameIndex);
-    const origin = getAnchorPosition(config);
+    const source = getSpriteSource(this.props.frameData, this.props.frameKey);
+    const origin = config ? getAnchorPosition(config) : Vector2.ZERO;
     return (
       <div className={cx('cn--sprite-frame', this.isSelected && 'mod--selected')} onClick={this.onClick}>
         <div className="cn--sprite">
-          <SpriteRenderer config={config} source={this.props.frameData.source} />
+          {config && source && <SpriteRenderer config={config} source={source} /> }
           <div className="cn--box-display">
             {this.props.hurt.boxes.map((box: BoxConfig, i: number) => (
               <Box key={i} config={box} persistent={this.props.hurt.persistent} type={BoxType.HURT} origin={origin} />

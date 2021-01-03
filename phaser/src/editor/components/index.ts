@@ -5,4 +5,5 @@ export { default as AnimationRenderer } from 'src/editor/components/animationRen
 export { ReduxConnectedFrameRenderer as FrameRenderer } from 'src/editor/components/frameRenderer';
 export { ReduxConnectedFrameDefinitionEditor as FrameDefinitionEditor } from 'src/editor/components/frameDefinitionEditor';
 export { ReduxConnectedDefinitionLoader as DefinitionLoader } from 'src/editor/components/definitionLoader';
+export { ReduxConnectedSpriteSheetLoader as SpriteSheetLoader } from 'src/editor/components/spriteSheetLoader';
 export { default as Root } from 'src/editor/components/root';
