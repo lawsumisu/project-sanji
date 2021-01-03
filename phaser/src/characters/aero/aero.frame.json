@@ -441,7 +441,7 @@
     "hitboxDef": {
       "3": {
         "boxes": [{ "x1": 35.4, "y1": -77.2, "x2": 55.2, "y2": -84.6, "r": 8.5 }],
-        "persistThroughFrame": 7
+        "persistThroughFrame": 6
       },
       "hit": {
         "damage": 20,

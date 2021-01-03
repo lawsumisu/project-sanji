@@ -85,7 +85,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       cancelLock: 24,
       update: () => {
         this.position.y = PS.stage.ground;
-        if (this.sprite.anims.currentFrame.index === 5) {
+        if (this.sprite.anims.currentFrame.index === 3) {
           this.playSound('rush1');
         }
         if (!this.sprite.anims.isPlaying) {
@@ -95,7 +95,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     },
     [AeroShadowState.STAND_DUNK]: {
       startAnimation: 'SHADOW_DUNK',
-      onHitSound: 'hitMed',
+      onHitSound: 'hitHeavy',
       cancelLock: 24,
       update: (tick: number, stateParams: { velocity?: Vector2 }) => {
         if (tick === 0) {
