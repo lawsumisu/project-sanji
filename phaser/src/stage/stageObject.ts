@@ -1,7 +1,13 @@
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Hit } from 'src/collider';
 
+export interface UpdateParams {
+  time: number;
+  delta: number; // Number of ms since last update
+}
+
 export abstract class StageObject {
+  public position: Vector2;
   private static objectCounter = 1;
   public readonly tag: string;
   protected hitlag: number = 0;
@@ -11,20 +17,18 @@ export abstract class StageObject {
     StageObject.objectCounter++;
   }
 
-  public update(_params: { time: number; delta: number }): void {
+  public update(_params: UpdateParams): void {
     if (this.hitlag > 0) {
       this.hitlag = Math.max(0, this.hitlag - 1);
     }
   }
-
-  public abstract get position(): Vector2;
 
   public abstract applyHit(hit: Hit): void;
 
   public abstract onTargetHit(stageObject: StageObject, hit: Hit): void;
 
   protected setHitlag(hit: Hit, m = 1): void {
-    this.hitlag = Math.floor((hit.damage / 3 + 6) * m);
+    this.hitlag = Math.floor(((hit.knockback / 20) + 3) * m);
   }
 
   protected get isHitlagged(): boolean {

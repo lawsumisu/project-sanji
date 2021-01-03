@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import * as _ from 'lodash';
-import { AnimationFrameConfig } from 'src/characters';
+import { AnimationFrameConfig } from 'src/characters/frameData';
 
 export function addAnimation(
   sprite: Phaser.GameObjects.Sprite,
@@ -41,7 +41,7 @@ export function addAnimationByFrames(
         return {
           key: assetKey,
           frame: `${prefix}/${frameString}.png`
-        }
+        };
       });
     })
     .flatten()
@@ -49,8 +49,9 @@ export function addAnimationByFrames(
   sprite.anims.animationManager.create({ key, frames, frameRate, repeat });
 }
 
-export function playAnimation(sprite: Phaser.GameObjects.Sprite, key: string, force = false): void {
-  if (sprite.anims.getCurrentKey() !== key || force) {
-    sprite.anims.play(key);
+export function playAnimation(sprite: Phaser.GameObjects.Sprite, key: string, params: { force?: boolean, startFrame?: number } = {}): void {
+  const { force = false, startFrame = 0} = params;
+  if (sprite.anims.animationManager.exists(key) && (sprite.anims.getCurrentKey() !== key || force)) {
+    sprite.anims.play(key, !force, startFrame);
   }
 }

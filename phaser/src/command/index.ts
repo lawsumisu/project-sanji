@@ -1,5 +1,7 @@
 import { GameInput } from 'src/plugins/gameInput.plugin';
 import { PS } from 'src/global';
+import * as _ from 'lodash';
+import { CommandParser, isNonTerminal, Token, TokenType } from 'src/command/parser';
 
 export enum CommandInputType {
   DOWN = 'DOWN',
@@ -8,66 +10,95 @@ export enum CommandInputType {
 }
 
 interface CommandInput {
-  input: SimpleInput | JunctiveInput;
+  input: Input;
   strict?: boolean;
 }
 
-export class SimpleInput {
-  input: GameInput;
+interface CheckInputParams {
+  facingRight: boolean;
+  historyIndex: number;
+  ignoreType: boolean;
+}
+
+interface Input {
+  checkInput(playerIndex: number, params: Partial<CheckInputParams>): boolean;
+  toString(): string;
+  equals(input: Input): boolean;
+}
+
+export class SimpleInput implements Input {
+  input: GameInput | ((facingRight: boolean) => GameInput);
   type: CommandInputType;
 
-  constructor(input: GameInput, type: CommandInputType) {
+  constructor(input: GameInput | ((facingRight: boolean) => GameInput), type: CommandInputType) {
     this.input = input;
     this.type = type;
   }
 
-  public checkInput(playerIndex: number, historyIndex = 0): boolean {
+  public checkInput(playerIndex: number, params: Partial<CheckInputParams> = {}): boolean {
+    const { facingRight = true, historyIndex = 0, ignoreType = false } = params;
     const history = PS.gameInput.for(playerIndex);
-    switch (this.type) {
-      case CommandInputType.DOWN:
-        return history.isInputDown(this.input, historyIndex);
-      case CommandInputType.PRESS:
-        return history.isInputPressed(this.input, historyIndex);
-      case CommandInputType.RELEASE:
-        return history.isInputReleased(this.input, historyIndex);
+    const input = _.isFunction(this.input) ? this.input(facingRight) : this.input;
+    if (ignoreType) {
+      return history.isInputDown(input, historyIndex) || history.isInputReleased(input, historyIndex);
+    } else {
+      switch (this.type) {
+        case CommandInputType.DOWN:
+          return history.isInputDown(input, historyIndex);
+        case CommandInputType.PRESS:
+          return history.isInputPressed(input, historyIndex);
+        case CommandInputType.RELEASE:
+          return history.isInputReleased(input, historyIndex);
+      }
     }
   }
 
-  public checkInputIgnoringType(playerIndex: number, historyIndex = 0): boolean {
-    const history = PS.gameInput.for(playerIndex);
-    return history.isInputDown(this.input, historyIndex) || history.isInputReleased(this.input, historyIndex);
+  public toString(): string {
+    return (_.isFunction(this.input) ? this.input(true) : this.input).toString();
+  }
+
+  public equals(i: Input): boolean {
+    if (_.has(i, 'input') && _.has(i, 'type')) {
+      const si = i as SimpleInput;
+      return si.input === this.input && si.type === this.type;
+    }
+    return false;
   }
 }
 
-class JunctiveInput {
-  input1: JunctiveInput | SimpleInput;
-  input2: JunctiveInput | SimpleInput;
+export class JunctiveInput implements Input {
   isAnd: boolean;
+  inputs: Input[];
 
-  constructor(input1: JunctiveInput | SimpleInput, input2: JunctiveInput | SimpleInput, isAnd = false) {
-    this.input1 = input1;
-    this.input2 = input2;
+  constructor(inputs: Input[], isAnd = false) {
     this.isAnd = isAnd;
+    this.inputs = inputs;
   }
 
-  public checkInput(playerIndex: number, historyIndex = 0): boolean {
-    const c1 = this.input1.checkInput(playerIndex, historyIndex);
-    if (c1 && !this.isAnd) {
-      return true;
-    } else {
-      const c2 = this.input2.checkInput(playerIndex, historyIndex);
-      return this.isAnd ? c1 && c2 : c2;
-    }
+  public checkInput(playerIndex: number, params: Partial<CheckInputParams> = {}): boolean {
+    return this.isAnd
+      ? _.every(this.inputs, i => i.checkInput(playerIndex, params))
+      : _.some(this.inputs, i => i.checkInput(playerIndex, params));
   }
 
-  public checkInputIgnoringType(playerIndex: number, historyIndex = 0): boolean {
-    const c1 = this.input1.checkInputIgnoringType(playerIndex, historyIndex);
-    if (c1 && this.isAnd) {
+  public toString(): string {
+    return '(' + this.inputs.map(i => i.toString()).join(this.isAnd ? '+' : '/') + ')';
+  }
+
+  public equals(i: Input): boolean {
+    if (_.has(i, 'inputs') && _.has(i, 'isAnd')) {
+      const ji = i as JunctiveInput;
+      if (this.isAnd !== ji.isAnd || this.inputs.length !== ji.inputs.length) {
+        return false;
+      }
+      for (const input of this.inputs) {
+        if (!_.some(ji.inputs, jiInput => jiInput.equals(input))) {
+          return false;
+        }
+      }
       return true;
-    } else {
-      const c2 = this.input2.checkInputIgnoringType(playerIndex, historyIndex);
-      return this.isAnd ? c1 && c2 : c2;
     }
+    return false;
   }
 }
 
@@ -84,55 +115,73 @@ export class Command {
     a: GameInput.INPUT3,
     b: GameInput.INPUT4,
     c: GameInput.INPUT2,
-    d: GameInput.INPUT1
+    d: GameInput.INPUT1,
+    l: GameInput.INPUT5
+  };
+
+  private static reverseGameInputMap: { [key in GameInput]?: GameInput } = {
+    [GameInput.RIGHT]: GameInput.LEFT,
+    [GameInput.LEFT]: GameInput.RIGHT,
+    [GameInput.DOWN_RIGHT]: GameInput.DOWN_LEFT,
+    [GameInput.DOWN_LEFT]: GameInput.DOWN_RIGHT
+  };
+
+  public static registry = {
+    FORWARD: new Command('*6', 1),
+    BACK: new Command('*4', 1),
+    GUARD: new Command('*l', 1)
   };
 
   private readonly inputs: CommandInput[];
   private readonly inputTime: number;
-  private readonly playerIndex: number;
 
-  constructor(cmd: string, inputTime: number, playerIndex = 0) {
+  constructor(cmd: string, inputTime: number = 1) {
     this.inputs = Command.parse(cmd);
     this.inputTime = inputTime;
-    this.playerIndex = playerIndex;
   }
 
-  public isExecuted(): boolean {
+  public isExecuted(playerIndex: number, facingRight = true): boolean {
     let i = this.inputs.length - 1;
-    if (!this.inputs[i].input.checkInput(this.playerIndex)) {
+    if (!this.inputs[i].input.checkInput(playerIndex, { facingRight })) {
       return false;
     } else if (this.inputs.length === 1) {
       return true;
     } else {
-      const executionTime = Math.min(this.inputTime, PS.gameInput.for(this.playerIndex).historyLength);
-      return this.isExecutedRecursive(1, i - 1, executionTime);
+      const executionTime = Math.min(this.inputTime, PS.gameInput.for(playerIndex).historyLength);
+      return this.isExecutedRecursive(playerIndex, facingRight, 1, i - 1, executionTime);
     }
   }
 
-  private isExecutedRecursive(historyIndex: number, inputIndex: number, executionTime: number): boolean {
+  private isExecutedRecursive(
+    playerIndex: number,
+    facingRight: boolean,
+    historyIndex: number,
+    inputIndex: number,
+    executionTime: number
+  ): boolean {
     for (let j = historyIndex; j < executionTime; j++) {
       const commandInput = this.inputs[inputIndex];
       if (commandInput.strict) {
         // If strict case, then fail early if any inputs other than the one being checked for have been inputted.
-        if (PS.gameInput.for(this.playerIndex).getInputs(j).size === 0) {
+        if (PS.gameInput.for(playerIndex).getInputs(j).size === 0) {
           continue;
-        } else if (!commandInput.input.checkInputIgnoringType(this.playerIndex, j)) {
+        } else if (!commandInput.input.checkInput(playerIndex, { facingRight, historyIndex: j, ignoreType: true })) {
           return false;
         }
       }
-      if (commandInput.input.checkInput(this.playerIndex, j)) {
+      if (commandInput.input.checkInput(playerIndex, { facingRight, historyIndex: j })) {
         if (inputIndex === 0) {
           return true;
         } else {
-          return this.isExecutedRecursive(j + 1, inputIndex - 1, executionTime);
+          return this.isExecutedRecursive(playerIndex, facingRight, j + 1, inputIndex - 1, executionTime);
         }
       }
     }
     return false;
   }
 
-  private static parse(cmd: string): CommandInput[] {
-    const regex = /\(?\*?[a-d1-9]([|+]\(*\*?[a-d1-9]\)*)*\)?~?/g;
+  public static parse(cmd: string): CommandInput[] {
+    const regex = /\(?\*?[a-dl1-9]([|+]\(*\*?[a-dl1-9]\)*)*\)?~?/g;
     const matches = cmd.match(regex);
     if (matches) {
       return matches.map(Command.parseInput);
@@ -143,21 +192,52 @@ export class Command {
 
   private static parseInput(input: string): CommandInput {
     let strict = input.endsWith('~');
-    const parsedInput = input
-      .replace('~', '')
-      .split('|')
-      .map((simpleInput: string) => {
-        const type = simpleInput.startsWith('*') ? CommandInputType.DOWN : CommandInputType.PRESS;
-        const input = Command.commandToGameInputMap[simpleInput.replace('*', '')];
-        return new SimpleInput(input, type);
-      })
-      .reduce((accumulator: JunctiveInput | SimpleInput, simpleInput: SimpleInput) => {
-        if (accumulator === null) {
-          return simpleInput;
-        } else {
-          return new JunctiveInput(accumulator, simpleInput);
+    const inputStr = input.replace('~', '');
+    const parsedInput = CommandParser.parse(CommandParser.tokenize(inputStr));
+    if (parsedInput) {
+      return { input: Command.getInputFromToken(parsedInput), strict };
+    }
+    throw new Error(`Invalid input ${inputStr}`);
+  }
+
+  private static getInputFromToken(token: Token): Input {
+    if (isNonTerminal(token)) {
+      switch (token.type) {
+        case TokenType.AND_INPUT: {
+          const tokens = token.nestedTokens.filter(t => t.type !== TokenType.AND);
+          return tokens.length === 1
+            ? Command.getInputFromToken(tokens[0])
+            : new JunctiveInput(tokens.map(Command.getInputFromToken), true);
         }
-      }, null);
-    return {input: parsedInput!, strict};
+        case TokenType.OR_INPUT: {
+          const tokens = token.nestedTokens.filter(t => t.type !== TokenType.OR);
+          return new JunctiveInput(tokens.map(Command.getInputFromToken));
+        }
+        case TokenType.INPUT: {
+          return Command.getInputFromToken(token.nestedTokens[1] || token.nestedTokens[0]);
+        }
+        default:
+          throw new Error('Token does not correspond to valid input')
+      }
+    } else {
+      switch (token.type) {
+        case TokenType.BASE_INPUT: {
+          const { value = '' } = token;
+          const type = value.startsWith('*') ? CommandInputType.DOWN : CommandInputType.PRESS;
+          const input = Command.commandToGameInputMap[value.replace('*', '')];
+          if (Command.reverseGameInputMap[input]) {
+            return new SimpleInput(facingRight => (facingRight ? input : Command.reverseGameInputMap[input]!), type);
+          } else {
+            return new SimpleInput(input, type);
+          }
+        }
+        default:
+          throw new Error('Token does not correspond to valid input')
+      }
+    }
+  }
+
+  public toString(): string {
+    return this.inputs.map(ci => ci.input.toString()).join('');
   }
 }

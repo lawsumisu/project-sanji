@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { CapsuleBoxConfig } from 'src/characters';
+import { CapsuleBoxConfig } from 'src/characters/frameData';
 import Box, { BoxProps } from 'src/editor/components/box';
 import * as _ from 'lodash';
 import 'src/editor/components/frameDefinitionEditor/styles.scss';

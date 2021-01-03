@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AnimationFrameConfig } from 'src/characters';
+import { AnimationFrameConfig } from 'src/characters/frameData';
 import * as _ from 'lodash';
 import { SpriteRenderer } from 'src/editor/components';
 import { FrameDataState, getSpriteConfig } from 'src/editor/redux/frameData';
@@ -51,7 +51,7 @@ export default class AnimationRenderer extends React.PureComponent<Props, State>
     const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.state.currentIndex);
     return (
       <div className="cn--animation-renderer">
-        <SpriteRenderer config={config} source={this.props.frameData.source} scale={0.5} />
+        {config && <SpriteRenderer config={config} source={this.props.frameData.source} scale={0.5} />}
       </div>
     );
   }

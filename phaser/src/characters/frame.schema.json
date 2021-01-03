@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "",
+  "title": "Frame Definition",
+  "description": "frame data for a collection of animations",
+  "type": "object",
+  "patternProperties": {
+    "^[A-Z][A-Z0-9_]*$": {
+      "type": "object",
+      "properties": {
+        "animDef": {
+          "type": "object",
+          "properties": {
+            "frames": { "type": ["array", "integer"], "items": { "type": ["integer", "object"] } },
+            "assetKey": { "type": "string" },
+            "prefix": { "type": "string" },
+            "frameRate": { "type": "integer" }
+          }
+        },
+        "hitboxDef": {
+          "type": "object",
+          "properties": {
+            "hit": {
+              "type": "object",
+              "properties": {
+                "damage": { "type": "number" },
+                "angle": { "type": "number" },
+                "knockback": { "type": "number" }
+              },
+              "required": ["damage", "angle", "knockback"]
+            }
+          },
+          "patternProperties": {
+            "^[1-9][0-9]*$": {
+              "properties": {
+                "boxes": {
+                  "type": "array",
+                  "items": {"type": "object"}
+                },
+                "tag": {
+                  "type": ["string", "number"]
+                },
+                "persistThroughFrame": { "type": "number" }
+              }
+            }
+          },
+          "required": ["hit"]
+        }
+      }
+    }
+  }
+}

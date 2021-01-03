@@ -1,6 +1,6 @@
 import * as React from 'react';
 import 'src/editor/components/frameRenderer/styles.scss';
-import { BoxConfig, BoxType } from 'src/characters';
+import { BoxConfig, BoxType } from 'src/characters/frameData';
 import { Box, SpriteRenderer } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
