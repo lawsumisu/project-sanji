@@ -2,7 +2,7 @@ import * as React from 'react';
 import { AnimationFrameConfig } from 'src/characters/frameData';
 import * as _ from 'lodash';
 import { SpriteRenderer } from 'src/editor/components';
-import { FrameDataState, getSpriteConfig } from 'src/editor/redux/frameData';
+import { FrameDataState, getSpriteConfig, getSpriteSource } from 'src/editor/redux/frameData';
 import 'src/editor/components/animationRenderer/styles.scss';
 
 interface Props {
@@ -49,9 +49,10 @@ export default class AnimationRenderer extends React.PureComponent<Props, State>
 
   public render(): React.ReactNode {
     const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.state.currentIndex);
+    const source = getSpriteSource(this.props.frameData, this.props.frameKey);
     return (
       <div className="cn--animation-renderer">
-        {config && <SpriteRenderer config={config} source={this.props.frameData.source} scale={0.5} />}
+        {config && source && <SpriteRenderer config={config} source={source} scale={0.5} />}
       </div>
     );
   }

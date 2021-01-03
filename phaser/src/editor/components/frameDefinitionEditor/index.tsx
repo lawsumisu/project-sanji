@@ -5,7 +5,7 @@ import { Box, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
-import { FrameDataState, getAnchorPosition, getSpriteConfig } from 'src/editor/redux/frameData';
+import { FrameDataState, getAnchorPosition, getSpriteConfig, getSpriteSource } from 'src/editor/redux/frameData';
 import 'src/editor/components/frameDefinitionEditor/styles.scss';
 import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
@@ -134,7 +134,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
   private get origin(): Vector2 {
     const { key, index } = this.state.selectedFrame!;
     const config = getSpriteConfig(this.props.frameData, key, index);
-    return getAnchorPosition(config);
+    return config ? getAnchorPosition(config) : Vector2.ZERO;
   }
 
   private getSelectedBoxKey(): 'hitboxes' | 'hurtboxes' | null {
@@ -201,7 +201,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
       const key = this.getSelectedBoxKey()!;
       if (isCircleBox(this.state[key][index])) {
         const boxes = [...this.state[key]];
-        boxes[index] = { ...boxes[index], x: nx, y: ny};
+        boxes[index] = { ...boxes[index], x: nx, y: ny };
         this.setState({
           [key]: boxes
         } as any);
@@ -232,8 +232,8 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           const oldY = (box.y1 + box.y2) / 2;
           box.x1 = round(box.x1 + nx - oldX);
           box.x2 = round(box.x2 + nx - oldX);
-          box.y1 = round( box.y1 + ny - oldY);
-          box.y2 = round (box.y2 + ny - oldY);
+          box.y1 = round(box.y1 + ny - oldY);
+          box.y2 = round(box.y2 + ny - oldY);
           break;
         }
       }
@@ -380,10 +380,11 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     if (this.state.selectedFrame) {
       const { key, index } = this.state.selectedFrame;
       const config = getSpriteConfig(this.props.frameData, key, index);
+      const source = getSpriteSource(this.props.frameData, key);
       const origin = this.origin;
       return (
         <div ref={this.setRef}>
-          <SpriteRenderer source={this.props.frameData.source} config={config} scale={this.scale} />
+          {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
           {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
           {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
         </div>
