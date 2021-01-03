@@ -116,7 +116,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
           break;
         } else if (canTransition && !this.isCurrentState(state)) {
           // Immediately transition to next state.
-          this.goToNextState(state, stateParams);
+          this.isHitlagged ? this.queueNextState(state, stateParams) : this.goToNextState(state, stateParams);
           console.log(command.toString());
           break;
         }

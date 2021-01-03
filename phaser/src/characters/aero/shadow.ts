@@ -3,12 +3,13 @@ import Aero from 'src/characters/aero/aero.character';
 import { FrameDefinitionMap } from 'src/characters/frameData';
 import { StageObject, UpdateParams } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
-import { Scalar } from '@lawsumisu/common-utilities';
+import { Scalar, Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 import * as _ from 'lodash';
 import { AudioKey } from 'src/assets/audio';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { StateDefinition } from 'src/state';
+import { PS } from 'src/global';
 
 interface AeroShadowStateConfig {
   startAnimation?: string;
@@ -33,6 +34,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
 
   protected defaultState = AeroShadowState.STAND;
   protected audioKeys: AudioKey[] = ['rush1'];
+  // TODO set states with constructor; provide access to position, velocity, and sprite via stateParams.
   protected states: { [key in AeroShadowState]: StateDefinition<AeroShadowStateConfig> } = {
     [AeroShadowState.STAND]: {
       startAnimation: 'SHADOW_STAND',
@@ -49,6 +51,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       cancelLock: 0,
       update: (tick: number) => {
         if (tick === 0) {
+          this.position.y = PS.stage.ground;
           this.move();
         }
         if (this.sprite.anims.currentFrame.index === 2) {
@@ -65,6 +68,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       cancelLock: 0,
       update: (tick: number) => {
         if (tick === 0) {
+          this.position.y = PS.stage.ground;
           this.move();
         }
         if (this.sprite.anims.currentFrame.index === 2) {
@@ -80,6 +84,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       onHitSound: 'hitMed',
       cancelLock: 24,
       update: () => {
+        this.position.y = PS.stage.ground;
         if (this.sprite.anims.currentFrame.index === 5) {
           this.playSound('rush1');
         }
@@ -92,10 +97,14 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       startAnimation: 'SHADOW_DUNK',
       onHitSound: 'hitMed',
       cancelLock: 24,
-      update: (tick: number) => {
+      update: (tick: number, stateParams: { velocity?: Vector2 }) => {
         if (tick === 0) {
-          this.position.y = this.aero.position.y;
-          this.velocity.y = -100;
+          const { velocity = Vector2.ZERO } = stateParams;
+          this.position.y = PS.stage.ground;
+          this.velocity.x = velocity.x;
+          this.velocity.y = -90;
+        } else if (this.position.y === PS.stage.ground) {
+          this.velocity.x = 0;
         }
         if (this.sprite.anims.currentFrame.index === 5) {
           this.playSound('rush1');
@@ -121,7 +130,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     this.colliderManager.ignoreCollisionsWith(this.aero.tag);
   }
 
-  public enable(params: Partial<{ state: AeroShadowState }> = {}): void {
+  public enable(params: Partial<{ state: AeroShadowState, velocity: Vector2 }> = {}): void {
     let state;
     if (this.cancelLock > 0) {
       return;
@@ -138,11 +147,12 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     } else {
       state = AeroShadowState.STAND_R;
     }
-    this.stateManager.setState(state, {}, true);
+    this.stateManager.setState(state, params, true);
     if (!this.sprite.active) {
       this.position = this.aero.position;
       this.sprite.setActive(true).setVisible(true);
     }
+    this.hitlag = 0;
   }
 
   public disable(): void {

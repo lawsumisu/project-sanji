@@ -324,6 +324,19 @@
       "assetKey": "vanessa",
       "prefix": "attacks/air/light",
       "frameRate": 15
+    },
+    "hitboxDef": {
+      "1": {
+        "boxes": [
+          { "x1": 4.8, "y1": -87.8, "x2": 28, "y2": -64.2, "r": 6.5 }
+        ],
+        "persistThroughFrame": 4
+      },
+      "hit": {
+        "damage": 10,
+        "angle": 0,
+        "knockback": 10
+      }
     }
   },
   "AIR_MED": {
@@ -332,6 +345,19 @@
       "assetKey": "vanessa",
       "prefix": "attacks/air/med",
       "frameRate": 15
+    },
+    "hitboxDef": {
+      "1": {
+        "boxes": [
+          { "x1": 17, "y1": -90.8, "x2": 47.2, "y2": -78.2, "r": 8 }
+        ],
+        "persistThroughFrame": 3
+      },
+      "hit": {
+        "damage": 10,
+        "angle": 0,
+        "knockback": 10
+      }
     }
   },
   "AIR_HEAVY": {
@@ -340,6 +366,19 @@
       "assetKey": "vanessa",
       "prefix": "attacks/air/heavy",
       "frameRate": 15
+    },
+    "hitboxDef": {
+      "3": {
+        "boxes": [
+          { "x1": 18.2, "y1": -73.2, "x2": 28.6, "y2": -37.8, "r": 10 }
+        ],
+        "persistThroughFrame": 4
+      },
+      "hit": {
+        "damage": 25,
+        "angle": 0,
+        "knockback": 25
+      }
     }
   },
   "SHADOW_STAND": {

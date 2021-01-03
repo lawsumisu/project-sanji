@@ -478,14 +478,14 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
           !this.isAirborne &&
           (this.isIdle || this.canCancel(AeroState.ROLL) || this.isCurrentState(CommonState.JUMP_SQUAT)),
         state: AeroState.ROLL,
-        stateParams: { shadowState: AeroShadowState.STAND_UPPER },
+        stateParams: { shadowState: AeroShadowState.STAND_DUNK },
         priority: 3
       },
       {
         command: new Command('*1|*2|*3+d', 1),
         trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
         state: AeroState.ROLL,
-        stateParams: { shadowState: AeroShadowState.STAND_DUNK },
+        stateParams: { shadowState: AeroShadowState.STAND_UPPER },
         priority: 3
       },
       {
@@ -565,6 +565,19 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       this.playSound(config.onHitSound, {}, true);
     }
     this.cancelFlag = true;
+  }
+
+  protected updateState(): void {
+    super.updateState();
+    if (
+      !this.isHitlagged &&
+      this.isAirborne &&
+      this.isIdle &&
+      this.isCommandExecuted(new Command('d', 1)) &&
+      this.shadow.canCancel()
+    ) {
+      this.shadow.enable({ state: AeroShadowState.STAND_DUNK, velocity: this.velocity });
+    }
   }
 
   private canCancel(nextState: CharacterState<AeroState>): boolean {
