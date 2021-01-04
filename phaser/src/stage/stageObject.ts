@@ -36,7 +36,7 @@ export abstract class StageObject {
     this.hitlag = Math.floor(((hit.knockback / 20) + 3) * m);
   }
 
-  protected get isHitlagged(): boolean {
+  public get isHitlagged(): boolean {
     return this.hitlag > 0;
   }
 }

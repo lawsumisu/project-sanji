@@ -20,6 +20,8 @@ export class Stage extends Phaser.Scene {
 
   public ground = 0;
 
+  private contact: { collider: Phaser.Geom.Circle, owner: string } | null = null;
+
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
     this.p1 = new Aero(0);
@@ -121,16 +123,9 @@ export class Stage extends Phaser.Scene {
                 hurtObject.applyHit(hit);
                 hitObject.onTargetHit(hurtObject, hit);
                 if (hurtbox.isCircular()) {
-                  const { x, y, radius: r } = hurtbox.transformBox(hurtOffset);
-                  this.debugDraw.circle(
-                    { x, y, r },
-                    {
-                      fill: {
-                        color: 0xffff00,
-                        alpha: 0.6
-                      }
-                    }
-                  );
+                  this.contact = { collider: hurtbox.transformBox(hurtOffset, hurtOrientation), owner: hurtObject.tag };
+                } else {
+                  this.contact = null;
                 }
                 break;
               }
@@ -224,6 +219,19 @@ export class Stage extends Phaser.Scene {
         });
       }
     });
+
+    if (this.contact && this.getStageObject(this.contact.owner).isHitlagged) {
+      const { x, y, radius: r } = this.contact.collider;
+      this.debugDraw.circle(
+        { x, y, r },
+        {
+          fill: {
+            color: 0xffff00,
+            alpha: 0.6
+          }
+        }
+      );
+    }
 
     this.debugDraw.rect(this.bounds, { lineColor: 0xffff00 });
   }

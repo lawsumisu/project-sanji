@@ -82,7 +82,11 @@ export class JunctiveInput implements Input {
   }
 
   public toString(): string {
-    return '(' + this.inputs.map(i => i.toString()).join(this.isAnd ? '+' : '/') + ')';
+    if (this.isAnd) {
+      return this.inputs.map(i => i.toString()).join('+');
+    } else {
+      return '(' + this.inputs.map(i => i.toString()).join('/') + ')';
+    }
   }
 
   public equals(i: Input): boolean {

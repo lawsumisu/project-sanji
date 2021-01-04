@@ -126,7 +126,6 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     this.sprite.tint = 0x222222;
     this.sprite.alpha = 0.6;
     this.disable();
-    this.sprite.depth = 10;
     this.colliderManager.ignoreCollisionsWith(this.aero.tag);
   }
 
@@ -201,5 +200,9 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
 
   public canCancel(inFrames: number = 0): boolean {
     return this.cancelLock - inFrames <= 0;
+  }
+
+  public setDepth(depth: number) {
+    this.sprite.depth = depth;
   }
 }

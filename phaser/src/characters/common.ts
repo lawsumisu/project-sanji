@@ -60,11 +60,6 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.STAND]: {
       startAnimation: 'STAND',
       type: [StateType.IDLE, StateType.STAND],
-      update: () => {
-        this.velocity.y = 0;
-        this.velocity.x = 0;
-
-      }
     },
     [CommonState.WALK]: {
       type: [StateType.IDLE, StateType.STAND],
@@ -75,14 +70,13 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
           const animation = this.isCommandExecuted(Command.registry.FORWARD) ? 'WALK_FWD' : 'WALK_BACK';
           const d = this.isCommandExecuted(Command.registry.FORWARD) ? 1 : -1;
           this.playAnimation(animation);
-          this.velocity.x = this.walkSpeed * d;
+          this.setOrientedVelocity({ x: this.walkSpeed * d });
         }
       }
     },
     [CommonState.CROUCH_TRANSITION]: {
       type: [StateType.IDLE, StateType.CROUCH],
       update: (tick: number) => {
-        this.velocity.x = 0;
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
           this.playAnimation('STAND_UP');
         } else if (tick === 0) {
@@ -99,7 +93,6 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'CROUCH',
       type: [StateType.IDLE, StateType.CROUCH],
       update: () => {
-        this.velocity.x = 0;
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
           this.playAnimation('STAND_UP');
         }
@@ -112,7 +105,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'RUN',
       type: [StateType.IDLE, StateType.STAND],
       update: () => {
-        this.velocity.x = this.runSpeed;
+        this.setOrientedVelocity({ x: this.runSpeed });
         if (!this.isCommandExecuted(Command.registry.FORWARD)) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -123,7 +116,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       type: [StateType.IDLE, StateType.STAND],
       update: (tick: number) => {
         if (tick === 0) {
-          this.velocity.x = -this.dashSpeed;
+          this.setOrientedVelocity({ x: -this.dashSpeed });
         } else if (tick < 9 && this.sprite.anims.currentFrame.index === 2) {
           this.sprite.anims.pause();
         } else if (tick === 10) {
@@ -140,16 +133,12 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       type: [StateType.STAND],
       update: (tick: number, params: { d?: -1 | 1 }) => {
         if (tick <= 2) {
-          if (tick === 0) {
-            this.velocity.x = 0;
-          }
           if (this.isCommandExecuted(Command.registry.FORWARD_ANY) || this.isCommandExecuted(Command.registry.BACK_ANY)) {
             const jumpDirection = this.isCommandExecuted(Command.registry.FORWARD_ANY);
             params.d = jumpDirection ? 1 : -1;
           }
         } else if (!this.sprite.anims.isPlaying && this.currentAnimation === 'SQUAT') {
-          this.velocity.y = -this.jumpSpeed;
-          this.velocity.x = this.walkSpeed * (params.d || 0);
+          this.setOrientedVelocity({ x:  this.walkSpeed * (params.d || 0), y: -this.jumpSpeed });
           this.goToNextState(CommonState.JUMP);
         }
       }
@@ -170,10 +159,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.BLOCK_STAND]: {
       startAnimation: 'BLOCK_STAND',
       type: [StateType.BLOCK, StateType.STAND],
-      update: (tick: number) => {
-        if (tick === 0) {
-          this.velocity.x = 0;
-        }
+      update: () => {
         if (!this.isCommandExecuted(Command.registry.GUARD)) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -182,10 +168,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.BLOCK_CROUCH]: {
       startAnimation: 'BLOCK_CROUCH',
       type: [StateType.BLOCK, StateType.CROUCH],
-      update: (tick: number) => {
-        if (tick === 0) {
-          this.velocity.x = 0;
-        }
+      update: () => {
         if (!this.isCommandExecuted(Command.registry.GUARD)) {
           this.stateManager.setState(CommonState.CROUCH);
         } else if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
@@ -262,10 +245,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       this._orientation.x = this.position.x < this.target.position.x;
     }
     super.update(params);
-    this.hitstun = Math.max(0, this.hitstun - 1);
-    if (this.hitstun === 1 && !this.isAirborne) {
-      this.velocity.x = 0;
-    }
+    this.updateHitstun();
   }
 
 
@@ -287,9 +267,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
     }
-    const d = this._orientation.x ? 1: -1;
-    const velocity = new Vector2(this.velocity.x * d, this.velocity.y);
-    this.position = this.position.add(velocity.scale(delta * Unit.toPx));
+    this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
 
     // TODO handle this in a separate function?
     if (this.position.x < PS.stage.left) {
@@ -299,15 +277,24 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     }
     if (this.isAirborne) {
       const bounds = this.bounds;
-      if (bounds.bottom > PS.stage.ground) {
+      if (Math.min(bounds.bottom, this.position.y) > PS.stage.ground) {
         this.position.y = PS.stage.ground;
         this.velocity.y = 0;
         this.stateManager.setState(CommonState.STAND);
         this.playSound('land', { volume: 0.5 }, true);
-        // this.sprite.flipX = !this._orientation.x;
       }
     } else if (this.position.y > PS.stage.ground) {
       this.position.y = PS.stage.ground;
+      this.velocity = Vector2.ZERO;
+    }
+  }
+
+  protected updateHitstun(): void {
+    if (this.hitstun > 0) {
+      this.hitstun = Math.max(0, this.hitstun - 1);
+      if (this.hitstun === 0 && !this.isAirborne) {
+        this.velocity.x = 0;
+      }
     }
   }
 
@@ -316,6 +303,14 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     const { startAnimation } = config;
     if (startAnimation) {
       playAnimation(this.sprite, [this.frameDefinitionMap.name, startAnimation].join('-'), { force: true, startFrame: params.startFrame });
+    }
+    if (this.checkStateType(StateType.ATTACK)) {
+      this.sprite.depth = 25;
+    } else {
+      this.sprite.depth = 20;
+    }
+    if (!this.isAirborne) {
+      this.velocity = Vector2.ZERO
     }
   }
 
@@ -356,6 +351,12 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     );
   }
 
+  protected setOrientedVelocity(v: { x? : number, y?: number}): void {
+    const d = this._orientation.x ? 1: -1;
+    const { x = this.velocity.x, y = this.velocity.y } = v;
+    this.velocity = new Vector2(x * d, y);
+  }
+
   protected get bounds(): Phaser.Geom.Rectangle {
     const { flipX } = this.sprite;
     const {
@@ -379,6 +380,6 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   private setHitstun(hit: Hit): void {
     this.hitstun = hit.knockback * 0.1;
-    this.velocity = new PolarVector(hit.knockback, hit.angle).toCartesian();
+    this.velocity = this.velocity.add(new PolarVector(hit.knockback, hit.angle).toCartesian());
   }
 }

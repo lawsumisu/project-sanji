@@ -131,6 +131,7 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
 
   private onSceneStart = (): void => {
     this.graphics = this.scene.add.graphics();
+    this.graphics.depth = 100;
   };
 
   private onSceneShutdown = (): void => {
