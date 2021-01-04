@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import * as _ from 'lodash';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
-import { Collider, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
+import { Collider, Hitbox, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
 import { PS } from 'src/global';
 import { BaseCharacter } from 'src/characters';
 import { StageObject } from 'src/stage/stageObject';
@@ -64,7 +64,7 @@ export class Stage extends Phaser.Scene {
     this.p1.setTarget(this.p2);
     this.p2.setTarget(this.p1);
     this.p1.position.x = 200;
-    this.p2.position = new Vector2(400, this.ground - 25);
+    this.p2.position = new Vector2(400, this.ground);
   }
 
   private updateBounds(): void {
@@ -104,17 +104,22 @@ export class Stage extends Phaser.Scene {
     _.forEach(this.hitData, (hitboxData: HitboxData) => {
       _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
         if (!hitboxData.hasCollided(hurtboxData) && !hitboxData.canIgnoreCollision(hurtboxData.owner)) {
-          const hitOffset = this.getStageObject(hitboxData.owner).position;
-          const hurtOffset = this.getStageObject(hurtboxData.owner).position;
+          const { position: hitOffset, orientation: hitOrientation } = this.getStageObject(hitboxData.owner);
+          const { position: hurtOffset, orientation: hurtOrientation } = this.getStageObject(hurtboxData.owner);
           for (let hitbox of hitboxData.data) {
             for (const hurtbox of hurtboxData.data) {
-              if (Collider.checkCollision(hitbox, hurtbox, { offset1: hitOffset, offset2: hurtOffset })) {
+              if (
+                Collider.checkCollision(hitbox, hurtbox, {
+                  c1: { offset: hitOffset, orientation: hitOrientation },
+                  c2: { offset: hurtOffset, orientation: hurtOrientation }
+                })
+              ) {
                 hitboxData.registerCollision(hurtboxData);
-                // TODO handle hits
                 const hurtObject = this.getStageObject(hurtboxData.owner);
                 const hitObject = this.getStageObject(hitboxData.owner);
-                hurtObject.applyHit(hitbox.hit);
-                hitObject.onTargetHit(hurtObject, hitbox.hit);
+                const hit = Hitbox.transformHit(hitbox.hit, hitOrientation);
+                hurtObject.applyHit(hit);
+                hitObject.onTargetHit(hurtObject, hit);
                 if (hurtbox.isCircular()) {
                   const { x, y, radius: r } = hurtbox.transformBox(hurtOffset);
                   this.debugDraw.circle(
@@ -153,13 +158,15 @@ export class Stage extends Phaser.Scene {
 
   public addHurtboxData(hurt: HurtboxData): void {
     if (!hurt.isEmpty) {
-      this.hurtData[hurt.tag] = hurt;
+      const key = [hurt.tag, hurt.owner].join('-');
+      this.hurtData[key] = hurt;
     }
   }
 
-  public removeHurtboxData(tag: string): void {
-    if (_.has(this.hurtData, tag)) {
-      delete this.hurtData[tag];
+  public removeHurtboxData(tag: string, owner: string): void {
+    const key = [tag, owner].join('-');
+    if (_.has(this.hurtData, key)) {
+      delete this.hurtData[key];
     }
   }
 
@@ -193,26 +200,26 @@ export class Stage extends Phaser.Scene {
       }
     };
     _.forEach(this.hitData, (hitboxData: HitboxData) => {
-      const p = this.getStageObject(hitboxData.owner).position;
+      const { position, orientation } = this.getStageObject(hitboxData.owner);
       hitboxData.data.forEach((hitbox: Collider) => {
         if (hitbox.isCircular()) {
-          const { x, y, radius: r } = hitbox.transformBox(p);
+          const { x, y, radius: r } = hitbox.transformBox(position, orientation);
           this.debugDraw.circle({ x, y, r }, hitboxOptions);
         } else if (hitbox.isCapsular()) {
-          this.debugDraw.capsule(hitbox.transformBox(p), hitboxOptions);
+          this.debugDraw.capsule(hitbox.transformBox(position, orientation), hitboxOptions);
         }
       });
     });
 
     _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
-      const p = this.getStageObject(hurtboxData.owner).position;
-      if (hurtboxData.owner === this.p2.tag) {
+      const { position, orientation } = this.getStageObject(hurtboxData.owner);
+      if (hurtboxData.owner !== this.p1.tag) {
         hurtboxData.data.forEach((hurtbox: Hurtbox) => {
           if (hurtbox.isCircular()) {
-            const { x, y, radius: r } = hurtbox.transformBox(p);
+            const { x, y, radius: r } = hurtbox.transformBox(position, orientation);
             this.debugDraw.circle({ x, y, r }, hurtboxOptions);
           } else if (hurtbox.isCapsular()) {
-            this.debugDraw.capsule(hurtbox.transformBox(p), hurtboxOptions);
+            this.debugDraw.capsule(hurtbox.transformBox(position, orientation), hurtboxOptions);
           }
         });
       }

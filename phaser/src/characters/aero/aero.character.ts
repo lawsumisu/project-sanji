@@ -230,7 +230,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: (tick: number, params: { strength: number }) => {
         const { strength = 0 } = params;
         if (tick === 0) {
-          this.velocity.x = (105 + 20 * strength) * this.direction;
+          this.velocity.x = (105 + 20 * strength);
         }
         if (!this.sprite.anims.isPlaying) {
           this.velocity.x = 0;
@@ -333,7 +333,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   private shadowStates: Array<{ command: Command; state: AeroShadowState }>;
 
   constructor(playerIndex = 0) {
-    super(playerIndex, aero, 'aero');
+    super(playerIndex, aero);
     this.shadow = new AeroShadow(this, aero, () => {
       this.cancelFlag = true;
     });
@@ -560,10 +560,6 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
 
   public onTargetHit(target: StageObject, hit: Hit): void {
     super.onTargetHit(target, hit);
-    const config = this.states[this.stateManager.current.key];
-    if (config && config.onHitSound) {
-      this.playSound(config.onHitSound, {}, true);
-    }
     this.cancelFlag = true;
   }
 

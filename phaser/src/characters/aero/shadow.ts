@@ -116,7 +116,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     }
   };
   constructor(aero: Aero, frameDefinitionMap: FrameDefinitionMap, onHit: () => void = _.noop) {
-    super(aero.playerIndex, frameDefinitionMap, 'shadow');
+    super(aero.playerIndex, frameDefinitionMap);
     this.aero = aero;
     this.onHit = onHit;
   }
@@ -169,18 +169,19 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
   }
 
   public update(params: UpdateParams): void {
-    this.direction = this.position.x < this.target.position.x ? 1 : -1;
-    this.sprite.flipX = this.direction === -1;
+    this._orientation.x = this.position.x < this.target.position.x;
+    this.sprite.flipX = !this._orientation.x;
     super.update(params);
     this.cancelLock = Math.max(0, this.cancelLock - 1);
   }
 
   private move(): void {
-    const cmp = this.direction === 1 ? Math.min : Math.max;
-    const lo = this.aero.position.x + 20 * this.direction;
-    const hi = this.target.position.x - 30 * this.direction;
-    const nx = this.position.x + this.speed * this.direction;
-    const limit = this.aero.position.x + this.range * this.direction;
+    const d = this._orientation.x ? 1 : -1;
+    const cmp = this._orientation.x ? Math.min : Math.max;
+    const lo = this.aero.position.x + 20 * d;
+    const hi = this.target.position.x - 30 * d;
+    const nx = this.position.x + this.speed * d;
+    const limit = this.aero.position.x + this.range * d;
     if (lo <= hi) {
       this.position.x = Scalar.clamp(cmp(nx, limit), lo, hi);
     } else {
@@ -192,7 +193,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, [this.name,startAnimation].join('-'), { force: true, startFrame: params.startFrame });
+      playAnimation(this.sprite, [this.frameDefinitionMap.name,startAnimation].join('-'), { force: true, startFrame: params.startFrame });
     }
     this.cancelLock = config.cancelLock;
     this.colliderManager.clearHitboxData();

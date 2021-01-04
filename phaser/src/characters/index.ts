@@ -37,7 +37,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   protected velocity: Vector2 = Vector2.ZERO;
   public position: Vector2 = Vector2.ZERO;
-  protected direction: -1 | 1 = 1;
 
   public readonly playerIndex: number;
   protected target: StageObject;
@@ -135,13 +134,16 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected updateSprite(): void {
     this.sprite.x = this.position.x;
     this.sprite.y = this.position.y;
+    this.sprite.flipX = !this._orientation.x
   }
 
   protected updateKinematics(delta: number): void {
     if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
     }
-    this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
+    const d = this._orientation.x ? 1: -1;
+    const velocity = new Vector2(this.velocity.x * d, this.velocity.y);
+    this.position = this.position.add(velocity.scale(delta * Unit.toPx));
 
     // TODO handle this in a separate function?
     if (this.position.x < PS.stage.left) {
@@ -230,7 +232,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   }
 
   protected isCommandExecuted(command: Command): boolean {
-    return command.isExecuted(this.playerIndex, this.direction === 1);
+    return command.isExecuted(this.playerIndex, this._orientation.x);
   }
 
   protected get input(): InputHistory {
@@ -252,19 +254,16 @@ export class BaseCharacterWithFrameDefinition<
 > extends BaseCharacter<S, D> {
   protected frameDefinitionMap: FrameDefinitionMap;
   protected colliderManager: FrameDefinitionColliderManager;
-  protected readonly name: string;
 
-  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap, name: string) {
+  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
     super(playerIndex);
-    this.name = name;
-    // TODO update frameDefinitionMap to include properties like name.
     this.frameDefinitionMap = frameDefinitionMap;
     this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
       const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
       const animKey = anim.key.split('-')[1];
-      if (this.frameDefinitionMap[animKey]) {
+      if (this.frameDefinitionMap.frameDef[animKey]) {
         return {
-          index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap[animKey].animDef, frame.index),
+          index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap.frameDef[animKey].animDef, frame.index),
           direction: { x: !this.sprite.flipX, y: true },
           frameKey: animKey
         };
@@ -276,11 +275,11 @@ export class BaseCharacterWithFrameDefinition<
 
   protected setupSprite(): void {
     super.setupSprite();
-    addAnimationsByDefinition(this.sprite, this.frameDefinitionMap, this.name);
+    addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
   }
 
   protected playAnimation(key: string, force = false) {
-    playAnimation(this.sprite, [this.name, key].join('-'), { force });
+    playAnimation(this.sprite, [this.frameDefinitionMap.name, key].join('-'), { force });
   }
 
   protected get currentAnimation(): string {

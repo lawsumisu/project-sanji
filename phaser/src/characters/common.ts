@@ -3,12 +3,13 @@ import { StateDefinition } from 'src/state';
 import { Command } from 'src/command';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import * as _ from 'lodash';
-import { GameInput } from 'src/plugins/gameInput.plugin';
 import { FrameDefinitionMap } from 'src/characters/frameData';
 import { PS } from 'src/global';
-import { Vector2 } from '@lawsumisu/common-utilities';
+import { PolarVector, Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 import { AudioKey } from 'src/assets/audio';
+import { Hit } from 'src/collider';
+import { StageObject } from 'src/stage/stageObject';
 
 export enum StateType {
   AIR = 'AIR',
@@ -49,6 +50,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   CharacterState<S>,
   CharacterStateConfig<D>
 > {
+  private hitstun = 0;
+
   protected states: StateMap<S, D>;
   protected audioKeys: AudioKey[] = [];
 
@@ -72,7 +75,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
           const animation = this.isCommandExecuted(Command.registry.FORWARD) ? 'WALK_FWD' : 'WALK_BACK';
           const d = this.isCommandExecuted(Command.registry.FORWARD) ? 1 : -1;
           this.playAnimation(animation);
-          this.velocity.x = this.walkSpeed * this.direction * d;
+          this.velocity.x = this.walkSpeed * d;
         }
       }
     },
@@ -109,7 +112,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'RUN',
       type: [StateType.IDLE, StateType.STAND],
       update: () => {
-        this.velocity.x = this.runSpeed * this.direction;
+        this.velocity.x = this.runSpeed;
         if (!this.isCommandExecuted(Command.registry.FORWARD)) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -120,7 +123,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       type: [StateType.IDLE, StateType.STAND],
       update: (tick: number) => {
         if (tick === 0) {
-          this.velocity.x = this.dashSpeed * -this.direction;
+          this.velocity.x = -this.dashSpeed;
         } else if (tick < 9 && this.sprite.anims.currentFrame.index === 2) {
           this.sprite.anims.pause();
         } else if (tick === 10) {
@@ -140,13 +143,13 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
           if (tick === 0) {
             this.velocity.x = 0;
           }
-          if (_.some([GameInput.UP_RIGHT, GameInput.UP_LEFT], (gi: GameInput) => this.input.isInputDown(gi))) {
-            const jumpDirection = this.input.isInputDown(GameInput.UP_RIGHT) ? 1 : -1;
-            params.d = jumpDirection === this.direction ? 1 : -1;
+          if (this.isCommandExecuted(Command.registry.FORWARD_ANY) || this.isCommandExecuted(Command.registry.BACK_ANY)) {
+            const jumpDirection = this.isCommandExecuted(Command.registry.FORWARD_ANY);
+            params.d = jumpDirection ? 1 : -1;
           }
         } else if (!this.sprite.anims.isPlaying && this.currentAnimation === 'SQUAT') {
           this.velocity.y = -this.jumpSpeed;
-          this.velocity.x = this.walkSpeed * this.direction * (params.d || 0);
+          this.velocity.x = this.walkSpeed * (params.d || 0);
           this.goToNextState(CommonState.JUMP);
         }
       }
@@ -193,8 +196,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   };
   private commonAudioKeys: AudioKey[] = ['land'];
 
-  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap, name: string) {
-    super(playerIndex, frameDefinitionMap, name);
+  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
+    super(playerIndex, frameDefinitionMap);
     this.defaultState = CommonState.STAND;
     this.commandList = this.getCommandList();
   }
@@ -255,15 +258,38 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   }
 
   public update(params: { time: number; delta: number }): void {
-    this.direction = this.position.x < this.target.position.x ? 1 : -1;
+    if (this.isIdle && !this.isAirborne) {
+      this._orientation.x = this.position.x < this.target.position.x;
+    }
     super.update(params);
+    this.hitstun = Math.max(0, this.hitstun - 1);
+    if (this.hitstun === 1 && !this.isAirborne) {
+      this.velocity.x = 0;
+    }
+  }
+
+
+  public onTargetHit(target: StageObject, hit: Hit): void {
+    super.onTargetHit(target, hit);
+    const config = this.states[this.stateManager.current.key];
+    if (config && config.onHitSound) {
+      this.playSound(config.onHitSound, {}, true);
+    }
+  }
+
+  public applyHit(hit: Hit): void {
+    console.log(hit);
+    super.applyHit(hit);
+    this.setHitstun(hit);
   }
 
   protected updateKinematics(delta: number): void {
     if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
     }
-    this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
+    const d = this._orientation.x ? 1: -1;
+    const velocity = new Vector2(this.velocity.x * d, this.velocity.y);
+    this.position = this.position.add(velocity.scale(delta * Unit.toPx));
 
     // TODO handle this in a separate function?
     if (this.position.x < PS.stage.left) {
@@ -278,17 +304,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         this.velocity.y = 0;
         this.stateManager.setState(CommonState.STAND);
         this.playSound('land', { volume: 0.5 }, true);
-        this.sprite.flipX = this.direction === -1;
+        // this.sprite.flipX = !this._orientation.x;
       }
     } else if (this.position.y > PS.stage.ground) {
       this.position.y = PS.stage.ground;
-    }
-  }
-
-  protected updateSprite(): void {
-    super.updateSprite();
-    if (this.isIdle && !this.isAirborne) {
-      this.sprite.flipX = this.direction === -1;
     }
   }
 
@@ -296,7 +315,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, [this.name, startAnimation].join('-'), { force: true, startFrame: params.startFrame });
+      playAnimation(this.sprite, [this.frameDefinitionMap.name, startAnimation].join('-'), { force: true, startFrame: params.startFrame });
     }
   }
 
@@ -356,5 +375,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     rect.centerX = this.position.x - (pivotX * realWidth - centerX - x) * fx;
     rect.centerY = this.position.y - pivotY * realHeight + centerY + y;
     return rect;
+  }
+
+  private setHitstun(hit: Hit): void {
+    this.hitstun = hit.knockback * 0.1;
+    this.velocity = new PolarVector(hit.knockback, hit.angle).toCartesian();
   }
 }

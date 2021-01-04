@@ -63,17 +63,22 @@ export interface FrameDefinition {
   };
 }
 
-export type FrameDefinitionMap<T extends string = string> = {
-  [key in T]: FrameDefinition;
+export type FrameDefinitionMap = {
+  name: string;
+  frameDef: {
+    [key: string]: FrameDefinition;
+  }
 };
 
-export function addAnimationsByDefinition(sprite: Phaser.GameObjects.Sprite, definitionMap: FrameDefinitionMap, name: string): void {
-  _.forEach(definitionMap, (definition, key: string) => {
+export function addAnimationsByDefinition(sprite: Phaser.GameObjects.Sprite, definitionMap: FrameDefinitionMap): void {
+  const { name, frameDef } = definitionMap;
+  _.forEach(frameDef, (definition, key: string) => {
     const { frames, prefix, frameRate, repeat = 0, assetKey } = definition.animDef;
+    const animKey = [name, key].join('-');
     if (_.isNumber(frames)) {
-      addAnimation(sprite, [name, key].join('-'), assetKey, frames, prefix, frameRate, repeat);
+      addAnimation(sprite, animKey, assetKey, frames, prefix, frameRate, repeat);
     } else {
-      addAnimationByFrames(sprite, [name, key].join('-'), assetKey, frames, prefix, frameRate, repeat);
+      addAnimationByFrames(sprite, animKey, assetKey, frames, prefix, frameRate, repeat);
     }
   });
 }

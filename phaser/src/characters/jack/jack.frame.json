@@ -1,11 +1,24 @@
 {
-  "STAND": {
-    "animDef": {
-      "frames": 13,
-      "assetKey": "hugo",
-      "prefix": "stand/idle",
-      "frameRate": 12,
-      "repeat": -1
+  "name": "jack",
+  "frameDef": {
+    "STAND": {
+      "animDef": {
+        "frames": 13,
+        "assetKey": "hugo",
+        "prefix": "stand/idle",
+        "frameRate": 12,
+        "repeat": -1
+      },
+      "hurtboxDef": {
+        "0": {
+          "boxes": [
+            { "x": 4.4, "y": -87.8, "r": 31 },
+            { "x": 7.6, "y": -124, "r": 16 },
+            { "x1": 5.8, "y1": -45, "x2": 9.8, "y2": -20, "r": 28 }
+          ],
+          "persistThroughFrame": 12
+        }
+      }
     }
   }
 }

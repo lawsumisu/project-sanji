@@ -65,7 +65,8 @@ export class ColliderManager {
   }
 
   private setHurtData(data: HurtboxData | null): void {
-    PS.stage.removeHurtboxData(this.collisionData.hurtData.tag);
+    const { tag, owner } = this.collisionData.hurtData;
+    PS.stage.removeHurtboxData(tag, owner);
     this.collisionData.hurtData = data ? data : HurtboxData.EMPTY;
     PS.stage.addHurtboxData(this.collisionData.hurtData);
   }
@@ -100,9 +101,7 @@ export class FrameDefinitionColliderManager extends ColliderManager {
 
   private generateHurtboxData(hurtboxData: HurtboxData): HurtboxData | null {
     const boxDefinitionData = this.generateBoxDefinitionData(hurtboxData, BoxType.HURT);
-    if (_.isNil(boxDefinitionData)) {
-      return null;
-    } else {
+    if (!_.isNil(boxDefinitionData)) {
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
       return new HurtboxData(
         frameBoxDef.boxes.map(box => {
@@ -117,26 +116,26 @@ export class FrameDefinitionColliderManager extends ColliderManager {
         index,
         { persist }
       );
+    } else {
+      return null;
     }
   }
 
   private generateHitboxData(hitboxData: HitboxData): HitboxData | null {
     const boxDefinitionData = this.generateBoxDefinitionData(hitboxData, BoxType.HIT);
     const animInfo = this.getAnimInfo();
-    if (_.isNil(boxDefinitionData)) {
-      return null;
-    } else if (animInfo){
-      const { direction, frameKey } = animInfo;
+    if (animInfo && !_.isNil(boxDefinitionData)){
+      const { frameKey } = animInfo;
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
-      const frameDefinition = this.frameDefinitionMap[frameKey];
+      const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
       // TODO allow hitbox data to be overwritten at runtime
       const hit = { ...frameDefinition!.hitboxDef!.hit, ...frameBoxDef.hit };
       return new HitboxData(
         frameBoxDef.boxes.map((box: BoxConfig) => {
           if (isCircleBox(box)) {
-            return Hitbox.generateCircular(box, hit, direction);
+            return Hitbox.generateCircular(box, hit);
           } else {
-            return Hitbox.generateCapsular(box, hit, direction);
+            return Hitbox.generateCapsular(box, hit);
           }
         }),
         tag,
@@ -148,8 +147,9 @@ export class FrameDefinitionColliderManager extends ColliderManager {
           ignoreCollisionTags: this.ignoreCollisionTags
         }
       );
+    } else {
+      return null;
     }
-    return null;
   }
 
   private generateBoxDefinitionData<T extends CollisionData<Collider>>(
@@ -164,7 +164,7 @@ export class FrameDefinitionColliderManager extends ColliderManager {
     const animInfo = this.getAnimInfo();
     if (animInfo) {
       const { index, frameKey } = animInfo;
-      const frameDefinition = this.frameDefinitionMap[frameKey];
+      const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
       const key = boxType === BoxType.HIT ? 'hitboxDef' : 'hurtboxDef';
       if (
         frameDefinition &&

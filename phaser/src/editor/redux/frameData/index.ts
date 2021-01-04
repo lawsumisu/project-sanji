@@ -49,7 +49,7 @@ interface SpriteSheetInfo {
 }
 
 export interface FrameDataState {
-  definitionMap: FrameDefinitionMap;
+  definitionMap: FrameDefinitionMap['frameDef'];
   spriteSheets: {[key: string]: SpriteSheetInfo}
   selection: { key: string; frame: number } | null;
 }
@@ -64,7 +64,7 @@ const ACF = actionCreatorFactory('frameData');
 
 export const frameDataActionCreators = {
   select: ACF<{ key: string; frame: number }>('SELECT'),
-  loadDefinition: ACF<FrameDefinitionMap>('LOAD'),
+  loadDefinition: ACF<FrameDefinitionMap['frameDef']>('LOAD'),
   loadSpriteSheet: ACF<{ key: string, source: string, textureData: TextureDataTP }>('LOAD_SPRITE_SHEET'),
 };
 
