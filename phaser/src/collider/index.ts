@@ -14,10 +14,20 @@ export enum ColliderType {
   CAPSULE = 'CAPSULE'
 }
 
+export enum HitType {
+  HIGH = 'HIGH',
+  MID = 'MID',
+  LOW = 'LOW',
+  HEAVY = 'HEAVY',
+  LIGHT = 'LIGHT',
+  MEDIUM = 'MEDIUM',
+  LAUNCH = 'LAUNCH'
+}
 export interface Hit {
   damage: number;
   angle: number;
   knockback: number;
+  type: string[];
 }
 
 export interface Direction {

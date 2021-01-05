@@ -278,8 +278,8 @@ export class BaseCharacterWithFrameDefinition<
     addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
   }
 
-  protected playAnimation(key: string, force = false) {
-    playAnimation(this.sprite, [this.frameDefinitionMap.name, key].join('-'), { force });
+  protected playAnimation(key: string, params: { force?: boolean, startFrame?: number } = {}) {
+    playAnimation(this.sprite, [this.frameDefinitionMap.name, key].join('-'), params);
   }
 
   protected get currentAnimation(): string {

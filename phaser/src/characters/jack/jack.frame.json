@@ -19,6 +19,94 @@
           "persistThroughFrame": 12
         }
       }
+    },
+    "HIT_HIGH_LIGHT": {
+      "animDef": {
+        "frames": 6,
+        "assetKey": "hugo",
+        "prefix": "hit/head/light",
+        "frameRate": 12
+      }
+    },
+    "HIT_HIGH_MEDIUM": {
+      "animDef": {
+        "frames": 5,
+        "assetKey": "hugo",
+        "prefix": "hit/head/med",
+        "frameRate": 12
+      }
+    },
+    "HIT_HIGH_HEAVY": {
+      "animDef": {
+        "frames": 11,
+        "assetKey": "hugo",
+        "prefix": "hit/head/heavy",
+        "frameRate": 12
+      }
+    },
+    "HIT_HIGH_LAUNCH": {
+      "animDef": {
+        "frames": 4,
+        "assetKey": "hugo",
+        "prefix": "hit/head/launch",
+        "frameRate": 15
+      }
+    },
+    "HIT_MID_LIGHT": {
+      "animDef": {
+        "frames": 5,
+        "assetKey": "hugo",
+        "prefix": "hit/body/light",
+        "frameRate": 12
+      }
+    },
+    "HIT_MID_MEDIUM": {
+      "animDef": {
+        "frames": 5,
+        "assetKey": "hugo",
+        "prefix": "hit/body/med",
+        "frameRate": 12
+      }
+    },
+    "HIT_MID_HEAVY": {
+      "animDef": {
+        "frames": 10,
+        "assetKey": "hugo",
+        "prefix": "hit/body/heavy",
+        "frameRate": 12
+      }
+    },
+    "HIT_MID_LAUNCH": {
+      "animDef": {
+        "frames": 5,
+        "assetKey": "hugo",
+        "prefix": "hit/body/launch",
+        "frameRate": 12
+      }
+    },
+    "HIT_HIGH_FALL": {
+      "animDef": {
+        "frames": 8,
+        "assetKey": "hugo",
+        "prefix": "hit/air/launch",
+        "frameRate": 15
+      }
+    },
+    "HIT_LAND": {
+      "animDef": {
+        "frames": 17,
+        "assetKey": "hugo",
+        "prefix": "hit/air/land",
+        "frameRate": 15
+      }
+    },
+    "WAKE_UP_STAND": {
+      "animDef": {
+        "frames": 5,
+        "assetKey": "hugo",
+        "prefix": "hit/getup/stand",
+        "frameRate": 15
+      }
     }
   }
 }

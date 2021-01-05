@@ -13,7 +13,9 @@
         "0": { "boxes": [{ "x1": 1.38, "y1": -92.4, "x2": 0.78, "y2": -12.8, "r": 13.5 }], "persistThroughFrame": 21 }
       }
     },
-    "WALK_FWD": { "animDef": { "frames": 8, "assetKey": "vanessa", "prefix": "walkfwd", "frameRate": 15, "repeat": -1 } },
+    "WALK_FWD": {
+      "animDef": { "frames": 8, "assetKey": "vanessa", "prefix": "walkfwd", "frameRate": 15, "repeat": -1 }
+    },
     "WALK_BACK": {
       "animDef": { "frames": 8, "assetKey": "vanessa", "prefix": "walkback", "frameRate": 15, "repeat": -1 }
     },
@@ -55,7 +57,7 @@
       },
       "hitboxDef": {
         "1": { "boxes": [{ "x1": 16, "y1": -86, "x2": 39.4, "y2": -74.6, "r": 6.5 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"] }
       }
     },
     "LIGHT_JAB_2": {
@@ -67,32 +69,42 @@
             { "x1": 22.83, "y1": -88.79, "x2": 58.85000000000001, "y2": -92.17, "r": 7 }
           ]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"] }
       }
     },
     "LIGHT_3": {
       "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "attacks/light3", "frameRate": 15 },
       "hitboxDef": {
         "1": { "boxes": [{ "x1": 23.2, "y1": -75.8, "x2": 8.6, "y2": -75.6, "r": 6.5 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"] }
       }
     },
     "LIGHT_4": {
       "animDef": { "frames": 6, "assetKey": "vanessa", "prefix": "attacks/light4", "frameRate": 15 },
       "hitboxDef": {
         "1": { "boxes": [{ "x1": 56.2, "y1": -95, "x2": 16.2, "y2": -87.8, "r": 6.5 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"] }
       }
     },
     "GUT_PUNCH_1": {
-      "animDef": { "frames": [1, 2, 3, 4, 5, 11], "assetKey": "vanessa", "prefix": "attacks/gutpunch", "frameRate": 14 },
+      "animDef": {
+        "frames": [1, 2, 3, 4, 5, 11],
+        "assetKey": "vanessa",
+        "prefix": "attacks/gutpunch",
+        "frameRate": 14
+      },
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 50.8, "y1": -82.82000000000001, "x2": 28.799999999999994, "y2": -57.02, "r": 8.5 }] },
-        "hit": { "damage": 10, "angle": -75, "knockback": 50 }
+        "hit": { "damage": 10, "angle": -75, "knockback": 50, "type": ["MEDIUM", "MID"] }
       }
     },
     "GUT_PUNCH_2": {
-      "animDef": { "frames": [6, 7, 8, 9, 10, 11], "assetKey": "vanessa", "prefix": "attacks/gutpunch", "frameRate": 14 },
+      "animDef": {
+        "frames": [6, 7, 8, 9, 10, 11],
+        "assetKey": "vanessa",
+        "prefix": "attacks/gutpunch",
+        "frameRate": 14
+      },
       "hitboxDef": {
         "1": {
           "boxes": [
@@ -101,7 +113,7 @@
           ]
         },
         "2": { "boxes": [{ "x": 45, "y": -72.2, "r": 10 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 25 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 25, "type": ["MEDIUM", "MID"] }
       }
     },
     "STAND_MED_R_2": {
@@ -113,7 +125,7 @@
       },
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 46.6, "y1": -65.4, "x2": 12.4, "y2": -60.8, "r": 10 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["MEDIUM", "MID"] }
       }
     },
     "STAND_MED_L_2": {
@@ -126,7 +138,7 @@
       "hitboxDef": {
         "3": { "boxes": [{ "x1": 64, "y1": -111.2, "x2": 32.8, "y2": -64, "r": 10 }] },
         "4": { "boxes": [{ "x": 62, "y": -103, "r": 10 }], "persistThroughFrame": 5 },
-        "hit": { "damage": 10, "angle": -10, "knockback": 35 }
+        "hit": { "damage": 10, "angle": -10, "knockback": 35, "type": ["MEDIUM", "MID"] }
       }
     },
     "STRAIGHT": {
@@ -134,7 +146,7 @@
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 30.4, "y1": -92.37, "x2": 68, "y2": -92.19, "r": 6.5 }] },
         "3": { "boxes": [{ "x1": 32.6, "y1": -89.8, "x2": 67.8, "y2": -89, "r": 6.5 }], "persistThroughFrame": 4 },
-        "hit": { "damage": 20, "angle": 0, "knockback": 50 }
+        "hit": { "damage": 20, "angle": 0, "knockback": 50, "type": ["HEAVY", "MID"] }
       }
     },
     "STAND_HEAVY_R": {
@@ -147,7 +159,7 @@
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 36.6, "y1": -53.2, "x2": 20.2, "y2": -48.2, "r": 8.5 }] },
         "3": { "boxes": [{ "x": 40.6, "y": -81, "r": 9.5 }] },
-        "hit": { "damage": 20, "angle": 0, "knockback": 50 }
+        "hit": { "damage": 20, "angle": 0, "knockback": 50, "type": ["HEAVY", "MID"] }
       }
     },
     "STAND_HEAVY_L": {
@@ -159,7 +171,7 @@
       },
       "hitboxDef": {
         "1": { "boxes": [{ "x": 44.4, "y": -51.8, "r": 16 }], "persistThroughFrame": 2 },
-        "hit": { "damage": 20, "angle": 0, "knockback": 50 }
+        "hit": { "damage": 20, "angle": 0, "knockback": 50, "type": ["HEAVY", "MID"] }
       }
     },
     "MACHINE_GUN_R": {
@@ -174,7 +186,8 @@
         "hit": {
           "damage": 20,
           "angle": 0,
-          "knockback": 35
+          "knockback": 35,
+          "type": ["MEDIUM", "MID"]
         }
       }
     },
@@ -187,7 +200,8 @@
         "hit": {
           "damage": 20,
           "angle": 0,
-          "knockback": 35
+          "knockback": 35,
+          "type": ["MEDIUM", "MID"]
         }
       }
     },
@@ -254,7 +268,7 @@
         "1": {
           "boxes": [{ "x1": 50.8, "y1": -62.4, "x2": 16.6, "y2": -54.4, "r": 6 }]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LOW", "LIGHT"] }
       }
     },
     "CROUCH_LIGHT_2": {
@@ -268,7 +282,7 @@
         "1": {
           "boxes": [{ "x1": 25.6, "y1": -47.8, "x2": 58.4, "y2": -24.8, "r": 6.5 }]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LOW", "LIGHT"] }
       }
     },
     "CROUCH_MED": {
@@ -285,7 +299,7 @@
         "4": {
           "boxes": [{ "x": 61, "y": -30, "r": 12.5 }]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10 }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LOW", "MEDIUM"] }
       }
     },
     "CROUCH_HEAVY": {
@@ -316,7 +330,8 @@
         "hit": {
           "damage": 20,
           "angle": 0,
-          "knockback": 35
+          "knockback": 35,
+          "type": ["HEAVY", "LOW"]
         }
       }
     },
@@ -329,15 +344,14 @@
       },
       "hitboxDef": {
         "1": {
-          "boxes": [
-            { "x1": 4.8, "y1": -87.8, "x2": 28, "y2": -64.2, "r": 6.5 }
-          ],
+          "boxes": [{ "x1": 4.8, "y1": -87.8, "x2": 28, "y2": -64.2, "r": 6.5 }],
           "persistThroughFrame": 4
         },
         "hit": {
           "damage": 10,
           "angle": 0,
-          "knockback": 10
+          "knockback": 10,
+          "type": ["LIGHT", "HIGH"]
         }
       }
     },
@@ -350,15 +364,14 @@
       },
       "hitboxDef": {
         "1": {
-          "boxes": [
-            { "x1": 17, "y1": -90.8, "x2": 47.2, "y2": -78.2, "r": 8 }
-          ],
+          "boxes": [{ "x1": 17, "y1": -90.8, "x2": 47.2, "y2": -78.2, "r": 8 }],
           "persistThroughFrame": 3
         },
         "hit": {
           "damage": 10,
           "angle": 0,
-          "knockback": 10
+          "knockback": 20,
+          "type": ["MEDIUM", "HIGH"]
         }
       }
     },
@@ -371,15 +384,14 @@
       },
       "hitboxDef": {
         "3": {
-          "boxes": [
-            { "x1": 18.2, "y1": -73.2, "x2": 28.6, "y2": -37.8, "r": 10 }
-          ],
+          "boxes": [{ "x1": 18.2, "y1": -73.2, "x2": 28.6, "y2": -37.8, "r": 10 }],
           "persistThroughFrame": 4
         },
         "hit": {
           "damage": 25,
           "angle": 0,
-          "knockback": 25
+          "knockback": 25,
+          "type": ["HEAVY", "HIGH"]
         }
       }
     },
@@ -408,7 +420,8 @@
         "hit": {
           "damage": 20,
           "angle": 0,
-          "knockback": 35
+          "knockback": 35,
+          "type": ["LIGHT", "MID"]
         }
       }
     },
@@ -429,7 +442,8 @@
         "hit": {
           "damage": 20,
           "angle": 0,
-          "knockback": 35
+          "knockback": 35,
+          "type": ["LIGHT", "MID"]
         }
       }
     },
@@ -448,7 +462,8 @@
         "hit": {
           "damage": 20,
           "angle": -85,
-          "knockback": 125
+          "knockback": 125,
+          "type": ["LAUNCH", "HIGH"]
         }
       }
     },
@@ -467,7 +482,8 @@
         "hit": {
           "damage": 20,
           "angle": 15,
-          "knockback": 35
+          "knockback": 35,
+          "type": ["MEDIUM", "MID"]
         }
       }
     }

@@ -8,7 +8,7 @@ import { PS } from 'src/global';
 import { PolarVector, Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 import { AudioKey } from 'src/assets/audio';
-import { Hit } from 'src/collider';
+import { Hit, HitType } from 'src/collider';
 import { StageObject } from 'src/stage/stageObject';
 
 export enum StateType {
@@ -17,7 +17,8 @@ export enum StateType {
   CROUCH = 'CROUCH',
   IDLE = 'IDLE',
   ATTACK = 'ATTACK',
-  BLOCK = 'BLOCK'
+  BLOCK = 'BLOCK',
+  HIT = 'HIT'
 }
 
 export interface CommonStateConfig {
@@ -38,7 +39,11 @@ export enum CommonState {
   CROUCH = 'CROUCH',
   RUN = 'RUN',
   BLOCK_STAND = 'BLOCK_STAND',
-  BLOCK_CROUCH = 'BLOCK_CROUCH'
+  BLOCK_CROUCH = 'BLOCK_CROUCH',
+  HIT = 'HIT',
+  HIT_AIR = 'HIT_AIR',
+  HIT_LAND = 'HIT_LAND',
+  WAKE_UP = 'WAKE_UP'
 }
 
 export type CharacterState<T extends string> = T | CommonState;
@@ -59,7 +64,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.NULL]: { type: [] },
     [CommonState.STAND]: {
       startAnimation: 'STAND',
-      type: [StateType.IDLE, StateType.STAND],
+      type: [StateType.IDLE, StateType.STAND]
     },
     [CommonState.WALK]: {
       type: [StateType.IDLE, StateType.STAND],
@@ -133,12 +138,15 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       type: [StateType.STAND],
       update: (tick: number, params: { d?: -1 | 1 }) => {
         if (tick <= 2) {
-          if (this.isCommandExecuted(Command.registry.FORWARD_ANY) || this.isCommandExecuted(Command.registry.BACK_ANY)) {
+          if (
+            this.isCommandExecuted(Command.registry.FORWARD_ANY) ||
+            this.isCommandExecuted(Command.registry.BACK_ANY)
+          ) {
             const jumpDirection = this.isCommandExecuted(Command.registry.FORWARD_ANY);
             params.d = jumpDirection ? 1 : -1;
           }
         } else if (!this.sprite.anims.isPlaying && this.currentAnimation === 'SQUAT') {
-          this.setOrientedVelocity({ x:  this.walkSpeed * (params.d || 0), y: -this.jumpSpeed });
+          this.setOrientedVelocity({ x: this.walkSpeed * (params.d || 0), y: -this.jumpSpeed });
           this.goToNextState(CommonState.JUMP);
         }
       }
@@ -175,9 +183,56 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
           this.stateManager.setState(CommonState.BLOCK_STAND);
         }
       }
+    },
+    [CommonState.HIT]: {
+      type: [StateType.HIT],
+      update: (tick: number, params: { hit: Hit }) => {
+        if (tick === 0) {
+          const { hit } = params;
+          this.setHitstun(hit);
+          const t1 =
+            hit.type.find((t: HitType) => [HitType.HIGH, HitType.MID, HitType.LOW].includes(t)) || HitType.HIGH;
+          const t2 =
+            hit.type.find((t: HitType) => [HitType.LAUNCH, HitType.HEAVY, HitType.MEDIUM, HitType.LIGHT].includes(t)) ||
+            HitType.LIGHT;
+          const animKey = ['HIT', t1, t2].join('_');
+          this.playAnimation(animKey, { force: true });
+        }
+        if (!this.sprite.anims.isPlaying && this.currentAnimation === 'HIT_HIGH_LAUNCH') {
+          this.goToNextState(CommonState.HIT_AIR);
+        }
+        if (this.hitstun === 0) {
+          this.goToNextState(CommonState.STAND);
+        }
+      }
+    },
+    [CommonState.HIT_AIR]: {
+      type: [StateType.HIT, StateType.AIR],
+      startAnimation: 'HIT_HIGH_FALL'
+    },
+    [CommonState.HIT_LAND]: {
+      type: [StateType.HIT],
+      startAnimation: 'HIT_LAND',
+      update: (tick: number) => {
+        if (tick === 0) {
+          this.playSound('landHeavy');
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.WAKE_UP);
+        }
+      }
+    },
+    [CommonState.WAKE_UP]: {
+      type: [StateType.STAND],
+      startAnimation: 'WAKE_UP_STAND',
+      update: () => {
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.STAND);
+        }
+      }
     }
   };
-  private commonAudioKeys: AudioKey[] = ['land'];
+  private commonAudioKeys: AudioKey[] = ['land', 'landHeavy'];
 
   constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
     super(playerIndex, frameDefinitionMap);
@@ -216,7 +271,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       },
       {
         command: Command.registry.GUARD,
-        trigger: () =>  this.isIdle && this.isStanding,
+        trigger: () => this.isIdle && this.isStanding,
         state: CommonState.BLOCK_STAND,
         priority: 1
       },
@@ -231,7 +286,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   public preload() {
     this.states = { ...this.commonStates, ...this.states };
-    this.audioKeys = [ ...this.commonAudioKeys, ...this.audioKeys ];
+    this.audioKeys = [...this.commonAudioKeys, ...this.audioKeys];
     super.preload();
   }
 
@@ -246,8 +301,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     }
     super.update(params);
     this.updateHitstun();
+    PS.stage.debugDraw.rect(this.bounds);
   }
-
 
   public onTargetHit(target: StageObject, hit: Hit): void {
     super.onTargetHit(target, hit);
@@ -260,7 +315,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   public applyHit(hit: Hit): void {
     console.log(hit);
     super.applyHit(hit);
-    this.setHitstun(hit);
+    this.goToNextState(CommonState.HIT, { hit });
+    this.stateManager.update();
   }
 
   protected updateKinematics(delta: number): void {
@@ -280,8 +336,12 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       if (Math.min(bounds.bottom, this.position.y) > PS.stage.ground) {
         this.position.y = PS.stage.ground;
         this.velocity.y = 0;
-        this.stateManager.setState(CommonState.STAND);
-        this.playSound('land', { volume: 0.5 }, true);
+        if (this.isHit) {
+          this.goToNextState(CommonState.HIT_LAND);
+        } else {
+          this.goToNextState(CommonState.STAND);
+          this.playSound('land', { volume: 0.5 }, true);
+        }
       }
     } else if (this.position.y > PS.stage.ground) {
       this.position.y = PS.stage.ground;
@@ -302,7 +362,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, [this.frameDefinitionMap.name, startAnimation].join('-'), { force: true, startFrame: params.startFrame });
+      playAnimation(this.sprite, [this.frameDefinitionMap.name, startAnimation].join('-'), {
+        force: true,
+        startFrame: params.startFrame
+      });
     }
     if (this.checkStateType(StateType.ATTACK)) {
       this.sprite.depth = 25;
@@ -310,7 +373,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       this.sprite.depth = 20;
     }
     if (!this.isAirborne) {
-      this.velocity = Vector2.ZERO
+      this.velocity = Vector2.ZERO;
     }
   }
 
@@ -320,6 +383,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   protected get isCrouching(): boolean {
     return this.checkStateType(StateType.CROUCH);
+  }
+
+  protected get isHit(): boolean {
+    return this.checkStateType(StateType.HIT);
   }
 
   protected get isIdle(): boolean {
@@ -351,8 +418,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     );
   }
 
-  protected setOrientedVelocity(v: { x? : number, y?: number}): void {
-    const d = this._orientation.x ? 1: -1;
+  protected setOrientedVelocity(v: { x?: number; y?: number }): void {
+    const d = this._orientation.x ? 1 : -1;
     const { x = this.velocity.x, y = this.velocity.y } = v;
     this.velocity = new Vector2(x * d, y);
   }
@@ -379,7 +446,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   }
 
   private setHitstun(hit: Hit): void {
-    this.hitstun = hit.knockback * 0.1;
+    this.hitstun = hit.knockback;
     this.velocity = this.velocity.add(new PolarVector(hit.knockback, hit.angle).toCartesian());
   }
 }

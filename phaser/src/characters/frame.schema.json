@@ -28,9 +28,10 @@
                   "properties": {
                     "damage": { "type": "number" },
                     "angle": { "type": "number" },
-                    "knockback": { "type": "number" }
+                    "knockback": { "type": "number" },
+                    "type": { "type": "array", "items": { "type": "string" } }
                   },
-                  "required": ["damage", "angle", "knockback"]
+                  "required": ["damage", "angle", "knockback", "type"]
                 }
               },
               "patternProperties": {
