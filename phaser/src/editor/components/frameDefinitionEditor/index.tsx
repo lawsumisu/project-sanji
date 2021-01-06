@@ -39,6 +39,7 @@ interface StateMappedProps {
   selected: FrameEditState;
 }
 
+// TODO add way to modify scale of sprites
 class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State> {
   public static mapStateToProps(state: AppState): StateMappedProps {
     return {

@@ -95,7 +95,7 @@
       },
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 50.8, "y1": -82.82000000000001, "x2": 28.799999999999994, "y2": -57.02, "r": 8.5 }] },
-        "hit": { "damage": 10, "angle": -75, "knockback": 50, "type": ["MEDIUM", "MID"] }
+        "hit": { "damage": 10, "angle": -75, "knockback": 25, "type": ["MEDIUM", "MID"] }
       }
     },
     "GUT_PUNCH_2": {
@@ -113,7 +113,7 @@
           ]
         },
         "2": { "boxes": [{ "x": 45, "y": -72.2, "r": 10 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 25, "type": ["MEDIUM", "MID"] }
+        "hit": { "damage": 10, "angle": -75, "knockback": 25, "type": ["MEDIUM", "MID"] }
       }
     },
     "STAND_MED_R_2": {
@@ -159,7 +159,7 @@
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 36.6, "y1": -53.2, "x2": 20.2, "y2": -48.2, "r": 8.5 }] },
         "3": { "boxes": [{ "x": 40.6, "y": -81, "r": 9.5 }] },
-        "hit": { "damage": 20, "angle": 0, "knockback": 50, "type": ["HEAVY", "MID"] }
+        "hit": { "damage": 20, "angle": 0, "knockback": 25, "type": ["HEAVY", "MID"] }
       }
     },
     "STAND_HEAVY_L": {
@@ -171,7 +171,7 @@
       },
       "hitboxDef": {
         "1": { "boxes": [{ "x": 44.4, "y": -51.8, "r": 16 }], "persistThroughFrame": 2 },
-        "hit": { "damage": 20, "angle": 0, "knockback": 50, "type": ["HEAVY", "MID"] }
+        "hit": { "damage": 20, "angle": 0, "knockback": 25, "type": ["HEAVY", "MID"] }
       }
     },
     "MACHINE_GUN_R": {
@@ -420,8 +420,8 @@
         "hit": {
           "damage": 20,
           "angle": 0,
-          "knockback": 35,
-          "type": ["LIGHT", "MID"]
+          "knockback": 15,
+          "type": ["HEAVY", "MID"]
         }
       }
     },
@@ -442,8 +442,8 @@
         "hit": {
           "damage": 20,
           "angle": 0,
-          "knockback": 35,
-          "type": ["LIGHT", "MID"]
+          "knockback": 15,
+          "type": ["MEDIUM", "MID"]
         }
       }
     },

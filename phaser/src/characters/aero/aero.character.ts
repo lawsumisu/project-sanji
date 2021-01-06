@@ -196,7 +196,6 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       type: [StateType.ATTACK, StateType.STAND],
       update: (tick: number, stateParams: { shadowState?: AeroShadowState }) => {
         this.velocity.x = 0;
-        this.shadow.setDepth(this.sprite.depth - 1);
         if (!this.sprite.anims.isPlaying) {
           if (this.currentAnimation === 'ROLL_STARTUP') {
             this.playAnimation('ROLL_1');
@@ -571,9 +570,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       this.isAirborne &&
       this.isIdle &&
       this.isCommandExecuted(new Command('d', 1)) &&
-      this.shadow.canCancel()
+      this.shadow.canCancel() && !this.shadow.isActive
     ) {
-      this.shadow.enable({ state: AeroShadowState.STAND_DUNK, velocity: this.velocity });
+      this.shadow.enable({ state: AeroShadowState.STAND_DUNK });
     }
   }
 

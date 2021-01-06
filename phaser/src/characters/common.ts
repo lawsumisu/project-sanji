@@ -215,7 +215,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'HIT_LAND',
       update: (tick: number) => {
         if (tick === 0) {
-          this.playSound('landHeavy');
+          this.playSound('landHeavy', { volume: 0.5 });
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.WAKE_UP);
@@ -315,7 +315,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   public applyHit(hit: Hit): void {
     console.log(hit);
     super.applyHit(hit);
-    this.goToNextState(CommonState.HIT, { hit });
+    this.goToNextState(CommonState.HIT, { hit }, true);
     this.stateManager.update();
   }
 
@@ -339,6 +339,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         if (this.isHit) {
           this.goToNextState(CommonState.HIT_LAND);
         } else {
+          // TODO add this to landing state.
           this.goToNextState(CommonState.STAND);
           this.playSound('land', { volume: 0.5 }, true);
         }
@@ -416,12 +417,6 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       (lastQueuedState && lastQueuedState.state === fromState) ||
       (this.isCurrentState(fromState) && this.sprite.anims.currentFrame.index <= throughFrame)
     );
-  }
-
-  protected setOrientedVelocity(v: { x?: number; y?: number }): void {
-    const d = this._orientation.x ? 1 : -1;
-    const { x = this.velocity.x, y = this.velocity.y } = v;
-    this.velocity = new Vector2(x * d, y);
   }
 
   protected get bounds(): Phaser.Geom.Rectangle {

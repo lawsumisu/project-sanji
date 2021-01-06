@@ -97,11 +97,10 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       startAnimation: 'SHADOW_DUNK',
       onHitSound: 'hitHeavy',
       cancelLock: 24,
-      update: (tick: number, stateParams: { velocity?: Vector2 }) => {
+      update: (tick: number) => {
         if (tick === 0) {
-          const { velocity = Vector2.ZERO } = stateParams;
           this.position.y = PS.stage.ground;
-          this.velocity.x = velocity.x;
+          this.velocity.x = this.aero.velocity.x;
           this.velocity.y = -90;
         } else if (this.position.y === PS.stage.ground) {
           this.velocity.x = 0;
@@ -202,7 +201,9 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     return this.cancelLock - inFrames <= 0;
   }
 
-  public setDepth(depth: number) {
-    this.sprite.depth = depth;
+  public get isActive(): boolean {
+    return this.sprite.active;
   }
 }
+
+

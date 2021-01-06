@@ -12,6 +12,7 @@ import * as Phaser from 'phaser';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { ColliderManager, FrameDefinitionColliderManager } from 'src/collider/manager';
 import { AudioKey } from 'src/assets/audio';
+import { Vfx } from 'src/vfx';
 
 export interface CommandTrigger<S extends string> {
   command: Command;
@@ -27,16 +28,11 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected nextStates: Array<{ state: S; executionTrigger: () => boolean; stateParams: object }> = [];
   protected defaultState: S;
 
-  protected sprite: Phaser.GameObjects.Sprite;
-
   protected walkSpeed = 100;
   protected runSpeed = 175;
   protected dashSpeed = 250;
   protected jumpSpeed = 150;
   protected gravity = 450;
-
-  protected velocity: Vector2 = Vector2.ZERO;
-  public position: Vector2 = Vector2.ZERO;
 
   public readonly playerIndex: number;
   protected target: StageObject;
@@ -86,6 +82,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   public applyHit(hit: Hit): void {
     this.setHitlag(hit);
+    this.addVfx(Vfx.shake(this.sprite, new Vector2(1,0), this.hitlag));
   }
 
   public onTargetHit(_stageObject: StageObject, hit: Hit): void {
@@ -134,16 +131,14 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected updateSprite(): void {
     this.sprite.x = this.position.x;
     this.sprite.y = this.position.y;
-    this.sprite.flipX = !this._orientation.x
+    this.sprite.flipX = !this._orientation.x;
   }
 
   protected updateKinematics(delta: number): void {
     if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
     }
-    const d = this._orientation.x ? 1: -1;
-    const velocity = new Vector2(this.velocity.x * d, this.velocity.y);
-    this.position = this.position.add(velocity.scale(delta * Unit.toPx));
+    this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
 
     // TODO handle this in a separate function?
     if (this.position.x < PS.stage.left) {
@@ -158,7 +153,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   }
 
   protected setupSprite(): void {
-    this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
+    this._sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
     this.sprite.depth = 20;
   }
 
@@ -177,11 +172,12 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
    * If a state is provided directly, transition to that state immediately (this will clear the transition queue).
    * @param state
    * @param stateParams
+   * @param force
    */
-  protected goToNextState(state?: S, stateParams: object = {}): void {
+  protected goToNextState(state?: S, stateParams: object = {}, force = false): void {
     if (state) {
       this.nextStates = [];
-      this.stateManager.setState(state, stateParams);
+      this.stateManager.setState(state, stateParams, force);
     } else if (this.nextStates.length >= 1) {
       const [nextState, ...rest] = this.nextStates;
       if (nextState.executionTrigger()) {
@@ -278,7 +274,7 @@ export class BaseCharacterWithFrameDefinition<
     addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
   }
 
-  protected playAnimation(key: string, params: { force?: boolean, startFrame?: number } = {}) {
+  protected playAnimation(key: string, params: { force?: boolean; startFrame?: number } = {}) {
     playAnimation(this.sprite, [this.frameDefinitionMap.name, key].join('-'), params);
   }
 
