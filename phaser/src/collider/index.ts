@@ -28,6 +28,7 @@ export interface Hit {
   angle: number;
   knockback: number;
   type: string[];
+  hitstop: number[];
 }
 
 export interface Direction {

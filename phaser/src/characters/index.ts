@@ -11,7 +11,7 @@ import { Unit } from 'src/unit';
 import * as Phaser from 'phaser';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { ColliderManager, FrameDefinitionColliderManager } from 'src/collider/manager';
-import { AudioKey } from 'src/assets/audio';
+import { AudioKey, SoundLibrary } from 'src/assets/audio';
 import { Vfx } from 'src/vfx';
 
 export interface CommandTrigger<S extends string> {
@@ -81,12 +81,12 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   }
 
   public applyHit(hit: Hit): void {
-    this.setHitlag(hit);
-    this.addVfx(Vfx.shake(this.sprite, new Vector2(1,0), this.hitlag));
+    this.freezeFrames = hit.hitstop[1];
+    this.addVfx(Vfx.shake(this.sprite, new Vector2(1,0), this.freezeFrames));
   }
 
   public onTargetHit(_stageObject: StageObject, hit: Hit): void {
-    this.setHitlag(hit);
+    this.freezeFrames = hit.hitstop[0];
   }
 
   public setTarget(stageObject: StageObject): void {
@@ -96,7 +96,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   public update(params: { time: number; delta: number }): void {
     super.update(params);
     this.updateState();
-    if (!this.isHitlagged) {
+    if (!this.hasFreezeFrames) {
       this.updateKinematics(params.delta);
       this.updateSprite();
     }
@@ -112,13 +112,13 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
           break;
         } else if (canTransition && !this.isCurrentState(state)) {
           // Immediately transition to next state.
-          this.isHitlagged ? this.queueNextState(state, stateParams) : this.goToNextState(state, stateParams);
+          this.hasFreezeFrames ? this.queueNextState(state, stateParams) : this.goToNextState(state, stateParams);
           console.log(command.toString());
           break;
         }
       }
     }
-    if (this.isHitlagged) {
+    if (this.hasFreezeFrames) {
       this.sprite.anims.pause();
     } else {
       this.sprite.anims.resume();
@@ -207,7 +207,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   ): void {
     const { playedSounds = new Set() } = stateParams;
     if (!(PS.stage.sound.get(key) && playedSounds.has(key)) || force) {
-      PS.stage.sound.play(key, extra);
+      PS.stage.sound.play(key, {volume: SoundLibrary.defaultVolume, ...extra});
       if (!stateParams.playedSounds) {
         stateParams.playedSounds = new Set();
       }
@@ -220,7 +220,9 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
     force = false
   ): void {
-    this.stateManager.dispatchEvent('playSound', key, extra, force);
+    if (PS.stage.settings.enableSounds) {
+      this.stateManager.dispatchEvent('playSound', key, extra, force);
+    }
   }
 
   protected isCurrentState(state: S): boolean {

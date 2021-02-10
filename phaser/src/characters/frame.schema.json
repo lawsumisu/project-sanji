@@ -29,9 +29,12 @@
                     "damage": { "type": "number" },
                     "angle": { "type": "number" },
                     "knockback": { "type": "number" },
-                    "type": { "type": "array", "items": { "type": "string" } }
+                    "type": { "type": "array", "items": { "type": "string" } },
+                    "hitstop": {
+                      "type": "array", "items": { "type": "number"}, "maxItems": 2, "minItems": 2
+                    }
                   },
-                  "required": ["damage", "angle", "knockback", "type"]
+                  "required": ["damage", "angle", "knockback", "type", "hitstop"]
                 }
               },
               "patternProperties": {

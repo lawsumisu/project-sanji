@@ -70,7 +70,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('jabVoice', { volume: 0.5 });
+          this.playSound('jabVoice');
         } else if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -96,7 +96,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('jabVoice', { volume: 0.5 });
+          this.playSound('jabVoice');
         } else if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -110,7 +110,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch1', { volume: 0.5 });
+          this.playSound('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -124,7 +124,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitMed',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('punch1', { volume: 0.5 });
+          this.playSound('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -139,7 +139,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch1', { volume: 0.5 });
+          this.playSound('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -154,7 +154,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 4) {
-          this.playSound('punch1', { volume: 0.5 });
+          this.playSound('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -169,7 +169,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch2', { volume: 0.5 });
+          this.playSound('punch2');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -183,7 +183,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitHeavy',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch2', { volume: 0.5 });
+          this.playSound('punch2');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -260,7 +260,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 1) {
-          this.playSound('jabVoice', { volume: 0.5 });
+          this.playSound('jabVoice');
         } else if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.CROUCH);
         }
@@ -274,7 +274,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch1', { volume: 0.5 });
+          this.playSound('punch1');
         } else if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.CROUCH);
         }
@@ -308,7 +308,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitMed',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('punch1', { volume: 0.5 });
+          this.playSound('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.FALL);
@@ -321,7 +321,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitHeavy',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('punch1', { volume: 0.5 });
+          this.playSound('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.FALL, { startFrame: 2 });
@@ -566,7 +566,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   protected updateState(): void {
     super.updateState();
     if (
-      !this.isHitlagged &&
+      !this.hasFreezeFrames &&
       this.isAirborne &&
       this.isIdle &&
       this.isCommandExecuted(new Command('d', 1)) &&

@@ -9,6 +9,7 @@ import { StageObject } from 'src/stage/stageObject';
 import Aero from 'src/characters/aero/aero.character';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import Jack from 'src/characters/jack/jack.character';
+import { KeyboardPluginPS } from 'src/plugins/keyboard.plugin';
 
 export class Stage extends Phaser.Scene {
   protected hitData: { [tag: string]: HitboxData } = {};
@@ -21,6 +22,10 @@ export class Stage extends Phaser.Scene {
   public ground = 0;
 
   private contact: { collider: Phaser.Geom.Circle, owner: string } | null = null;
+  private debugSettings = {
+    colliders: false,
+    enableSounds: true,
+  };
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
@@ -53,6 +58,7 @@ export class Stage extends Phaser.Scene {
     this.updateBounds();
     this.updateHits();
     this.updateCamera();
+    this.updateDebugSettings();
     this.draw();
   }
 
@@ -100,6 +106,17 @@ export class Stage extends Phaser.Scene {
       }
     }
     camera.scrollY = p.y - camera.height / 2 + offset.y;
+  }
+
+  private updateDebugSettings(): void {
+    const keycodes = Phaser.Input.Keyboard.KeyCodes;
+    if (this.keyboard.isKeyPressed(keycodes.ONE)) {
+      this.debugSettings.colliders = !this.debugSettings.colliders;
+    }
+    if (this.keyboard.isKeyPressed(keycodes.TWO)) {
+      this.debugSettings.enableSounds = !this.debugSettings.enableSounds;
+      console.log(`Sound ${this.debugSettings.enableSounds ? 'enabled': 'disabled'}`);
+    }
   }
 
   private updateHits(): void {
@@ -173,6 +190,10 @@ export class Stage extends Phaser.Scene {
     return (<any>this.sys).GI;
   }
 
+  public get keyboard(): KeyboardPluginPS {
+    return (<any>this.sys).keyboard;
+  }
+
   public get left(): number {
     return this.bounds.left;
   }
@@ -182,6 +203,9 @@ export class Stage extends Phaser.Scene {
   }
 
   private draw(): void {
+    if (!this.debugSettings.colliders) {
+      return;
+    }
     const hitboxOptions = {
       fill: {
         color: 0xff0000,
@@ -220,7 +244,7 @@ export class Stage extends Phaser.Scene {
       }
     });
 
-    if (this.contact && this.getStageObject(this.contact.owner).isHitlagged) {
+    if (this.contact && this.getStageObject(this.contact.owner).hasFreezeFrames) {
       const { x, y, radius: r } = this.contact.collider;
       this.debugDraw.circle(
         { x, y, r },
@@ -238,5 +262,9 @@ export class Stage extends Phaser.Scene {
 
   private getStageObject(owner: string): StageObject {
     return this.stageObjects.find((so: StageObject) => so.tag === owner)!;
+  }
+
+  public get settings() {
+    return {...this.debugSettings }
   }
 }

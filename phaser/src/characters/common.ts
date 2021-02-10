@@ -215,7 +215,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'HIT_LAND',
       update: (tick: number) => {
         if (tick === 0) {
-          this.playSound('landHeavy', { volume: 0.5 });
+          this.playSound('landHeavy');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.WAKE_UP);
@@ -341,7 +341,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         } else {
           // TODO add this to landing state.
           this.goToNextState(CommonState.STAND);
-          this.playSound('land', { volume: 0.5 }, true);
+          this.playSound('land', {}, true);
         }
       }
     } else if (this.position.y > PS.stage.ground) {

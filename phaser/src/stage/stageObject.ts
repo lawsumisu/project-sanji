@@ -12,7 +12,7 @@ export class StageObject {
   public velocity: Vector2 = Vector2.ZERO;
   private static objectCounter = 1;
   public readonly tag: string;
-  protected hitlag: number = 0;
+  protected freezeFrames: number = 0;
   protected _orientation: Direction = { x: true, y: true };
   protected _sprite: Phaser.GameObjects.Sprite;
   protected activeVfx: Vfx[] = [];
@@ -23,8 +23,8 @@ export class StageObject {
   }
 
   public update(_params: UpdateParams): void {
-    if (this.hitlag > 0) {
-      this.hitlag = Math.max(0, this.hitlag - 1);
+    if (this.freezeFrames > 0) {
+      this.freezeFrames = Math.max(0, this.freezeFrames - 1);
     }
     this.activeVfx.forEach(vfx => vfx.update());
     this.activeVfx = this.activeVfx.filter(vfx => vfx.shouldUpdate);
@@ -44,12 +44,8 @@ export class StageObject {
     return { ...this._orientation };
   }
 
-  protected setHitlag(hit: Hit, m = 1): void {
-    this.hitlag = Math.floor((hit.knockback / 20 + 3) * m);
-  }
-
-  public get isHitlagged(): boolean {
-    return this.hitlag > 0;
+  public get hasFreezeFrames(): boolean {
+    return this.freezeFrames > 0;
   }
 
   public addVfx(vfx: Vfx): void {

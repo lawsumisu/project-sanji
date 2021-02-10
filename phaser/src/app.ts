@@ -3,6 +3,7 @@ import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
 import { Stage } from 'src/stage';
 import { PS } from 'src/global';
+import { KeyboardPluginPS } from 'src/plugins/keyboard.plugin';
 
 const config = PS.config;
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -18,6 +19,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
     scene: [
       { key: 'debugDraw', plugin: DebugDrawPlugin, mapping: 'debugDraw' },
       { key: 'GI', plugin: GameInputPlugin, mapping: 'GI' },
+      { key: 'keyboard', plugin: KeyboardPluginPS, mapping: 'keyboard' }
     ],
   },
 };

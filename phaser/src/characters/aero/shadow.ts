@@ -150,7 +150,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       this.position = this.aero.position;
       this.sprite.setActive(true).setVisible(true);
     }
-    this.hitlag = 0;
+    this.freezeFrames = 0;
   }
 
   public disable(): void {

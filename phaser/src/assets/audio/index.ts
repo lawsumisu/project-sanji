@@ -16,6 +16,7 @@ const audio =  {
 export type AudioKey = keyof typeof audio;
 
 export class SoundLibrary {
+  public static defaultVolume = 0.4;
   private readonly scene: Scene;
 
   private registeredSounds: {[key in AudioKey]?: object} = {};

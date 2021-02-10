@@ -8,7 +8,6 @@ import { ColliderManager } from 'src/collider/manager';
 
 export class Dummy extends BaseCharacter {
   public position = new Vector2(400, 250);
-  protected velocity = Vector2.ZERO;
   private hitstun = 0;
   protected states = {
     basic: {}
@@ -38,7 +37,7 @@ export class Dummy extends BaseCharacter {
 
   public update(params: { time: number; delta: number }) {
     super.update(params);
-    if (this.isHitlagged) {
+    if (this.hasFreezeFrames) {
       return;
     }
 
