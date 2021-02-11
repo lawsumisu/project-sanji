@@ -82,7 +82,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   public applyHit(hit: Hit): void {
     this.freezeFrames = hit.hitstop[1];
-    this.addVfx(Vfx.shake(this.sprite, new Vector2(1,0), this.freezeFrames));
+    this.addVfx(Vfx.shake(this.sprite, new Vector2(1,0), 3, this.freezeFrames));
   }
 
   public onTargetHit(_stageObject: StageObject, hit: Hit): void {

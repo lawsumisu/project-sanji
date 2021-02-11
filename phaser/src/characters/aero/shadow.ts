@@ -171,6 +171,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     this.sprite.flipX = !this._orientation.x;
     super.update(params);
     this.cancelLock = Math.max(0, this.cancelLock - 1);
+    this.sprite.depth = this.aero.sprite.depth - 1;
   }
 
   private move(): void {

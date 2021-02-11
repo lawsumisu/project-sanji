@@ -56,6 +56,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   CharacterStateConfig<D>
 > {
   private hitstun = 0;
+  protected isLaunched = false;
 
   protected states: StateMap<S, D>;
   protected audioKeys: AudioKey[] = [];
@@ -195,13 +196,20 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
           const t2 =
             hit.type.find((t: HitType) => [HitType.LAUNCH, HitType.HEAVY, HitType.MEDIUM, HitType.LIGHT].includes(t)) ||
             HitType.LIGHT;
-          const animKey = ['HIT', t1, t2].join('_');
+          let animKey = ['HIT', t1, t2].join('_');
+          if (this.isAirborne) {
+            animKey = 'HIT_HIGH_LAUNCH';
+          }
           this.playAnimation(animKey, { force: true });
+          if (animKey === 'HIT_HIGH_LAUNCH') {
+            this.isLaunched = true;
+          }
         }
         if (!this.sprite.anims.isPlaying && this.currentAnimation === 'HIT_HIGH_LAUNCH') {
           this.goToNextState(CommonState.HIT_AIR);
         }
-        if (this.hitstun === 0) {
+        if (this.hitstun === 0 && !this.isAirborne) {
+          this.isLaunched = false;
           this.goToNextState(CommonState.STAND);
         }
       }
@@ -215,6 +223,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'HIT_LAND',
       update: (tick: number) => {
         if (tick === 0) {
+          this.velocity = Vector2.ZERO;
+          this.isLaunched = false;
           this.playSound('landHeavy');
         }
         if (!this.sprite.anims.isPlaying) {
@@ -331,22 +341,24 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     } else if (this.position.x > PS.stage.right) {
       this.position.x = PS.stage.right;
     }
-    if (this.isAirborne) {
-      const bounds = this.bounds;
-      if (Math.min(bounds.bottom, this.position.y) > PS.stage.ground) {
-        this.position.y = PS.stage.ground;
-        this.velocity.y = 0;
-        if (this.isHit) {
-          this.goToNextState(CommonState.HIT_LAND);
-        } else {
-          // TODO add this to landing state.
-          this.goToNextState(CommonState.STAND);
-          this.playSound('land', {}, true);
+    if (this.velocity.y >= 0) {
+      if (this.isAirborne) {
+        const bounds = this.bounds;
+        if (Math.min(bounds.bottom, this.position.y) > PS.stage.ground) {
+          this.position.y = PS.stage.ground;
+          this.velocity.y = 0;
+          if (this.isHit) {
+            this.goToNextState(CommonState.HIT_LAND);
+          } else {
+            // TODO add this to landing state.
+            this.goToNextState(CommonState.STAND);
+            this.playSound('land', {}, true);
+          }
         }
+      } else if (this.position.y > PS.stage.ground) {
+        this.position.y = PS.stage.ground;
+        this.velocity = Vector2.ZERO;
       }
-    } else if (this.position.y > PS.stage.ground) {
-      this.position.y = PS.stage.ground;
-      this.velocity = Vector2.ZERO;
     }
   }
 
@@ -395,7 +407,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   }
 
   protected get isAirborne(): boolean {
-    return super.isAirborne || this.checkStateType(StateType.AIR);
+    return super.isAirborne || this.checkStateType(StateType.AIR) || this.isLaunched;
   }
 
   protected checkStateType(
@@ -442,6 +454,11 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   private setHitstun(hit: Hit): void {
     this.hitstun = hit.knockback;
-    this.velocity = this.velocity.add(new PolarVector(hit.knockback, hit.angle).toCartesian());
+    let v = new PolarVector(hit.knockback, hit.angle).toCartesian();
+    if (this.isAirborne) {
+      this.velocity = Vector2.ZERO;
+      v = v.add(new Vector2(0, -60));
+    }
+    this.velocity = this.velocity.add(v);
   }
 }
