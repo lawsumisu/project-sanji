@@ -55,7 +55,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
           this.move();
         }
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('rush1');
+          this.playSoundForAnimation('rush1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(AeroShadowState.STAND);
@@ -72,7 +72,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
           this.move();
         }
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('rush1');
+          this.playSoundForAnimation('rush1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(AeroShadowState.STAND);
@@ -86,7 +86,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       update: () => {
         this.position.y = PS.stage.ground;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('rush1');
+          this.playSoundForAnimation('rush1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(AeroShadowState.STAND);
@@ -106,7 +106,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
           this.velocity.x = 0;
         }
         if (this.sprite.anims.currentFrame.index === 5) {
-          this.playSound('rush1');
+          this.playSoundForAnimation('rush1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(AeroShadowState.STAND);
@@ -161,7 +161,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     super.onTargetHit(target, hit);
     const config = this.states[this.stateManager.current.key];
     if (config && config.onHitSound) {
-      this.playSound(config.onHitSound, {}, true);
+      PS.stage.playSound(config.onHitSound, {});
     }
     this.onHit();
   }

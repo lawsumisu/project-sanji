@@ -35,7 +35,8 @@ enum AeroState {
   CROUCH_HEAVY = 'CROUCH_HEAVY',
   AIR_LIGHT = 'AIR_LIGHT',
   AIR_MED = 'AIR_MED',
-  AIR_HEAVY = 'AIR_HEAVY'
+  AIR_HEAVY = 'AIR_HEAVY',
+  SP_TEMPEST = 'SP_TEMPEST'
 }
 
 interface AeroStateConfig {
@@ -70,7 +71,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('jabVoice');
+          this.playSoundForAnimation('jabVoice');
         } else if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -96,7 +97,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('jabVoice');
+          this.playSoundForAnimation('jabVoice');
         } else if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -110,7 +111,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch1');
+          this.playSoundForAnimation('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -124,7 +125,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitMed',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('punch1');
+          this.playSoundForAnimation('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -139,7 +140,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch1');
+          this.playSoundForAnimation('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -154,7 +155,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 4) {
-          this.playSound('punch1');
+          this.playSoundForAnimation('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -169,7 +170,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch2');
+          this.playSoundForAnimation('punch2');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -183,7 +184,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitHeavy',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch2');
+          this.playSoundForAnimation('punch2');
         }
         if (!this.sprite.anims.isPlaying) {
           this.stateManager.setState(CommonState.STAND);
@@ -230,7 +231,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: (tick: number, params: { strength: number }) => {
         const { strength = 0 } = params;
         if (tick === 0) {
-          this.setOrientedVelocity({ x: (105 + 20 * strength) });
+          this.setOrientedVelocity({ x: 105 + 20 * strength });
         }
         if (!this.sprite.anims.isPlaying) {
           this.velocity.x = 0;
@@ -260,7 +261,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 1) {
-          this.playSound('jabVoice');
+          this.playSoundForAnimation('jabVoice');
         } else if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.CROUCH);
         }
@@ -274,7 +275,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       update: () => {
         this.velocity.x = 0;
         if (this.sprite.anims.currentFrame.index === 3) {
-          this.playSound('punch1');
+          this.playSoundForAnimation('punch1');
         } else if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.CROUCH);
         }
@@ -308,7 +309,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitMed',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('punch1');
+          this.playSoundForAnimation('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.FALL);
@@ -321,10 +322,41 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       onHitSound: 'hitHeavy',
       update: () => {
         if (this.sprite.anims.currentFrame.index === 2) {
-          this.playSound('punch1');
+          this.playSoundForAnimation('punch1');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.FALL, { startFrame: 2 });
+        }
+      }
+    },
+    [AeroState.SP_TEMPEST]: {
+      startAnimation: 'SP_TEMPEST_DASH',
+      type: [StateType.STAND, StateType.ATTACK],
+      cancelPotential: 4,
+      onHitSound: 'hitMed',
+      update: (tick: number) => {
+        if (tick === 0) {
+          this.setOrientedVelocity({ x: 35 });
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.velocity.x = 0;
+
+          const animations = [
+            'SP_TEMPEST_DASH',
+            'SP_TEMPEST_GUTPUNCH',
+            'SP_TEMPEST_STRAIGHT',
+            'SP_TEMPEST_OVERHEAD',
+            'SP_TEMPEST_UPPER'
+          ];
+          const i = animations.indexOf(this.currentAnimation);
+          if (this.currentAnimation === 'SP_TEMPEST_STRAIGHT') {
+            this.modifyOrientedPosition({ x: 25 });
+          }
+          if (i === animations.length - 1) {
+            this.goToNextState(CommonState.STAND);
+          } else {
+            this.playAnimation(animations[i + 1]);
+          }
         }
       }
     }
@@ -508,9 +540,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       },
       {
         command: new Command('236a', 18),
-        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.DASH_BODY)),
-        state: AeroState.DASH_BODY,
-        stateParams: { strength: 1 },
+        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.SP_TEMPEST)),
+        state: AeroState.SP_TEMPEST,
+        // stateParams: { strength: 1 },
         priority: 10
       },
       {
@@ -570,7 +602,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       this.isAirborne &&
       this.isIdle &&
       this.isCommandExecuted(new Command('d', 1)) &&
-      this.shadow.canCancel() && !this.shadow.isActive
+      this.shadow.canCancel() &&
+      !this.shadow.isActive
     ) {
       this.shadow.enable({ state: AeroShadowState.STAND_DUNK });
     }

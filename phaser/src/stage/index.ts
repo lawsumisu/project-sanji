@@ -10,6 +10,7 @@ import Aero from 'src/characters/aero/aero.character';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import Jack from 'src/characters/jack/jack.character';
 import { KeyboardPluginPS } from 'src/plugins/keyboard.plugin';
+import { AudioKey, SoundLibrary } from 'src/assets/audio';
 
 export class Stage extends Phaser.Scene {
   protected hitData: { [tag: string]: HitboxData } = {};
@@ -266,5 +267,11 @@ export class Stage extends Phaser.Scene {
 
   public get settings() {
     return {...this.debugSettings }
+  }
+
+  public playSound(key: AudioKey, extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker): void {
+    if (this.settings.enableSounds) {
+      this.sound.play(key, { volume: SoundLibrary.defaultVolume, ...extra });
+    }
   }
 }

@@ -11,7 +11,7 @@ import { Unit } from 'src/unit';
 import * as Phaser from 'phaser';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { ColliderManager, FrameDefinitionColliderManager } from 'src/collider/manager';
-import { AudioKey, SoundLibrary } from 'src/assets/audio';
+import { AudioKey } from 'src/assets/audio';
 import { Vfx } from 'src/vfx';
 
 export interface CommandTrigger<S extends string> {
@@ -41,6 +41,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   protected states: { [key in S]?: D };
   protected audioKeys: AudioKey[] = [];
+  protected playedAnimationSounds = new Set();
 
   constructor(playerIndex = 0) {
     super();
@@ -49,15 +50,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.stateManager = new StateManager<S, D>();
     this.stateManager.onBeforeTransition((key: S) => this.beforeStateTransition(key));
     this.stateManager.onAfterTransition((config, params) => this.afterStateTransition(config, params));
-    this.stateManager.addEventListener(
-      'playSound',
-      (
-        stateParams: { playedSounds?: Set<AudioKey> },
-        key: AudioKey,
-        extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
-        force = false
-      ) => this.onPlaySoundEvent(stateParams, key, extra, force)
-    );
   }
 
   public preload(): void {
@@ -82,7 +74,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   public applyHit(hit: Hit): void {
     this.freezeFrames = hit.hitstop[1];
-    this.addVfx(Vfx.shake(this.sprite, new Vector2(1,0), 3, this.freezeFrames));
+    this.addVfx(Vfx.shake(this.sprite, new Vector2(1, 0), 3, this.freezeFrames));
   }
 
   public onTargetHit(_stageObject: StageObject, hit: Hit): void {
@@ -195,33 +187,20 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     _.noop(config, params);
   }
 
-  protected beforeStateTransition(nextKey: S): void {
-    _.noop(nextKey);
+  protected beforeStateTransition(_nextKey: S): void {
+    this.playedAnimationSounds.clear();
   }
 
-  protected onPlaySoundEvent(
-    stateParams: { playedSounds?: Set<AudioKey> },
+  protected playSoundForAnimation(
     key: AudioKey,
     extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
     force = false
-  ): void {
-    const { playedSounds = new Set() } = stateParams;
-    if (!(PS.stage.sound.get(key) && playedSounds.has(key)) || force) {
-      PS.stage.sound.play(key, {volume: SoundLibrary.defaultVolume, ...extra});
-      if (!stateParams.playedSounds) {
-        stateParams.playedSounds = new Set();
-      }
-      stateParams.playedSounds!.add(key);
-    }
-  }
-
-  protected playSound(
-    key: AudioKey,
-    extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
-    force = false
-  ): void {
-    if (PS.stage.settings.enableSounds) {
-      this.stateManager.dispatchEvent('playSound', key, extra, force);
+  ) {
+    const animationSoundKey = `${this.currentAnimation}-${this.sprite.anims.currentFrame.index}`;
+    console.log(animationSoundKey);
+    if (!this.playedAnimationSounds.has(animationSoundKey) || force) {
+      this.playedAnimationSounds.add(animationSoundKey);
+      PS.stage.playSound(key, extra);
     }
   }
 

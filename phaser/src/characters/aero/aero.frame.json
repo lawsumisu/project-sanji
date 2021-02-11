@@ -57,9 +57,7 @@
       },
       "hitboxDef": {
         "1": { "boxes": [{ "x1": 16, "y1": -86, "x2": 39.4, "y2": -74.6, "r": 6.5 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"],
-          "hitstop": [5, 5]
-        }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5] }
       }
     },
     "LIGHT_JAB_2": {
@@ -234,7 +232,7 @@
         "frames": [1, 2, 3, 4, 5],
         "assetKey": "vanessa",
         "prefix": "attacks/uppercut",
-        "frameRate": 20
+        "frameRate": 25
       }
     },
     "DASH_UPPER": {
@@ -250,7 +248,7 @@
         "frames": [15, 16, 17, { "prefix": "attacks/light3", "index": 4 }, { "prefix": "attacks/light3", "index": 5 }],
         "assetKey": "vanessa",
         "prefix": "attacks/uppercut",
-        "frameRate": 20
+        "frameRate": 25
       }
     },
     "DASH_STRAIGHT": {
@@ -258,7 +256,77 @@
         "frames": [23, 24, 25, 26, 27, 28, 29, 30, 31],
         "assetKey": "vanessa",
         "prefix": "attacks/uppercut",
+        "frameRate": 25
+      }
+    },
+    "SP_TEMPEST_DASH": {
+      "animDef": {
+        "frames": [1, 4, { "index": 5, "sfx": "punch1" }],
+        "assetKey": "vanessa",
+        "prefix": "attacks/uppercut",
         "frameRate": 20
+      }
+    },
+    "SP_TEMPEST_GUTPUNCH": {
+      "animDef": {
+        "frames": [15, 16, 17, { "prefix": "attacks/light3", "index": 4 }, { "prefix": "attacks/light3", "index": 5 }],
+        "assetKey": "vanessa",
+        "prefix": "attacks/uppercut",
+        "frameRate": 25
+      },
+      "hitboxDef": {
+        "0": {
+          "boxes": [{ "x": 41, "y": -82.4, "r": 13.5 }],
+          "persistThroughFrame": 2
+        },
+        "hit": { "damage": 15, "angle": 0, "knockback": 5, "type": ["MEDIUM", "MID"], "hitstop": [5, 5] }
+      }
+    },
+    "SP_TEMPEST_STRAIGHT": {
+      "animDef": {
+        "frames": [25, 26, 27],
+        "assetKey": "vanessa",
+        "prefix": "attacks/uppercut",
+        "frameRate": 25
+      },
+      "hitboxDef": {
+        "1": {
+          "boxes": [{ "x1": 82, "y1": -79.8, "x2": 52, "y2": -79.8, "r": 10 }]
+        },
+        "hit": { "damage": 15, "angle": 0, "knockback": 10, "type": ["MEDIUM", "MID"], "hitstop": [5, 5] }
+      }
+    },
+    "SP_TEMPEST_OVERHEAD": {
+      "animDef": {
+        "frames": [1, 2, { "index": 3, "sfx": "punch1" }, 4, 5, 6],
+        "assetKey": "vanessa",
+        "prefix": "attacks/wildman",
+        "frameRate": 25
+      },
+      "hitboxDef": {
+        "3": {
+          "boxes": [
+            { "x": 47.8, "y": -46.4, "r": 23 }
+          ]
+        },
+        "hit": { "damage": 10, "angle": 0, "knockback": 35, "type": ["MEDIUM", "MID"], "hitstop": [6, 15] }
+      }
+    },
+    "SP_TEMPEST_UPPER": {
+      "animDef": {
+        "frames": [7, { "index": 8, "sfx": "punch1" }, 9, 10, 11, 12, 13, 14, 15],
+        "assetKey": "vanessa",
+        "prefix": "attacks/wildman",
+        "frameRate": 25
+      },
+      "hitboxDef": {
+        "2": {
+          "boxes": [{ "x": 35.4, "y": -71.8, "r": 15.5 }]
+        },
+        "3": {
+          "boxes": [{ "x1": 18.2, "y1": -134, "x2": 29.6, "y2": -83.8, "r": 13 }]
+        },
+        "hit": { "damage": 10, "angle": -90, "knockback": 50, "type": ["MEDIUM", "LAUNCH"], "hitstop": [10, 15] }
       }
     },
     "CROUCH_LIGHT": {

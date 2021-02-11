@@ -40,6 +40,12 @@ export class StageObject {
     this.velocity = new Vector2(x * d, y);
   }
 
+  protected modifyOrientedPosition(p: {x?: number; y?: number}): void {
+    const { x = 0, y = 0 } = p;
+    const d = this._orientation.x ? 1 : -1;
+    this.position = this.position.add(new Vector2(x * d, y));
+  }
+
   public get orientation(): Direction {
     return { ...this._orientation };
   }

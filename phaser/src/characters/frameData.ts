@@ -27,6 +27,7 @@ export interface AnimationFrameConfig {
   endIndex?: number;
   loop?: number;
   prefix?: string;
+  sfx?: string;
 }
 
 export interface AnimationDefinition {

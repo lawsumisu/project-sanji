@@ -225,7 +225,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         if (tick === 0) {
           this.velocity = Vector2.ZERO;
           this.isLaunched = false;
-          this.playSound('landHeavy');
+          this.playSoundForAnimation('landHeavy');
         }
         if (!this.sprite.anims.isPlaying) {
           this.goToNextState(CommonState.WAKE_UP);
@@ -314,11 +314,25 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     PS.stage.debugDraw.rect(this.bounds);
   }
 
+  protected updateSprite(): void {
+    super.updateSprite();
+    const frames = this.frameDefinitionMap.frameDef[this.currentAnimation]!.animDef.frames;
+    if (_.isArray(frames)) {
+      const animFrame = frames[this.sprite.anims.currentFrame.index];
+      // TODO remove non-null check once loop logic is removed from animations
+      if (animFrame && !_.isNumber(animFrame)) {
+        if (animFrame.sfx && this.audioKeys.includes(animFrame.sfx as AudioKey)) {
+          this.playSoundForAnimation(animFrame.sfx as AudioKey);
+        }
+      }
+    }
+  }
+
   public onTargetHit(target: StageObject, hit: Hit): void {
     super.onTargetHit(target, hit);
     const config = this.states[this.stateManager.current.key];
     if (config && config.onHitSound) {
-      this.playSound(config.onHitSound, {}, true);
+      PS.stage.playSound(config.onHitSound, {});
     }
   }
 
@@ -352,7 +366,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
           } else {
             // TODO add this to landing state.
             this.goToNextState(CommonState.STAND);
-            this.playSound('land', {}, true);
+            PS.stage.playSound('land', {});
           }
         }
       } else if (this.position.y > PS.stage.ground) {
