@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { Capsule, Scalar, Vector2 } from '@lawsumisu/common-utilities';
 import { CapsuleBoxConfig, CircleBoxConfig } from 'src/characters/frameData';
+import { AudioKey } from 'src/assets/audio';
 
 type BoxType<T = ColliderType> = T extends ColliderType.CIRCLE
   ? Phaser.Geom.Circle
@@ -29,6 +30,7 @@ export interface Hit {
   knockback: number;
   type: string[];
   hitstop: number[];
+  sfx?: AudioKey;
 }
 
 export interface Direction {

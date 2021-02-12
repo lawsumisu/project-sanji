@@ -269,7 +269,7 @@
     },
     "SP_TEMPEST_GUTPUNCH": {
       "animDef": {
-        "frames": [15, 16, 17, { "prefix": "attacks/light3", "index": 4 }, { "prefix": "attacks/light3", "index": 5 }],
+        "frames": [15, 16, 17],
         "assetKey": "vanessa",
         "prefix": "attacks/uppercut",
         "frameRate": 25
@@ -279,12 +279,12 @@
           "boxes": [{ "x": 41, "y": -82.4, "r": 13.5 }],
           "persistThroughFrame": 2
         },
-        "hit": { "damage": 15, "angle": 0, "knockback": 5, "type": ["MEDIUM", "MID"], "hitstop": [5, 5] }
+        "hit": { "damage": 15, "angle": 0, "knockback": 5, "type": ["MEDIUM", "MID"], "hitstop": [8,8], "sfx": "hitMed" }
       }
     },
     "SP_TEMPEST_STRAIGHT": {
       "animDef": {
-        "frames": [25, 26, 27],
+        "frames": [{"index": 25, "sfx": "punch1" }, 26, 27],
         "assetKey": "vanessa",
         "prefix": "attacks/uppercut",
         "frameRate": 25
@@ -293,7 +293,7 @@
         "1": {
           "boxes": [{ "x1": 82, "y1": -79.8, "x2": 52, "y2": -79.8, "r": 10 }]
         },
-        "hit": { "damage": 15, "angle": 0, "knockback": 10, "type": ["MEDIUM", "MID"], "hitstop": [5, 5] }
+        "hit": { "damage": 15, "angle": 0, "knockback": 10, "type": ["MEDIUM", "MID"], "hitstop": [8, 8], "sfx": "hitMed" }
       }
     },
     "SP_TEMPEST_OVERHEAD": {
@@ -305,11 +305,9 @@
       },
       "hitboxDef": {
         "3": {
-          "boxes": [
-            { "x": 47.8, "y": -46.4, "r": 23 }
-          ]
+          "boxes": [{ "x": 47.8, "y": -46.4, "r": 23 }]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 35, "type": ["MEDIUM", "MID"], "hitstop": [6, 15] }
+        "hit": { "damage": 10, "angle": 0, "knockback": 35, "type": ["MEDIUM", "MID"], "hitstop": [8, 15], "sfx": "hitHeavy" }
       }
     },
     "SP_TEMPEST_UPPER": {
@@ -326,7 +324,15 @@
         "3": {
           "boxes": [{ "x1": 18.2, "y1": -134, "x2": 29.6, "y2": -83.8, "r": 13 }]
         },
-        "hit": { "damage": 10, "angle": -90, "knockback": 50, "type": ["MEDIUM", "LAUNCH"], "hitstop": [10, 15] }
+        "hit": { "damage": 10, "angle": -90, "knockback": 50, "type": ["MEDIUM", "LAUNCH"], "hitstop": [8, 15], "sfx": "hitHeavy" }
+      }
+    },
+    "SP_TEMPEST_REST": {
+      "animDef": {
+        "frames": [1, 2, 3, 4, 4, 4],
+        "assetKey": "vanessa",
+        "prefix": "stand/point",
+        "frameRate": 15
       }
     },
     "CROUCH_LIGHT": {

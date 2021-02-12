@@ -41,6 +41,7 @@ enum AeroState {
 
 interface AeroStateConfig {
   cancelPotential: number;
+  checkInputs: () => void;
 }
 
 export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
@@ -195,7 +196,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       startAnimation: 'ROLL_STARTUP',
       cancelPotential: 4,
       type: [StateType.ATTACK, StateType.STAND],
-      update: (tick: number, stateParams: { shadowState?: AeroShadowState }) => {
+      update: (_tick: number, stateParams: { shadowState?: AeroShadowState }) => {
         this.velocity.x = 0;
         if (!this.sprite.anims.isPlaying) {
           if (this.currentAnimation === 'ROLL_STARTUP') {
@@ -216,7 +217,10 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             this.preRollState = CommonState.NULL;
           }
         }
-        if (tick > 0 && !stateParams.shadowState && this.shadow.canCancel(20)) {
+      },
+      checkInputs: () => {
+        const { params: stateParams } = this.stateManager.current;
+        if (this.currentAnimation !== 'ROLL_STARTUP' && !stateParams.shadowState && this.shadow.canCancel(20)) {
           const shadowState = this.shadowStates.find(s => this.isCommandExecuted(s.command));
           if (shadowState) {
             stateParams.shadowState = shadowState.state;
@@ -333,14 +337,18 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       startAnimation: 'SP_TEMPEST_DASH',
       type: [StateType.STAND, StateType.ATTACK],
       cancelPotential: 4,
-      onHitSound: 'hitMed',
-      update: (tick: number) => {
+      update: (tick: number, params: { lastAnimation?: string, shadowState?: AeroShadowState }) => {
         if (tick === 0) {
           this.setOrientedVelocity({ x: 35 });
         }
+        if (params.shadowState) {
+          this.shadow.enable({ state: params.shadowState });
+          delete params.shadowState;
+          params.lastAnimation = this.currentAnimation;
+          this.playAnimation('SP_TEMPEST_REST');
+        }
         if (!this.sprite.anims.isPlaying) {
           this.velocity.x = 0;
-
           const animations = [
             'SP_TEMPEST_DASH',
             'SP_TEMPEST_GUTPUNCH',
@@ -348,7 +356,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             'SP_TEMPEST_OVERHEAD',
             'SP_TEMPEST_UPPER'
           ];
-          const i = animations.indexOf(this.currentAnimation);
+          const i = animations.indexOf(params.lastAnimation || this.currentAnimation);
           if (this.currentAnimation === 'SP_TEMPEST_STRAIGHT') {
             this.modifyOrientedPosition({ x: 25 });
           }
@@ -356,6 +364,17 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             this.goToNextState(CommonState.STAND);
           } else {
             this.playAnimation(animations[i + 1]);
+            delete params.lastAnimation;
+            this.cancelFlag = false;
+          }
+        }
+      },
+      checkInputs: () => {
+        if (this.cancelFlag) {
+          const shadowCommandTrigger = this.shadowStates.find(s => this.isCommandExecuted(s.command));
+          if (shadowCommandTrigger) {
+            this.cancelFlag = false;
+            this.stateManager.current.params.shadowState = shadowCommandTrigger.state;
           }
         }
       }
@@ -367,7 +386,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   constructor(playerIndex = 0) {
     super(playerIndex, aero);
     this.shadow = new AeroShadow(this, aero, () => {
-      this.cancelFlag = true;
+      this.cancelFlag = !this.isCurrentState(AeroState.SP_TEMPEST);
     });
   }
 
@@ -606,6 +625,14 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       !this.shadow.isActive
     ) {
       this.shadow.enable({ state: AeroShadowState.STAND_DUNK });
+    }
+  }
+
+  protected checkInputs(): void {
+    super.checkInputs();
+    const currentState = this.states[this.stateManager.current.key];
+    if (currentState && currentState.checkInputs) {
+      currentState.checkInputs();
     }
   }
 

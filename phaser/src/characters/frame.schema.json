@@ -32,7 +32,8 @@
                     "type": { "type": "array", "items": { "type": "string" } },
                     "hitstop": {
                       "type": "array", "items": { "type": "number"}, "maxItems": 2, "minItems": 2
-                    }
+                    },
+                    "sfx": {"type": "string"}
                   },
                   "required": ["damage", "angle", "knockback", "type", "hitstop"]
                 }

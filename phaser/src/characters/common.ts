@@ -318,7 +318,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     super.updateSprite();
     const frames = this.frameDefinitionMap.frameDef[this.currentAnimation]!.animDef.frames;
     if (_.isArray(frames)) {
-      const animFrame = frames[this.sprite.anims.currentFrame.index];
+      const animFrame = frames[this.sprite.anims.currentFrame.index - 1];
       // TODO remove non-null check once loop logic is removed from animations
       if (animFrame && !_.isNumber(animFrame)) {
         if (animFrame.sfx && this.audioKeys.includes(animFrame.sfx as AudioKey)) {
@@ -333,6 +333,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     const config = this.states[this.stateManager.current.key];
     if (config && config.onHitSound) {
       PS.stage.playSound(config.onHitSound, {});
+    } else if ((hit.sfx && this.audioKeys.includes(hit.sfx))) {
+      PS.stage.playSound(hit.sfx, {});
     }
   }
 

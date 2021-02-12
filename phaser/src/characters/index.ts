@@ -95,21 +95,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   }
 
   protected updateState(): void {
-    for (const { command, trigger = () => true, state, stateParams = {} } of this.commandList) {
-      if (this.isCommandExecuted(command)) {
-        const canTransition = trigger();
-        if (_.isFunction(canTransition)) {
-          // chainable state, so add to queue
-          this.queueNextState(state, stateParams, canTransition);
-          break;
-        } else if (canTransition && !this.isCurrentState(state)) {
-          // Immediately transition to next state.
-          this.hasFreezeFrames ? this.queueNextState(state, stateParams) : this.goToNextState(state, stateParams);
-          console.log(command.toString());
-          break;
-        }
-      }
-    }
+    this.checkInputs();
     if (this.hasFreezeFrames) {
       this.sprite.anims.pause();
     } else {
@@ -141,6 +127,24 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     if (this.position.y > PS.stage.ground) {
       this.position.y = PS.stage.ground;
       this.velocity.y = 0;
+    }
+  }
+
+  protected checkInputs(): void {
+    for (const { command, trigger = () => true, state, stateParams = {} } of this.commandList) {
+      if (this.isCommandExecuted(command)) {
+        const canTransition = trigger();
+        if (_.isFunction(canTransition)) {
+          // chainable state, so add to queue
+          this.queueNextState(state, stateParams, canTransition);
+          break;
+        } else if (canTransition && !this.isCurrentState(state)) {
+          // Immediately transition to next state.
+          this.hasFreezeFrames ? this.queueNextState(state, stateParams) : this.goToNextState(state, stateParams);
+          console.log(command.toString());
+          break;
+        }
+      }
     }
   }
 
