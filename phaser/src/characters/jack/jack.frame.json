@@ -1,5 +1,6 @@
 {
   "name": "jack",
+  "tempPushbox": { "x": -25, "y": -100, "width": 50, "height": 100},
   "frameDef": {
     "STAND": {
       "animDef": {

@@ -22,10 +22,10 @@ export class Stage extends Phaser.Scene {
 
   public ground = 0;
 
-  private contact: { collider: Phaser.Geom.Circle, owner: string } | null = null;
+  private contact: { collider: Phaser.Geom.Circle; owner: string } | null = null;
   private debugSettings = {
     colliders: false,
-    enableSounds: true,
+    enableSounds: true
   };
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
@@ -57,6 +57,7 @@ export class Stage extends Phaser.Scene {
   public update(time: number, delta: number): void {
     this.stageObjects.forEach((so: StageObject) => so.update({ time, delta: delta / 1000 }));
     this.updateBounds();
+    this.updateCollisions();
     this.updateHits();
     this.updateCamera();
     this.updateDebugSettings();
@@ -116,7 +117,7 @@ export class Stage extends Phaser.Scene {
     }
     if (this.keyboard.isKeyPressed(keycodes.TWO)) {
       this.debugSettings.enableSounds = !this.debugSettings.enableSounds;
-      console.log(`Sound ${this.debugSettings.enableSounds ? 'enabled': 'disabled'}`);
+      console.log(`Sound ${this.debugSettings.enableSounds ? 'enabled' : 'disabled'}`);
     }
   }
 
@@ -155,6 +156,24 @@ export class Stage extends Phaser.Scene {
         }
       });
     });
+  }
+
+  public updateCollisions(): void {
+    // TODO theoretically anything could have a push box, so modify this function to not just expect pushboxes of p1 and p2.
+    const intersection = Phaser.Geom.Intersects.GetRectangleIntersection(this.p1.pushbox, this.p2.pushbox);
+    if (intersection.width > 0) {
+      const p1 = this.p1.position.x <= this.p2.position.x ? this.p1 : this.p2;
+      const p2 = this.p1.position.x <= this.p2.position.x ? this.p2 : this.p1;
+      let d1 = Math.max(intersection.width / 2, p1.position.x - this.bounds.left);
+      let d2 = Math.min(intersection.width / 2, this.bounds.right - p2.position.x);
+      if (d1 < intersection.width /2 ) {
+        d2 = intersection.width - d1;
+      } else if (d2 < intersection.width) {
+        d1 = intersection.width - d2;
+      }
+      p1.position.x -= d1;
+      p2.position.x += d2;
+    }
   }
 
   public addHitboxData(hit: HitboxData): void {
@@ -259,6 +278,7 @@ export class Stage extends Phaser.Scene {
     }
 
     this.debugDraw.rect(this.bounds, { lineColor: 0xffff00 });
+    [this.p1.pushbox, this.p2.pushbox].forEach(pushbox => this.debugDraw.rect(pushbox, { lineColor: 0xff00ff }));
   }
 
   private getStageObject(owner: string): StageObject {
@@ -266,7 +286,7 @@ export class Stage extends Phaser.Scene {
   }
 
   public get settings() {
-    return {...this.debugSettings }
+    return { ...this.debugSettings };
   }
 
   public playSound(key: AudioKey, extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker): void {

@@ -227,7 +227,22 @@ export class HitboxData extends CollisionData<Hitbox> {
   }
 }
 
+export class PushboxData {
+  public static get EMPTY(): PushboxData {
+    return new PushboxData(new Phaser.Geom.Rectangle(0, 0, 0, 0));
+  }
+  public readonly persist: boolean | (() => boolean);
+  public readonly pushbox: Phaser.Geom.Rectangle;
+
+  constructor(pushbox: Phaser.Geom.Rectangle, options: Partial<CollisionDataOptions> = {}) {
+    const { persist = false } = options;
+    this.pushbox = pushbox;
+    this.persist = persist;
+  }
+}
+
 export interface CollisionDataMap {
   hitData: HitboxData;
   hurtData: HurtboxData;
+  pushboxData: PushboxData;
 }

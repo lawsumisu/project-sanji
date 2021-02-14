@@ -8,7 +8,7 @@ import {
   Hitbox,
   HitboxData,
   Hurtbox,
-  HurtboxData
+  HurtboxData, PushboxData
 } from 'src/collider';
 import {
   BoxConfig,
@@ -19,43 +19,64 @@ import {
   isCircleBox
 } from 'src/characters/frameData';
 import { StageObject } from 'src/stage/stageObject';
+import { Vector2 } from '@lawsumisu/common-utilities';
 
 export type HitboxDataGenerator = (hitboxData: HitboxData) => HitboxData | null;
 export type HurtboxDataGenerator = (hurtboxData: HurtboxData) => HurtboxData | null;
+export type PushboxDataGenerator = (pushboxData: PushboxData) => PushboxData | null;
 
 export class ColliderManager {
   private collisionData: CollisionDataMap = {
     hitData: HitboxData.EMPTY,
-    hurtData: HurtboxData.EMPTY
+    hurtData: HurtboxData.EMPTY,
+    pushboxData: PushboxData.EMPTY,
   };
   protected hurtboxDataGenerator: HurtboxDataGenerator;
   protected hitboxDataGenerator: HitboxDataGenerator;
+  protected pushboxDataGenerator: PushboxDataGenerator;
 
   public constructor(
     hurtDefinition: HurtboxDataGenerator = () => null,
-    hitDefinition: HitboxDataGenerator = () => null
+    hitDefinition: HitboxDataGenerator = () => null,
+    pushboxDataGenerator: PushboxDataGenerator = () => null,
   ) {
     this.hitboxDataGenerator = hitDefinition;
     this.hurtboxDataGenerator = hurtDefinition;
+    this.pushboxDataGenerator = pushboxDataGenerator;
   }
 
+  // TODO pass in updateParams rather than relying on functions like getAnimInfo
   public update(): void {
+    // Update hurt data
     const prevHurtData = this.collisionData.hurtData;
     const hurtData = this.hurtboxDataGenerator(prevHurtData);
     const persistHurtboxes = _.isFunction(prevHurtData.persist) ? prevHurtData.persist() : prevHurtData.persist;
     if (!_.isNil(hurtData) || !persistHurtboxes) {
       this.setHurtData(hurtData);
     }
+    // Update hitData
     const prevHitData = this.collisionData.hitData;
     const hitData = this.hitboxDataGenerator(prevHitData);
     const persistHitboxes = _.isFunction(prevHitData.persist) ? prevHitData.persist() : prevHitData.persist;
     if (!_.isNil(hitData) || !persistHitboxes) {
       this.setHitData(hitData ? hitData : HitboxData.EMPTY);
     }
+    // Update pushboxData
+    const prevPushboxData = this.collisionData.pushboxData;
+    const pushboxData = this.pushboxDataGenerator(prevPushboxData);
+    const persistPushbox = _.isFunction(prevPushboxData.persist) ? prevPushboxData.persist() : prevPushboxData.persist;
+    if (!_.isNil(pushboxData) || !persistPushbox) {
+      this.collisionData.pushboxData = pushboxData ? pushboxData : PushboxData.EMPTY;
+    }
   }
 
   public clearHitboxData(): void {
     this.setHitData(HitboxData.EMPTY);
+  }
+
+  public getPushbox(origin: Vector2): Phaser.Geom.Rectangle {
+    const { x, y, width, height} = this.collisionData.pushboxData.pushbox;
+    return new Phaser.Geom.Rectangle(x + origin.x, y + origin.y, width, height);
   }
 
   private setHitData(data: HitboxData): void {
@@ -92,6 +113,10 @@ export class FrameDefinitionColliderManager extends ColliderManager {
     this.frameDefinitionMap = frameDefinitionMap;
     this.getAnimInfo = getAnimInfo;
     this.ignoreCollisionsWith();
+    this.pushboxDataGenerator = () => {
+      const { x, y, width, height } = frameDefinitionMap.tempPushbox;
+      return new PushboxData(new Phaser.Geom.Rectangle(x, y, width, height), { persist: true});
+    }
   }
 
   public ignoreCollisionsWith(...tags: string[]): void {

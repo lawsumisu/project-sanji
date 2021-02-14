@@ -52,6 +52,10 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.stateManager.onAfterTransition((config, params) => this.afterStateTransition(config, params));
   }
 
+  public get pushbox(): Phaser.Geom.Rectangle {
+    return this.colliderManager.getPushbox(this.position);
+  }
+
   public preload(): void {
     this.audioKeys.forEach(key => PS.soundLibrary.register(key));
   }
