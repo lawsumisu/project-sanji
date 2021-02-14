@@ -341,22 +341,22 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         if (tick === 0) {
           this.setOrientedVelocity({ x: 35 });
         }
+        const animations = [
+          'SP_TEMPEST_DASH',
+          'SP_TEMPEST_GUTPUNCH',
+          'SP_TEMPEST_STRAIGHT',
+          'SP_TEMPEST_OVERHEAD',
+          'SP_TEMPEST_UPPER'
+        ];
+        const i = animations.indexOf(params.lastAnimation || this.currentAnimation);
         if (params.shadowState) {
           this.shadow.enable({ state: params.shadowState });
           delete params.shadowState;
           params.lastAnimation = this.currentAnimation;
-          this.playAnimation('SP_TEMPEST_REST');
+          this.playAnimation(i % 2 === 0 ? 'SP_TEMPEST_REST_R' : 'SP_TEMPEST_REST_L');
         }
         if (!this.sprite.anims.isPlaying) {
           this.velocity.x = 0;
-          const animations = [
-            'SP_TEMPEST_DASH',
-            'SP_TEMPEST_GUTPUNCH',
-            'SP_TEMPEST_STRAIGHT',
-            'SP_TEMPEST_OVERHEAD',
-            'SP_TEMPEST_UPPER'
-          ];
-          const i = animations.indexOf(params.lastAnimation || this.currentAnimation);
           if (this.currentAnimation === 'SP_TEMPEST_STRAIGHT') {
             this.modifyOrientedPosition({ x: 25 });
           }
@@ -537,6 +537,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
         state: AeroState.ROLL,
         stateParams: { shadowState: AeroShadowState.STAND_UPPER },
+        priority: 3
+      },
+      {
+        command: new Command('*6+d', 1),
+        trigger: () => !this.isAirborne && (this.isIdle || this.canCancel(AeroState.ROLL)),
+        state: AeroState.ROLL,
+        stateParams: { shadowState: AeroShadowState.STAND_STRAIGHT },
         priority: 3
       },
       {

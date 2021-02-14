@@ -197,7 +197,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
             hit.type.find((t: HitType) => [HitType.LAUNCH, HitType.HEAVY, HitType.MEDIUM, HitType.LIGHT].includes(t)) ||
             HitType.LIGHT;
           let animKey = ['HIT', t1, t2].join('_');
-          if (this.isAirborne) {
+          if (this.isLaunched) {
             animKey = 'HIT_HIGH_LAUNCH';
           }
           this.playAnimation(animKey, { force: true });
@@ -311,30 +311,17 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     }
     super.update(params);
     this.updateHitstun();
-    PS.stage.debugDraw.rect(this.bounds);
-  }
-
-  protected updateSprite(): void {
-    super.updateSprite();
-    const frames = this.frameDefinitionMap.frameDef[this.currentAnimation]!.animDef.frames;
-    if (_.isArray(frames)) {
-      const animFrame = frames[this.sprite.anims.currentFrame.index - 1];
-      // TODO remove non-null check once loop logic is removed from animations
-      if (animFrame && !_.isNumber(animFrame)) {
-        if (animFrame.sfx && this.audioKeys.includes(animFrame.sfx as AudioKey)) {
-          this.playSoundForAnimation(animFrame.sfx as AudioKey);
-        }
-      }
-    }
+    // PS.stage.debugDraw.rect(this.bounds);
   }
 
   public onTargetHit(target: StageObject, hit: Hit): void {
     super.onTargetHit(target, hit);
     const config = this.states[this.stateManager.current.key];
+    // TODO move onHitSound to frame data
     if (config && config.onHitSound) {
       PS.stage.playSound(config.onHitSound, {});
-    } else if ((hit.sfx && this.audioKeys.includes(hit.sfx))) {
-      PS.stage.playSound(hit.sfx, {});
+    } else if ((hit.sfx && this.audioKeys.includes(hit.sfx as AudioKey))) {
+      PS.stage.playSound(hit.sfx as AudioKey, {});
     }
   }
 
@@ -358,9 +345,9 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       this.position.x = PS.stage.right;
     }
     if (this.velocity.y >= 0) {
-      if (this.isAirborne) {
-        const bounds = this.bounds;
-        if (Math.min(bounds.bottom, this.position.y) > PS.stage.ground) {
+      if (this.isLaunched || this.checkStateType(StateType.AIR)) {
+        // const bounds = this.bounds;
+        if (this.position.y > PS.stage.ground) {
           this.position.y = PS.stage.ground;
           this.velocity.y = 0;
           if (this.isHit) {
@@ -471,7 +458,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   private setHitstun(hit: Hit): void {
     this.hitstun = hit.knockback;
     let v = new PolarVector(hit.knockback, hit.angle).toCartesian();
-    if (this.isAirborne) {
+    if (this.isLaunched) {
       this.velocity = Vector2.ZERO;
       v = v.add(new Vector2(0, -60));
     }

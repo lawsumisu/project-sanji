@@ -22,7 +22,8 @@ export enum AeroShadowState {
   STAND_R = 'STAND_R',
   STAND = 'STAND',
   STAND_UPPER = 'STAND_UPPER',
-  STAND_DUNK = 'STAND_DUNK'
+  STAND_DUNK = 'STAND_DUNK',
+  STAND_STRAIGHT = 'STAND_STRAIGHT',
 }
 
 export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState, StateDefinition<AeroShadowStateConfig>> {
@@ -33,7 +34,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
   private cancelLock = 0;
 
   protected defaultState = AeroShadowState.STAND;
-  protected audioKeys: AudioKey[] = ['rush1'];
+  protected audioKeys: AudioKey[] = ['rush1', 'hitMed'];
   // TODO set states with constructor; provide access to position, velocity, and sprite via stateParams.
   protected states: { [key in AeroShadowState]: StateDefinition<AeroShadowStateConfig> } = {
     [AeroShadowState.STAND]: {
@@ -112,6 +113,15 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
           this.goToNextState(AeroShadowState.STAND);
         }
       }
+    },
+    [AeroShadowState.STAND_STRAIGHT]: {
+      startAnimation: "SHADOW_STRAIGHT",
+      cancelLock: 24,
+      update: () => {
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(AeroShadowState.STAND);
+        }
+      }
     }
   };
   constructor(aero: Aero, frameDefinitionMap: FrameDefinitionMap, onHit: () => void = _.noop) {
@@ -122,8 +132,8 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
 
   public create(): void {
     super.create();
-    this.sprite.tint = 0x222222;
-    this.sprite.alpha = 0.6;
+    this.sprite.tint = 0x111166;
+    // this.sprite.alpha = 0.6;
     this.disable();
     this.colliderManager.ignoreCollisionsWith(this.aero.tag);
   }
@@ -162,6 +172,8 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     const config = this.states[this.stateManager.current.key];
     if (config && config.onHitSound) {
       PS.stage.playSound(config.onHitSound, {});
+    } else if ((hit.sfx && this.audioKeys.includes(hit.sfx as AudioKey))) {
+      PS.stage.playSound(hit.sfx as AudioKey, {});
     }
     this.onHit();
   }

@@ -201,7 +201,6 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     force = false
   ) {
     const animationSoundKey = `${this.currentAnimation}-${this.sprite.anims.currentFrame.index}`;
-    console.log(animationSoundKey);
     if (!this.playedAnimationSounds.has(animationSoundKey) || force) {
       this.playedAnimationSounds.add(animationSoundKey);
       PS.stage.playSound(key, extra);
@@ -252,6 +251,20 @@ export class BaseCharacterWithFrameDefinition<
         return null;
       }
     });
+  }
+
+  protected updateSprite(): void {
+    super.updateSprite();
+    const frames = this.frameDefinitionMap.frameDef[this.currentAnimation]!.animDef.frames;
+    if (_.isArray(frames)) {
+      const animFrame = frames[this.sprite.anims.currentFrame.index - 1];
+      // TODO remove non-null check once loop logic is removed from animations
+      if (animFrame && !_.isNumber(animFrame)) {
+        if (animFrame.sfx && this.audioKeys.includes(animFrame.sfx as AudioKey)) {
+          this.playSoundForAnimation(animFrame.sfx as AudioKey);
+        }
+      }
+    }
   }
 
   protected setupSprite(): void {

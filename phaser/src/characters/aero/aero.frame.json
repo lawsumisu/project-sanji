@@ -170,7 +170,7 @@
         "frameRate": 15
       },
       "hitboxDef": {
-        "1": { "boxes": [{ "x": 44.4, "y": -51.8, "r": 16 }], "persistThroughFrame": 2 },
+        "1": { "boxes": [{ "x": 50.4, "y": -58.8, "r": 16 }], "persistThroughFrame": 2 },
         "hit": { "damage": 20, "angle": 0, "knockback": 25, "type": ["HEAVY", "MID"], "hitstop": [5, 5] }
       }
     },
@@ -279,12 +279,19 @@
           "boxes": [{ "x": 41, "y": -82.4, "r": 13.5 }],
           "persistThroughFrame": 2
         },
-        "hit": { "damage": 15, "angle": 0, "knockback": 5, "type": ["MEDIUM", "MID"], "hitstop": [8,8], "sfx": "hitMed" }
+        "hit": {
+          "damage": 15,
+          "angle": 0,
+          "knockback": 5,
+          "type": ["MEDIUM", "MID"],
+          "hitstop": [8, 8],
+          "sfx": "hitMed"
+        }
       }
     },
     "SP_TEMPEST_STRAIGHT": {
       "animDef": {
-        "frames": [{"index": 25, "sfx": "punch1" }, 26, 27],
+        "frames": [{ "index": 25, "sfx": "punch1" }, 26, 27],
         "assetKey": "vanessa",
         "prefix": "attacks/uppercut",
         "frameRate": 25
@@ -293,7 +300,14 @@
         "1": {
           "boxes": [{ "x1": 82, "y1": -79.8, "x2": 52, "y2": -79.8, "r": 10 }]
         },
-        "hit": { "damage": 15, "angle": 0, "knockback": 10, "type": ["MEDIUM", "MID"], "hitstop": [8, 8], "sfx": "hitMed" }
+        "hit": {
+          "damage": 15,
+          "angle": 0,
+          "knockback": 10,
+          "type": ["MEDIUM", "MID"],
+          "hitstop": [8, 8],
+          "sfx": "hitMed"
+        }
       }
     },
     "SP_TEMPEST_OVERHEAD": {
@@ -307,7 +321,14 @@
         "3": {
           "boxes": [{ "x": 47.8, "y": -46.4, "r": 23 }]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 35, "type": ["MEDIUM", "MID"], "hitstop": [8, 15], "sfx": "hitHeavy" }
+        "hit": {
+          "damage": 10,
+          "angle": 0,
+          "knockback": 35,
+          "type": ["MEDIUM", "MID"],
+          "hitstop": [8, 15],
+          "sfx": "hitHeavy"
+        }
       }
     },
     "SP_TEMPEST_UPPER": {
@@ -324,14 +345,29 @@
         "3": {
           "boxes": [{ "x1": 18.2, "y1": -134, "x2": 29.6, "y2": -83.8, "r": 13 }]
         },
-        "hit": { "damage": 10, "angle": -90, "knockback": 50, "type": ["MEDIUM", "LAUNCH"], "hitstop": [8, 15], "sfx": "hitHeavy" }
+        "hit": {
+          "damage": 10,
+          "angle": -90,
+          "knockback": 125,
+          "type": ["HIGH", "LAUNCH"],
+          "hitstop": [8, 15],
+          "sfx": "hitHeavy"
+        }
       }
     },
-    "SP_TEMPEST_REST": {
+    "SP_TEMPEST_REST_R": {
       "animDef": {
         "frames": [1, 2, 3, 4, 4, 4],
         "assetKey": "vanessa",
         "prefix": "stand/point",
+        "frameRate": 15
+      }
+    },
+    "SP_TEMPEST_REST_L": {
+      "animDef": {
+        "frames": [2, 3, 4, 5, 6, 7],
+        "assetKey": "vanessa",
+        "prefix": "stand/shrug",
         "frameRate": 15
       }
     },
@@ -570,6 +606,28 @@
           "knockback": 35,
           "type": ["MEDIUM", "MID"],
           "hitstop": [5, 5]
+        }
+      }
+    },
+    "SHADOW_STRAIGHT": {
+      "animDef": {
+        "frames": [5, 6, { "index": 7, "sfx": "rush1" }, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        "assetKey": "rock",
+        "prefix": "attacks/forcepalm",
+        "frameRate": 15
+      },
+      "hitboxDef": {
+        "3": {
+          "boxes": [{ "x1": 43.8, "y1": -74.2, "x2": 84.8, "y2": -74.4, "r": 7.5 }],
+          "persistThroughFrame": 4
+        },
+        "hit": {
+          "damage": 20,
+          "angle": 0,
+          "knockback": 50,
+          "type": ["MEDIUM", "MID"],
+          "hitstop": [5, 5],
+          "sfx": "hitMed"
         }
       }
     }
