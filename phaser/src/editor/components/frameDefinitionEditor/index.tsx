@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { BoxConfig, BoxType, CapsuleBoxConfig, isCircleBox } from 'src/characters/frameData';
+import { BoxConfig, BoxType, CapsuleBoxConfig, isCircleBox, PushboxConfig } from 'src/characters/frameData';
 import { Box, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
@@ -9,11 +9,10 @@ import { FrameDataState, getAnchorPosition, getSpriteConfig, getSpriteSource } f
 import 'src/editor/components/frameDefinitionEditor/styles.scss';
 import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
-import EditableCapsuleBox, {
-  SelectionType
-} from 'src/editor/components/frameDefinitionEditor/components/capsule.component';
+import EditableCapsuleBox, { SelectionType } from 'src/editor/components/frameDefinitionEditor/components/capsule.component';
 import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
 import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
+import { Pushbox } from 'src/editor/components/box';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -29,8 +28,10 @@ interface State {
   newBoxType: BoxType;
   hitboxes: BoxConfig[];
   hurtboxes: BoxConfig[];
+  pushbox: PushboxConfig;
   selectedBox: { offset: Vector2; index: number; selectionType: SelectionType; boxType: BoxType } | null;
   incompleteCapsule: { x: number; y: number } | null;
+  newBoxOrigin: { x: number; y: number } | null;
   mode: BoxMode;
 }
 
@@ -62,9 +63,11 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
         newBoxType: state.newBoxType,
         hitboxes: hit ? hit.boxes.map(box => ({ ...box })) : [],
         hurtboxes: hurt ? hurt.boxes.map(box => ({ ...box })) : [],
+        pushbox: { x: 0, y: 0, width: 0, height: 0 },
         selectedBox: null,
         mode: state.mode,
-        incompleteCapsule: null
+        incompleteCapsule: null,
+        newBoxOrigin: null
       };
     }
     return state;
@@ -76,8 +79,10 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     hitboxes: [],
     hurtboxes: [],
     selectedBox: null,
+    pushbox: { x: 0, y: 0, width: 0, height: 0 },
     mode: BoxMode.CIRCLE,
-    incompleteCapsule: null
+    incompleteCapsule: null,
+    newBoxOrigin: null
   };
 
   private scale = 5;
@@ -114,6 +119,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
                 { onSelect: this.getNewBoxOnSelectFn(BoxType.HIT), name: 'Hitbox' }
               ]}
             />
+            <Tool options={[ {onSelect: this.getNewBoxOnSelectFn(BoxType.PUSH), name: 'Pushbox'}]}/>
           </div>
           <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} />
         </div>
@@ -154,42 +160,56 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
         .subtract(this.origin);
       const ox = round(o.x);
       const oy = round(o.y);
-      const key = this.state.newBoxType === BoxType.HIT ? 'hitboxes' : 'hurtboxes';
-      if (this.state.mode === BoxMode.CIRCLE) {
-        const box = { x: ox, y: oy, r: 10 };
-        this.setState({
-          selectedBox: {
-            offset: Vector2.ZERO,
-            index: this.state[key].length,
-            selectionType: SelectionType.BOX,
-            boxType: this.state.newBoxType
-          },
-          [key]: [...this.state[key], box]
-        } as any);
-      } else {
-        if (this.state.incompleteCapsule) {
-          const { x, y } = this.state.incompleteCapsule;
-          const box = { x1: x, y1: y, x2: ox, y2: oy, r: 10 };
+      switch (this.state.newBoxType) {
+        case BoxType.HURT:
+        case BoxType.HIT:
+          const key = this.state.newBoxType === BoxType.HIT ? 'hitboxes' : 'hurtboxes';
+          if (this.state.mode === BoxMode.CIRCLE) {
+            const box = { x: ox, y: oy, r: 10 };
+            this.setState({
+              selectedBox: {
+                offset: Vector2.ZERO,
+                index: this.state[key].length,
+                selectionType: SelectionType.BOX,
+                boxType: this.state.newBoxType
+              },
+              [key]: [...this.state[key], box]
+            } as any);
+          } else {
+            if (this.state.incompleteCapsule) {
+              const { x, y } = this.state.incompleteCapsule;
+              const box = { x1: x, y1: y, x2: ox, y2: oy, r: 10 };
+              this.setState({
+                selectedBox: {
+                  offset: Vector2.ZERO,
+                  index: this.state[key].length,
+                  selectionType: SelectionType.HANDLE_2,
+                  boxType: this.state.newBoxType
+                },
+                [key]: [...this.state[key], box],
+                incompleteCapsule: null
+              } as any);
+            } else {
+              this.setState({
+                incompleteCapsule: { x: ox, y: oy }
+              });
+            }
+          }
+          break;
+        case BoxType.PUSH:
           this.setState({
-            selectedBox: {
-              offset: Vector2.ZERO,
-              index: this.state[key].length,
-              selectionType: SelectionType.HANDLE_2,
-              boxType: this.state.newBoxType
-            },
-            [key]: [...this.state[key], box],
-            incompleteCapsule: null
-          } as any);
-        } else {
-          this.setState({
-            incompleteCapsule: { x: ox, y: oy }
+            pushbox: { x: ox, y: oy, width: 0, height: 0},
+            newBoxOrigin: { x: ox, y: oy }
           });
-        }
+          break;
       }
     }
   };
 
   private onMouseMove = (e: React.MouseEvent): void => {
+    if (this.state.newBoxOrigin) {
+      this.updateBoxOnMouseMove(e);
+    }
     if (this.ref && this.state.selectedBox) {
       const { index, offset } = this.state.selectedBox;
       const o = new Vector2(e.clientX, e.clientY)
@@ -211,6 +231,21 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
       }
     }
   };
+
+  private updateBoxOnMouseMove(e: React.MouseEvent): void {
+    if (this.ref) {
+      const o = new Vector2(e.clientX, e.clientY)
+        .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
+        .scale(1 / this.scale)
+        .subtract(this.origin);
+      const nx = round(o.x);
+      const ny = round(o.y);
+      const { x, y } = this.state.newBoxOrigin!;
+      this.setState({
+        pushbox: { x: Math.min(x, nx), y: Math.min(y, ny), width: Math.abs(nx - x), height: Math.abs(ny - y) }
+      });
+    }
+  }
 
   private updateCapsuleBoxPosition(nx: number, ny: number): void {
     if (this.state.selectedBox) {
@@ -343,7 +378,8 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
 
   private onMouseUp = (): void => {
     this.setState({
-      selectedBox: null
+      selectedBox: null,
+      newBoxOrigin: null
     });
   };
 
@@ -388,6 +424,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
           {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
           {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
+          <Pushbox origin={origin} config={this.state.pushbox} scale={this.scale}/>
         </div>
       );
     } else {

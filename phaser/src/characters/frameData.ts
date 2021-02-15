@@ -16,6 +16,13 @@ export interface CapsuleBoxConfig {
   r: number;
 }
 
+export interface PushboxConfig {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export function isCircleBox(box: BoxConfig): box is CircleBoxConfig {
   return _.has(box, 'x');
 }
@@ -40,7 +47,8 @@ export interface AnimationDefinition {
 
 export enum BoxType {
   HIT = 'HIT',
-  HURT = 'HURT'
+  HURT = 'HURT',
+  PUSH = 'PUSH',
 }
 
 export interface BoxDefinition {

@@ -13,7 +13,10 @@
   &.mod--hit {
     background-color: rgb(255,0,0);
     &.mod--persistent {
-      background-color: rgb(255,200,0);
+      background-color: rgb(155,100,200);
     }
+  }
+  &.mod--push {
+    background-color: rgb(255,200,0);
   }
 }

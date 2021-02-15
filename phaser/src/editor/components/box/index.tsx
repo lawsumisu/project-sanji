@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { BoxConfig, BoxType, isCircleBox } from 'src/characters/frameData';
+import { BoxConfig, BoxType, isCircleBox, PushboxConfig } from 'src/characters/frameData';
 import cx from 'classnames';
 import 'src/editor/components/box/styles.scss';
 import { Vector2 } from '@lawsumisu/common-utilities';
@@ -70,5 +70,30 @@ export default class Box extends React.PureComponent<BoxProps> {
         onMouseUp={this.props.onMouseUp}
       />
     );
+  }
+}
+
+interface PushboxProps {
+  scale: number;
+  origin: Vector2;
+  config: PushboxConfig;
+  className?: string;
+}
+
+export class Pushbox extends React.PureComponent<PushboxProps> {
+  public render(): React.ReactNode {
+    return (
+      <div style={this.getStyle()} className={cx('box', 'mod--push', this.props.className)}/>
+    )
+  }
+
+  private getStyle(): React.CSSProperties {
+    const { origin, config, scale: s} = this.props;
+    return {
+      top: (origin.y + config.y) * s,
+      left: (origin.x + config.x) * s,
+      width: config.width * s,
+      height: config.height * s,
+    }
   }
 }
