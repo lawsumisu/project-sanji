@@ -380,8 +380,8 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
   private SelectedFrame = () => {
     if (this.state.selectedFrame) {
       const { key, index } = this.state.selectedFrame;
-      const config = getSpriteConfig(this.props.frameData, key, index);
       const source = getSpriteSource(this.props.frameData, key);
+      const config = source && getSpriteConfig(this.props.frameData, key, index);
       const origin = this.origin;
       return (
         <div ref={this.setRef}>

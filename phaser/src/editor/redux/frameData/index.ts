@@ -3,6 +3,7 @@ import { FrameDefinitionMap, getSpriteIndexFromDefinition } from 'src/characters
 import actionCreatorFactory, { isType } from 'typescript-fsa';
 import { Action } from 'redux';
 import { Vector2 } from '@lawsumisu/common-utilities';
+import * as _ from 'lodash';
 
 interface TextureDataMap {
   [key: string]: FrameConfigTP;
@@ -22,7 +23,7 @@ export function getSpriteSource(frameData: FrameDataState, frameKey: string): st
   return source;
 }
 
-export function getSpriteConfig(frameData: FrameDataState, frameKey: string, frameIndex: number): FrameConfigTP | null {
+export const getSpriteConfig = _.memoize((frameData: FrameDataState, frameKey: string, frameIndex: number) => {
   const animDef = frameData.definitionMap[frameKey].animDef;
   const { prefix, assetKey } = animDef;
   const { texture = {} } = frameData.spriteSheets[assetKey] || {};
@@ -35,7 +36,11 @@ export function getSpriteConfig(frameData: FrameDataState, frameKey: string, fra
     console.warn(`Config for ${filename} not Found`);
     return null
   }
-}
+}, (frameData: FrameDataState, frameKey: string, frameIndex: number) => {
+  const animDef = frameData.definitionMap[frameKey].animDef;
+  const { prefix, assetKey } = animDef;
+  return [prefix, assetKey, frameKey, frameIndex].join('-');
+});
 
 export function getAnchorPosition(config: FrameConfigTP): Vector2 {
   const { w, h } = config.sourceSize;

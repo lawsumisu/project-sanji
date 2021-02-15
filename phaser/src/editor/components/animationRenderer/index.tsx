@@ -46,8 +46,8 @@ export default class AnimationRenderer extends React.PureComponent<Props, State>
   }
 
   public render(): React.ReactNode {
-    const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.state.currentIndex);
     const source = getSpriteSource(this.props.frameData, this.props.frameKey);
+    const config = source && getSpriteConfig(this.props.frameData, this.props.frameKey, this.state.currentIndex);
     return (
       <div className="cn--animation-renderer">
         {config && source && <SpriteRenderer config={config} source={source} scale={0.5} />}

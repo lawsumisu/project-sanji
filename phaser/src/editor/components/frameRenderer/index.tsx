@@ -57,8 +57,8 @@ class FrameRenderer extends React.PureComponent<
   }
 
   public render(): React.ReactNode {
-    const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.props.frameIndex);
     const source = getSpriteSource(this.props.frameData, this.props.frameKey);
+    const config = source && getSpriteConfig(this.props.frameData, this.props.frameKey, this.props.frameIndex);
     const origin = config ? getAnchorPosition(config) : Vector2.ZERO;
     return (
       <div className={cx('cn--sprite-frame', this.isSelected && 'mod--selected')} onClick={this.onClick}>
