@@ -1,6 +1,13 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { BoxConfig, BoxType, CapsuleBoxConfig, isCircleBox, PushboxConfig } from 'src/characters/frameData';
+import {
+  BoxConfig,
+  BoxDefinition,
+  BoxType,
+  CapsuleBoxConfig,
+  isCircleBox,
+  PushboxConfig, PushboxDefinition
+} from 'src/characters/frameData';
 import { Box, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
@@ -51,27 +58,21 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
 
   public static getDerivedStateFromProps(props: StateMappedProps, state: State): State {
     if (props.selected.frame && !_.isEqual(props.selected.frame, state.selectedFrame)) {
-      const hit = getBoxDefinition(props.frameData, props.selected.frame.key, props.selected.frame.index, BoxType.HIT);
-      const hurt = getBoxDefinition(
-        props.frameData,
-        props.selected.frame.key,
-        props.selected.frame.index,
-        BoxType.HURT
-      );
-      // TODO tidy up
-      let pushbox = { x: 0, y: 0, width: 0, height: 0 };
-      if (props.frameData.definitionMap[props.selected.frame.key].pushboxDef) {
-        const pushboxDef = props.frameData.definitionMap[props.selected.frame.key].pushboxDef;
-        if (pushboxDef![props.selected.frame.index]) {
-          pushbox = pushboxDef![props.selected.frame.index].box;
+      const {
+        frameData,
+        selected: {
+          frame: { key, index }
         }
-      }
+      } = props;
+      const hit = getBoxDefinition(frameData, key, index, BoxType.HIT) as BoxDefinition | null;
+      const hurt = getBoxDefinition(frameData, key, index, BoxType.HURT) as BoxDefinition | null;
+      const pushbox = getBoxDefinition(frameData, key, index, BoxType.PUSH) as PushboxDefinition | null;
       return {
         selectedFrame: props.selected.frame,
         newBoxType: state.newBoxType,
         hitboxes: hit ? hit.boxes.map(box => ({ ...box })) : [],
         hurtboxes: hurt ? hurt.boxes.map(box => ({ ...box })) : [],
-        pushbox,
+        pushbox: pushbox ? pushbox.box : { x: 0, y: 0, width: 0, height: 0 },
         selectedBox: null,
         mode: state.mode,
         incompleteCapsule: null,
@@ -127,7 +128,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
                 { onSelect: this.getNewBoxOnSelectFn(BoxType.HIT), name: 'Hitbox' }
               ]}
             />
-            <Tool options={[ {onSelect: this.getNewBoxOnSelectFn(BoxType.PUSH), name: 'Pushbox'}]}/>
+            <Tool options={[{ onSelect: this.getNewBoxOnSelectFn(BoxType.PUSH), name: 'Pushbox' }]} />
           </div>
           <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} pushbox={this.state.pushbox} />
         </div>
@@ -206,7 +207,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           break;
         case BoxType.PUSH:
           this.setState({
-            pushbox: { x: ox, y: oy, width: 0, height: 0},
+            pushbox: { x: ox, y: oy, width: 0, height: 0 },
             newBoxOrigin: { x: ox, y: oy }
           });
           break;
@@ -250,7 +251,12 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
       const ny = round(o.y);
       const { x, y } = this.state.newBoxOrigin!;
       this.setState({
-        pushbox: { x: Math.min(x, nx), y: Math.min(y, ny), width: round(Math.abs(nx - x)), height: round(Math.abs(ny - y)) }
+        pushbox: {
+          x: Math.min(x, nx),
+          y: Math.min(y, ny),
+          width: round(Math.abs(nx - x)),
+          height: round(Math.abs(ny - y))
+        }
       });
     }
   }
@@ -432,7 +438,12 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
           {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
           {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
-          <Pushbox origin={origin} config={this.state.pushbox} scale={this.scale} onChange={pushbox => this.setState({ pushbox })}/>
+          <Pushbox
+            origin={origin}
+            config={this.state.pushbox}
+            scale={this.scale}
+            onChange={pushbox => this.setState({ pushbox })}
+          />
         </div>
       );
     } else {

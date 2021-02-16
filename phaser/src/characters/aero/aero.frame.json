@@ -1,6 +1,6 @@
 {
   "name": "aero",
-  "tempPushbox": { "x": -20, "y": -100, "width": 40, "height": 100},
+  "tempPushbox": { "x": -20, "y": -100, "width": 40, "height": 100 },
   "frameDef": {
     "STAND": {
       "animDef": {
@@ -15,7 +15,7 @@
       },
       "pushboxDef": {
         "0": {
-          "box": { "x": -10.6, "y": -106.6, "width": 23.4, "height": 106.6 },
+          "box": { "x": -10.6, "y": -80, "width": 23.4, "height": 80 },
           "persistThroughFrame": 21
         }
       }
@@ -39,7 +39,19 @@
     "STAND_UP": { "animDef": { "frames": [2, 1], "assetKey": "vanessa", "prefix": "crouch", "frameRate": 30 } },
     "RUN": { "animDef": { "frames": 6, "assetKey": "vanessa", "prefix": "run", "frameRate": 15, "repeat": -1 } },
     "DASH_BACK": { "animDef": { "frames": 3, "assetKey": "vanessa", "prefix": "dashback", "frameRate": 15 } },
-    "JUMP": { "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "jump", "frameRate": 15 } },
+    "JUMP": {
+      "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "jump", "frameRate": 15 },
+      "pushboxDef": {
+        "0": {
+          "box": { "x": -10.4, "y": -109.2, "width": 23.8, "height": 72.4 },
+          "persistThroughFrame": 2
+        },
+        "3": {
+          "box": { "x": -12.8, "y": -99, "width": 31.8, "height": 42.8 },
+          "persistThroughFrame": 4
+        }
+      }
+    },
     "FALL": { "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "fall", "frameRate": 15 } },
     "LIGHT_JAB_1": {
       "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "attacks/lightjab1", "frameRate": 15 },
@@ -354,7 +366,7 @@
         },
         "hit": {
           "damage": 10,
-          "angle": -90,
+          "angle": -75,
           "knockback": 125,
           "type": ["HIGH", "LAUNCH"],
           "hitstop": [8, 15],
