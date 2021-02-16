@@ -424,7 +424,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
           {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
           {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
-          <Pushbox origin={origin} config={this.state.pushbox} scale={this.scale}/>
+          <Pushbox origin={origin} config={this.state.pushbox} scale={this.scale} onChange={pushbox => this.setState({ pushbox })}/>
         </div>
       );
     } else {

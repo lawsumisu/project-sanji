@@ -21,3 +21,7 @@ export function getBoxDefinition(
 export function initializeFontAwesome(): void {
   library.add(faAngleRight, faAngleLeft, faCopy, faFileCode, faFileImage);
 }
+
+export function round(v: number, precision = 100) {
+  return Math.round(v * precision) / precision;
+}

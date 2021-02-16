@@ -4,6 +4,7 @@ import { BoxConfig, BoxType, isCircleBox, PushboxConfig } from 'src/characters/f
 import cx from 'classnames';
 import 'src/editor/components/box/styles.scss';
 import { Vector2 } from '@lawsumisu/common-utilities';
+import { round } from 'src/editor/redux/utilities';
 
 export interface BoxProps {
   scale: number;
@@ -78,22 +79,118 @@ interface PushboxProps {
   origin: Vector2;
   config: PushboxConfig;
   className?: string;
+  onChange: (pushbox: PushboxConfig) => void;
 }
 
-export class Pushbox extends React.PureComponent<PushboxProps> {
+interface PushboxState {
+  editableValues: { x: boolean; y: boolean; width: boolean; height: boolean };
+  editMode: 'size' | 'position';
+  dragOrigin: Vector2;
+  originalConfig: PushboxConfig;
+}
+
+export class Pushbox extends React.PureComponent<PushboxProps, PushboxState> {
+  public static defaultProps = {
+    onChange: _.noop,
+    scale: 1
+  };
+
+  private defaultState: PushboxState = {
+    editableValues: { x: false, y: false, width: false, height: false },
+    editMode: 'size',
+    dragOrigin: Vector2.ZERO,
+    originalConfig: { x: 0, y: 0, width: 0, height: 0 }
+  };
+
+  public state: PushboxState = {
+    ...this.defaultState
+  };
+
+  public componentDidMount(): void {
+    window.addEventListener('mousemove', this.onWindowMouseMove);
+    window.addEventListener('mouseup', this.onWindowMouseUp);
+  }
+  public componentWillUnmount(): void {
+    window.removeEventListener('mousemove', this.onWindowMouseMove);
+    window.removeEventListener('mouseup', this.onWindowMouseUp);
+  }
+
   public render(): React.ReactNode {
     return (
-      <div style={this.getStyle()} className={cx('box', 'mod--push', this.props.className)}/>
-    )
+      <div
+        style={this.getStyle()}
+        className={cx('box', 'mod--push', this.props.className)}
+        onMouseDown={this.onContainerMouseDown}
+      >
+        <div className="box--handle mod--vertical mod--top" onMouseDown={this.getOnMouseDownFn({ y: true })} />
+        <div className="box--handle mod--horizontal mod--left" onMouseDown={this.getOnMouseDownFn({ x: true })} />
+        <div className="box--handle mod--horizontal mod--right" onMouseDown={this.getOnMouseDownFn({ width: true })} />
+        <div className="box--handle mod--vertical mod--bottom" onMouseDown={this.getOnMouseDownFn({ height: true })} />
+      </div>
+    );
   }
 
   private getStyle(): React.CSSProperties {
-    const { origin, config, scale: s} = this.props;
+    const { origin, config, scale: s } = this.props;
     return {
       top: (origin.y + config.y) * s,
       left: (origin.x + config.x) * s,
       width: config.width * s,
-      height: config.height * s,
+      height: config.height * s
+    };
+  }
+
+  private onWindowMouseMove = (e: MouseEvent) => {
+    if (_.some(this.state.editableValues)) {
+      const { scale: s } = this.props;
+      const d = new Vector2(e.clientX, e.clientY).subtract(this.state.dragOrigin);
+      const newPushbox = { ...this.state.originalConfig };
+      if (this.state.editableValues.x) {
+        const newValue = round(d.x / s);
+        newPushbox.x += newValue;
+        if (this.state.editMode === 'size') {
+          newPushbox.width -= newValue;
+        }
+      } else if (this.state.editableValues.width) {
+        newPushbox.width += round(d.x / s);
+      }
+      if (this.state.editableValues.y) {
+        const newValue = round(d.y / s);
+        newPushbox.y += newValue;
+        if (this.state.editMode === 'size') {
+          newPushbox.height -= newValue;
+        }
+      } else if (this.state.editableValues.height) {
+        newPushbox.height += round(d.y / s);
+      }
+      this.props.onChange(newPushbox);
     }
+  };
+
+  private onWindowMouseUp = () => {
+    this.setState({
+      ...this.defaultState
+    });
+  };
+
+  private onContainerMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    this.setState({
+      editableValues: { ...this.state.editableValues, x: true, y: true },
+      editMode: 'position',
+      dragOrigin: new Vector2(e.clientX, e.clientY),
+      originalConfig: { ...this.props.config }
+    });
+  };
+
+  private getOnMouseDownFn(editableValues: Partial<PushboxState['editableValues']>) {
+    return (e: React.MouseEvent) => {
+      e.stopPropagation();
+      this.setState({
+        editableValues: { ...this.state.editableValues, ...editableValues },
+        dragOrigin: new Vector2(e.clientX, e.clientY),
+        originalConfig: { ...this.props.config }
+      });
+    };
   }
 }
