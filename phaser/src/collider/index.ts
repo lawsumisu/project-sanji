@@ -229,15 +229,21 @@ export class HitboxData extends CollisionData<Hitbox> {
 
 export class PushboxData {
   public static get EMPTY(): PushboxData {
-    return new PushboxData(new Phaser.Geom.Rectangle(0, 0, 0, 0));
+    return new PushboxData(new Phaser.Geom.Rectangle(0, 0, 0, 0), 0);
   }
   public readonly persist: boolean | (() => boolean);
   public readonly pushbox: Phaser.Geom.Rectangle;
+  public readonly index: number;
 
-  constructor(pushbox: Phaser.Geom.Rectangle, options: Partial<CollisionDataOptions> = {}) {
+  constructor(pushbox: Phaser.Geom.Rectangle, index: number, options: Partial<CollisionDataOptions> = {}) {
     const { persist = false } = options;
     this.pushbox = pushbox;
     this.persist = persist;
+    this.index = index;
+  }
+
+  public get isEmpty(): boolean {
+    return this.pushbox.width === 0 || this.pushbox.height === 0;
   }
 }
 

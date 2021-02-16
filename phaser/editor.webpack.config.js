@@ -1,3 +1,4 @@
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -57,6 +58,7 @@ module.exports = {
     }),
     new webpack.SourceMapDevToolPlugin({
       test: /\.(ts|js)($|\?)/i
-    })
+    }),
+    new ReactRefreshWebpackPlugin()
   ]
 };

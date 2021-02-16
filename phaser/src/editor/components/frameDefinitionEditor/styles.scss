@@ -63,6 +63,13 @@
           border-bottom: 1px solid rgba(50, 128, 255, 0.5);
         }
       }
+      &.mod--push {
+        border: 1px solid rgba(200, 175, 50, 0.5);
+        .boxes--header {
+          background-color: rgba(255, 200, 45, 0.2);
+          border-bottom: 1px solid rgba(200, 175, 50, 0.5)
+        }
+      }
       .boxes--info {
         padding: 8px;
         font-size: 12px;

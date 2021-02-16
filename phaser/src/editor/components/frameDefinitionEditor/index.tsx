@@ -58,12 +58,20 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
         props.selected.frame.index,
         BoxType.HURT
       );
+      // TODO tidy up
+      let pushbox = { x: 0, y: 0, width: 0, height: 0 };
+      if (props.frameData.definitionMap[props.selected.frame.key].pushboxDef) {
+        const pushboxDef = props.frameData.definitionMap[props.selected.frame.key].pushboxDef;
+        if (pushboxDef![props.selected.frame.index]) {
+          pushbox = pushboxDef![props.selected.frame.index].box;
+        }
+      }
       return {
         selectedFrame: props.selected.frame,
         newBoxType: state.newBoxType,
         hitboxes: hit ? hit.boxes.map(box => ({ ...box })) : [],
         hurtboxes: hurt ? hurt.boxes.map(box => ({ ...box })) : [],
-        pushbox: { x: 0, y: 0, width: 0, height: 0 },
+        pushbox,
         selectedBox: null,
         mode: state.mode,
         incompleteCapsule: null,
@@ -121,7 +129,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
             />
             <Tool options={[ {onSelect: this.getNewBoxOnSelectFn(BoxType.PUSH), name: 'Pushbox'}]}/>
           </div>
-          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} />
+          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} pushbox={this.state.pushbox} />
         </div>
       </div>
     );
@@ -242,7 +250,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
       const ny = round(o.y);
       const { x, y } = this.state.newBoxOrigin!;
       this.setState({
-        pushbox: { x: Math.min(x, nx), y: Math.min(y, ny), width: Math.abs(nx - x), height: Math.abs(ny - y) }
+        pushbox: { x: Math.min(x, nx), y: Math.min(y, ny), width: round(Math.abs(nx - x)), height: round(Math.abs(ny - y)) }
       });
     }
   }

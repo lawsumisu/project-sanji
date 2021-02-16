@@ -1,4 +1,4 @@
-import { AnimationFrameConfig, BoxConfig, FrameDefinition } from 'src/characters/index';
+import { AnimationFrameConfig, BoxConfig, FrameDefinition } from 'src/characters/frameData';
 import * as React from 'react';
 import * as _ from 'lodash';
 import { FrameRenderer } from 'src/editor/components/index';
@@ -16,17 +16,18 @@ export default class FrameDefinitionRenderer extends React.PureComponent<Props> 
     const uniqueFrames: number = _.isNumber(frames)
       ? frames
       : _.reduce(
-        frames,
-        (acc: number, value: number | AnimationFrameConfig) => {
-          if (_.isNumber(value)) {
-            return acc + 1;
-          } else {
-            const { index: start, endIndex: end = start } = value;
-            return acc + end - start + 1;
-          }
-        },
-        0
-      );
+          frames,
+          (acc: number, value: number | AnimationFrameConfig) => {
+            if (_.isNumber(value)) {
+              return acc + 1;
+            } else {
+              const { index: start, endIndex: end = start } = value;
+              return acc + end - start + 1;
+            }
+          },
+          0
+        );
+    const { pushboxDef } = this.props.definition;
     return (
       <div className={cx('cn--frame-definition-renderer', this.props.className)}>
         {_.times(uniqueFrames, (i: number) => {
@@ -37,6 +38,14 @@ export default class FrameDefinitionRenderer extends React.PureComponent<Props> 
               frameIndex={i}
               hit={this.getBoxes(i, 'hitboxDef')}
               hurt={this.getBoxes(i, 'hurtboxDef')}
+              push={
+                pushboxDef && pushboxDef[i]
+                  ? {
+                      box: pushboxDef[i].box,
+                      persistent: pushboxDef[i].persistThroughFrame && pushboxDef[i].persistThroughFrame! > i
+                    }
+                  : undefined
+              }
             />
           );
         })}

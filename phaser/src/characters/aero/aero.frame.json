@@ -12,6 +12,12 @@
       },
       "hurtboxDef": {
         "0": { "boxes": [{ "x1": 1.38, "y1": -92.4, "x2": 0.78, "y2": -12.8, "r": 13.5 }], "persistThroughFrame": 21 }
+      },
+      "pushboxDef": {
+        "0": {
+          "box": { "x": -10.6, "y": -106.6, "width": 23.4, "height": 106.6 },
+          "persistThroughFrame": 21
+        }
       }
     },
     "WALK_FWD": {

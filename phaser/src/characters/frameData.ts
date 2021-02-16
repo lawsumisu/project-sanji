@@ -61,6 +61,11 @@ export interface HitboxDefinition extends BoxDefinition {
   hit?: Hit;
 }
 
+export interface PushboxDefinition {
+  box: PushboxConfig;
+  persistThroughFrame?: number;
+}
+
 export interface FrameDefinition {
   animDef: AnimationDefinition;
   hurtboxDef?: {
@@ -70,6 +75,9 @@ export interface FrameDefinition {
     hit: Hit;
     [key: number]: HitboxDefinition;
   };
+  pushboxDef?: {
+    [key: number]: PushboxDefinition;
+  }
 }
 
 export type FrameDefinitionMap = {

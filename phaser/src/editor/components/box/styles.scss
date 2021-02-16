@@ -17,45 +17,47 @@
     }
   }
   &.mod--push {
-    --handle-width: 9px;
-    --border-width: 3px;
     opacity: 1;
     background-color: rgba(255,200,0, .5);
-    border: 3px dashed black;
-    box-sizing: border-box;
 
-    &:hover {
-      background-color: rgba(255,200,0, .7);
-      cursor: pointer;
-    }
+    &.mod--editable {
+      --handle-width: 9px;
+      --border-width: 3px;
+      border: 3px dashed black;
+      box-sizing: border-box;
+      &:hover {
+        background-color: rgba(255,200,0, .7);
+        cursor: pointer;
+      }
 
-    .box--handle {
-      position: absolute;
-      &.mod--vertical {
-        width: 100%;
-        height: var(--handle-width);
-        &:hover {
-          cursor: ns-resize;
+      .box--handle {
+        position: absolute;
+        &.mod--vertical {
+          width: 100%;
+          height: var(--handle-width);
+          &:hover {
+            cursor: ns-resize;
+          }
         }
-      }
-      &.mod--horizontal {
-        height: 100%;
-        width: var(--handle-width);
-        &:hover {
-          cursor: ew-resize;
+        &.mod--horizontal {
+          height: 100%;
+          width: var(--handle-width);
+          &:hover {
+            cursor: ew-resize;
+          }
         }
-      }
-      &.mod--top {
-        top: calc((var(--handle-width) + var(--handle-width)) / -2);
-      }
-      &.mod--bottom {
-        bottom: calc((var(--handle-width) + var(--handle-width)) / -2);
-      }
-      &.mod--left {
-        left: calc((var(--handle-width) + var(--handle-width)) / -2);
-      }
-      &.mod--right {
-        right: calc((var(--handle-width) + var(--handle-width)) / -2);
+        &.mod--top {
+          top: calc((var(--handle-width) + var(--handle-width)) / -2);
+        }
+        &.mod--bottom {
+          bottom: calc((var(--handle-width) + var(--handle-width)) / -2);
+        }
+        &.mod--left {
+          left: calc((var(--handle-width) + var(--handle-width)) / -2);
+        }
+        &.mod--right {
+          right: calc((var(--handle-width) + var(--handle-width)) / -2);
+        }
       }
     }
   }

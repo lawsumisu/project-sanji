@@ -8,7 +8,8 @@ import {
   Hitbox,
   HitboxData,
   Hurtbox,
-  HurtboxData, PushboxData
+  HurtboxData,
+  PushboxData
 } from 'src/collider';
 import {
   BoxConfig,
@@ -29,7 +30,7 @@ export class ColliderManager {
   private collisionData: CollisionDataMap = {
     hitData: HitboxData.EMPTY,
     hurtData: HurtboxData.EMPTY,
-    pushboxData: PushboxData.EMPTY,
+    pushboxData: PushboxData.EMPTY
   };
   protected hurtboxDataGenerator: HurtboxDataGenerator;
   protected hitboxDataGenerator: HitboxDataGenerator;
@@ -38,7 +39,7 @@ export class ColliderManager {
   public constructor(
     hurtDefinition: HurtboxDataGenerator = () => null,
     hitDefinition: HitboxDataGenerator = () => null,
-    pushboxDataGenerator: PushboxDataGenerator = () => null,
+    pushboxDataGenerator: PushboxDataGenerator = () => null
   ) {
     this.hitboxDataGenerator = hitDefinition;
     this.hurtboxDataGenerator = hurtDefinition;
@@ -65,7 +66,7 @@ export class ColliderManager {
     const prevPushboxData = this.collisionData.pushboxData;
     const pushboxData = this.pushboxDataGenerator(prevPushboxData);
     const persistPushbox = _.isFunction(prevPushboxData.persist) ? prevPushboxData.persist() : prevPushboxData.persist;
-    if (!_.isNil(pushboxData) || !persistPushbox) {
+    if (!_.isNil(pushboxData) && !persistPushbox) {
       this.collisionData.pushboxData = pushboxData ? pushboxData : PushboxData.EMPTY;
     }
   }
@@ -75,7 +76,7 @@ export class ColliderManager {
   }
 
   public getPushbox(origin: Vector2): Phaser.Geom.Rectangle {
-    const { x, y, width, height} = this.collisionData.pushboxData.pushbox;
+    const { x, y, width, height } = this.collisionData.pushboxData.pushbox;
     return new Phaser.Geom.Rectangle(x + origin.x, y + origin.y, width, height);
   }
 
@@ -105,7 +106,11 @@ export class FrameDefinitionColliderManager extends ColliderManager {
   private readonly getAnimInfo: () => AnimInfo | null;
   private ignoreCollisionTags: Set<string>;
 
-  public constructor(stageObject: StageObject, frameDefinitionMap: FrameDefinitionMap, getAnimInfo: () => AnimInfo | null) {
+  public constructor(
+    stageObject: StageObject,
+    frameDefinitionMap: FrameDefinitionMap,
+    getAnimInfo: () => AnimInfo | null
+  ) {
     super();
     this.stageObject = stageObject;
     this.hitboxDataGenerator = this.generateHitboxData;
@@ -113,10 +118,7 @@ export class FrameDefinitionColliderManager extends ColliderManager {
     this.frameDefinitionMap = frameDefinitionMap;
     this.getAnimInfo = getAnimInfo;
     this.ignoreCollisionsWith();
-    this.pushboxDataGenerator = () => {
-      const { x, y, width, height } = frameDefinitionMap.tempPushbox;
-      return new PushboxData(new Phaser.Geom.Rectangle(x, y, width, height), { persist: true});
-    }
+    this.pushboxDataGenerator = this.generatePushboxData;
   }
 
   public ignoreCollisionsWith(...tags: string[]): void {
@@ -149,7 +151,7 @@ export class FrameDefinitionColliderManager extends ColliderManager {
   private generateHitboxData(hitboxData: HitboxData): HitboxData | null {
     const boxDefinitionData = this.generateBoxDefinitionData(hitboxData, BoxType.HIT);
     const animInfo = this.getAnimInfo();
-    if (animInfo && !_.isNil(boxDefinitionData)){
+    if (animInfo && !_.isNil(boxDefinitionData)) {
       const { frameKey } = animInfo;
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
       const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
@@ -175,6 +177,32 @@ export class FrameDefinitionColliderManager extends ColliderManager {
     } else {
       return null;
     }
+  }
+
+  private generatePushboxData(pushboxData: PushboxData): PushboxData | null {
+    const animInfo = this.getAnimInfo();
+    if (animInfo) {
+      const { index, frameKey } = animInfo;
+      const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
+      if (
+        frameDefinition &&
+        frameDefinition.pushboxDef &&
+        frameDefinition.pushboxDef[index] &&
+        (pushboxData.index !== index || pushboxData.isEmpty)
+      ) {
+        const pushboxDef = frameDefinition.pushboxDef[index];
+        const persist = (): boolean => {
+          const { index: i, frameKey: currentFrameKey } = this.getAnimInfo()!;
+          const { persistThroughFrame = index + 1 } = pushboxDef;
+          return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
+        };
+        const { x, y, width, height } = pushboxDef.box;
+        console.log(pushboxDef);
+        return new PushboxData(new Phaser.Geom.Rectangle(x, y, width, height), index, { persist })
+      }
+    }
+    const { x, y, width, height } = this.frameDefinitionMap.tempPushbox;
+    return new PushboxData(new Phaser.Geom.Rectangle(x, y, width, height), -1);
   }
 
   private generateBoxDefinitionData<T extends CollisionData<Collider>>(

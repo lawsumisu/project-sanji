@@ -76,10 +76,12 @@ export default class Box extends React.PureComponent<BoxProps> {
 
 interface PushboxProps {
   scale: number;
+  persistent: boolean;
   origin: Vector2;
   config: PushboxConfig;
   className?: string;
   onChange: (pushbox: PushboxConfig) => void;
+  editable: boolean;
 }
 
 interface PushboxState {
@@ -92,7 +94,9 @@ interface PushboxState {
 export class Pushbox extends React.PureComponent<PushboxProps, PushboxState> {
   public static defaultProps = {
     onChange: _.noop,
-    scale: 1
+    scale: 1,
+    persistent: false,
+    editable: true
   };
 
   private defaultState: PushboxState = {
@@ -119,7 +123,13 @@ export class Pushbox extends React.PureComponent<PushboxProps, PushboxState> {
     return (
       <div
         style={this.getStyle()}
-        className={cx('box', 'mod--push', this.props.className)}
+        className={cx(
+          'box',
+          'mod--push',
+          this.props.persistent && 'mod--persistent',
+          this.props.editable && 'mod--editable',
+          this.props.className
+        )}
         onMouseDown={this.onContainerMouseDown}
       >
         <div className="box--handle mod--vertical mod--top" onMouseDown={this.getOnMouseDownFn({ y: true })} />
@@ -146,22 +156,20 @@ export class Pushbox extends React.PureComponent<PushboxProps, PushboxState> {
       const d = new Vector2(e.clientX, e.clientY).subtract(this.state.dragOrigin);
       const newPushbox = { ...this.state.originalConfig };
       if (this.state.editableValues.x) {
-        const newValue = round(d.x / s);
-        newPushbox.x += newValue;
+        newPushbox.x = round(newPushbox.x + d.x / s);
         if (this.state.editMode === 'size') {
-          newPushbox.width -= newValue;
+          newPushbox.width = round(newPushbox.width - d.x / s);
         }
       } else if (this.state.editableValues.width) {
-        newPushbox.width += round(d.x / s);
+        newPushbox.width = round(newPushbox.width + d.x / s);
       }
       if (this.state.editableValues.y) {
-        const newValue = round(d.y / s);
-        newPushbox.y += newValue;
+        newPushbox.y = round(newPushbox.y + d.y / s);
         if (this.state.editMode === 'size') {
-          newPushbox.height -= newValue;
+          newPushbox.height = round(newPushbox.height - d.y / s);
         }
       } else if (this.state.editableValues.height) {
-        newPushbox.height += round(d.y / s);
+        newPushbox.height = round(newPushbox.height + d.y / s);
       }
       this.props.onChange(newPushbox);
     }
