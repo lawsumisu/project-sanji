@@ -1,7 +1,7 @@
 import * as React from 'react';
 import 'src/editor/components/frameRenderer/styles.scss';
 import { BoxConfig, BoxType, PushboxConfig } from 'src/characters/frameData';
-import { Box, SpriteRenderer } from 'src/editor/components';
+import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
 import { FrameDataState, getAnchorPosition, getSpriteConfig, getSpriteSource } from 'src/editor/redux/frameData';
@@ -9,7 +9,6 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { frameEditActionCreators, FrameEditState } from 'src/editor/redux/frameEdit';
 import cx from 'classnames';
 import { Vector2 } from '@lawsumisu/common-utilities';
-import { Pushbox } from 'src/editor/components/box';
 
 export interface SpriteFrameProps {
   frameKey: string;
@@ -71,13 +70,27 @@ class FrameRenderer extends React.PureComponent<
           {config && source && <SpriteRenderer config={config} source={source} />}
           <div className="cn--box-display">
             {this.props.hurt.boxes.map((box: BoxConfig, i: number) => (
-              <Box key={i} config={box} persistent={this.props.hurt.persistent} type={BoxType.HURT} origin={origin} />
+              <HboxPreview
+                key={i}
+                config={box}
+                persistent={this.props.hurt.persistent}
+                type={BoxType.HURT}
+                origin={origin}
+                editable={false}
+              />
             ))}
             {this.props.hit.boxes.map((box: BoxConfig, i: number) => (
-              <Box key={i} config={box} persistent={this.props.hit.persistent} type={BoxType.HIT} origin={origin} />
+              <HboxPreview
+                key={i}
+                config={box}
+                persistent={this.props.hit.persistent}
+                type={BoxType.HIT}
+                origin={origin}
+                editable={false}
+              />
             ))}
             {this.props.push && (
-              <Pushbox
+              <PushboxPreview
                 origin={origin}
                 config={this.props.push.box}
                 persistent={this.props.push.persistent}

@@ -7,7 +7,7 @@ import {
   PushboxConfig,
   PushboxDefinition
 } from 'src/characters/frameData';
-import { SpriteRenderer } from 'src/editor/components';
+import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
@@ -17,8 +17,6 @@ import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
 import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
-import { Pushbox } from 'src/editor/components/box';
-import HboxPreview from 'src/editor/components/box/components/hboxPreview';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -258,7 +256,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
           {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
           {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
-          <Pushbox
+          <PushboxPreview
             origin={origin}
             config={this.state.pushbox}
             scale={this.scale}

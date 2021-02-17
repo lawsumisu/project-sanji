@@ -1,24 +1,18 @@
 import * as React from 'react';
+import * as _ from 'lodash';
 import { BoxConfig, BoxType, isCircleBox } from 'src/characters/frameData';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import cx from 'classnames';
 import { round } from 'src/editor/redux/utilities';
+import { BoxPreviewProps, BoxPreviewState } from 'src/editor/components';
 
-interface HboxPreviewProps {
+interface HboxPreviewProps extends BoxPreviewProps<BoxConfig> {
   scale: number;
-  persistent: boolean;
-  type: BoxType;
-  origin: Vector2;
-  config: BoxConfig;
-  className?: string;
-  initialDragOrigin?: Vector2;
-  onChange: (config: BoxConfig) => void;
+  config: BoxConfig
   onDelete: () => void;
 }
 
-interface HboxPreviewState {
-  dragOrigin: Vector2 | null;
-  originalConfig: BoxConfig | null;
+interface HboxPreviewState extends BoxPreviewState<BoxConfig> {
   dragHandle?: 'handle1' | 'handle2' | null;
 }
 
@@ -26,7 +20,10 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
   public static defaultProps = {
     scale: 1,
     persistent: false,
-    type: BoxType.HURT
+    type: BoxType.HURT,
+    editable: true,
+    onChange: _.noop,
+    onDelete: _.noop,
   };
 
   public state: HboxPreviewState = {
@@ -66,7 +63,7 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
         )}
         onMouseDown={this.onContainerMouseDown}
       >
-        {!isCircleBox(this.props.config) && (
+        {!isCircleBox(this.props.config) && this.props.editable && (
           <div style={{ height: handleSize }} className="cn--capsule-handles">
             <div
               style={{ width: handleSize, height: handleSize, left: -handleSize / 2 }}
