@@ -5,7 +5,7 @@ import { BoxConfig, PushboxConfig } from 'src/characters/frameData';
 interface Props {
   hurtboxes: BoxConfig[];
   hitboxes: BoxConfig[];
-  pushbox: PushboxConfig;
+  pushbox: PushboxConfig | null;
 }
 
 function stringify(o: any): string {
@@ -29,7 +29,7 @@ export class FrameInfo extends React.PureComponent<Props> {
             <div className="boxes--info">{stringify(this.props.hitboxes)}</div>
           </div>
         )}
-        {this.props.pushbox.width > 0 && this.props.pushbox.height > 0 && (
+        {this.props.pushbox && (
           <div className={cx('frame-info--boxes', 'mod--push')}>
             <div className="boxes--header">Pushbox</div>
             <div className="boxes--info">{stringify(this.props.pushbox)}</div>

@@ -7,7 +7,7 @@ import { round } from 'src/editor/redux/utilities';
 import { BoxPreviewProps, BoxPreviewState } from 'src/editor/components';
 
 interface HboxPreviewProps extends BoxPreviewProps<BoxConfig> {
-  scale: number;
+  type: BoxType;
   config: BoxConfig
   onDelete: () => void;
 }

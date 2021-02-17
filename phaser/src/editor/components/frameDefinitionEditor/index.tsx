@@ -1,12 +1,6 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import {
-  BoxConfig,
-  BoxDefinition,
-  BoxType,
-  PushboxConfig,
-  PushboxDefinition
-} from 'src/characters/frameData';
+import { BoxConfig, BoxDefinition, BoxType, PushboxConfig, PushboxDefinition } from 'src/characters/frameData';
 import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
@@ -32,7 +26,7 @@ interface State {
   newBoxType: BoxType;
   hitboxes: BoxConfig[];
   hurtboxes: BoxConfig[];
-  pushbox: PushboxConfig;
+  pushbox: PushboxConfig | null;
   newBoxOrigin: Vector2 | null;
   mode: BoxMode;
 }
@@ -67,7 +61,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
         newBoxType: state.newBoxType,
         hitboxes: hit ? hit.boxes.map(box => ({ ...box })) : [],
         hurtboxes: hurt ? hurt.boxes.map(box => ({ ...box })) : [],
-        pushbox: pushbox ? pushbox.box : { x: 0, y: 0, width: 0, height: 0 },
+        pushbox: pushbox ? pushbox.box : null,
         mode: state.mode,
         newBoxOrigin: null
       };
@@ -92,12 +86,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
   public render(): React.ReactNode {
     return (
       <div className="cn--frame-editor">
-        <div
-          className="cn--frame"
-          tabIndex={0}
-          onMouseUp={this.onMouseUp}
-          onMouseDown={this.onMouseDown}
-        >
+        <div className="cn--frame" tabIndex={0} onMouseUp={this.onMouseUp} onMouseDown={this.onMouseDown}>
           <this.SelectedFrame />
         </div>
         <div>
@@ -148,17 +137,17 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           if (this.state.mode === BoxMode.CIRCLE) {
             box = { x: ox, y: oy, r: 10 };
           } else {
-            box = { x1: ox, y1: oy, x2: ox, y2: oy, r: 10};
+            box = { x1: ox, y1: oy, x2: ox, y2: oy, r: 10 };
           }
           this.setState({
             [key]: [...this.state[key], box],
-            newBoxOrigin,
+            newBoxOrigin
           } as any);
           break;
         case BoxType.PUSH:
           this.setState({
             pushbox: { x: ox, y: oy, width: 0, height: 0 },
-            newBoxOrigin,
+            newBoxOrigin
           });
           break;
       }
@@ -195,7 +184,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     });
   };
 
-  private getOnHboxChangeFn(index: number, type: BoxType) {
+  private getOnHboxChangeFn(type: BoxType, index: number) {
     return (config: BoxConfig) => {
       if (type === BoxType.HURT) {
         const boxes = [...this.state.hurtboxes];
@@ -213,7 +202,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     };
   }
 
-  private getOnDeleteFn(index: number, type: BoxType) {
+  private getOnDeleteFn(type: BoxType, index = 0) {
     return () => {
       if (type === BoxType.HURT) {
         this.setState({
@@ -223,8 +212,12 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
         this.setState({
           hitboxes: this.state.hitboxes.filter((__, i: number) => i !== index)
         });
+      } else {
+        this.setState({
+          pushbox: null
+        });
       }
-    }
+    };
   }
 
   private BoxDisplay = ({ boxes, type, origin }: { boxes: BoxConfig[]; type: BoxType; origin: Vector2 }) => (
@@ -237,8 +230,8 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           origin={origin}
           scale={this.scale}
           className="editor-box"
-          onChange={this.getOnHboxChangeFn(i, type)}
-          onDelete={this.getOnDeleteFn(i, type)}
+          onChange={this.getOnHboxChangeFn(type, i)}
+          onDelete={this.getOnDeleteFn(type, i)}
           initialDragOrigin={this.state.newBoxOrigin || undefined}
         />
       ))}
@@ -256,13 +249,16 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
           {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
           {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
-          <PushboxPreview
-            origin={origin}
-            config={this.state.pushbox}
-            scale={this.scale}
-            onChange={pushbox => this.setState({ pushbox })}
-            initialDragOrigin={(this.state.newBoxType === BoxType.PUSH && this.state.newBoxOrigin) || undefined}
-          />
+          {this.state.pushbox && (
+            <PushboxPreview
+              origin={origin}
+              config={this.state.pushbox}
+              scale={this.scale}
+              onChange={pushbox => this.setState({ pushbox })}
+              onDelete={this.getOnDeleteFn(BoxType.PUSH)}
+              initialDragOrigin={(this.state.newBoxType === BoxType.PUSH && this.state.newBoxOrigin) || undefined}
+            />
+          )}
         </div>
       );
     } else {

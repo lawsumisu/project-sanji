@@ -16,6 +16,7 @@ interface PushboxPreviewState extends BoxPreviewState<PushboxConfig> {
 export default class PushboxPreview extends React.PureComponent<PushboxPreviewProps, PushboxPreviewState> {
   public static defaultProps = {
     onChange: _.noop,
+    onDelete: _.noop,
     scale: 1,
     persistent: false,
     editable: true
@@ -51,10 +52,12 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
   public componentDidMount(): void {
     window.addEventListener('mousemove', this.onWindowMouseMove);
     window.addEventListener('mouseup', this.onWindowMouseUp);
+    window.addEventListener('keydown', this.onWindowKeyDown);
   }
   public componentWillUnmount(): void {
     window.removeEventListener('mousemove', this.onWindowMouseMove);
     window.removeEventListener('mouseup', this.onWindowMouseUp);
+    window.removeEventListener('keydown', this.onWindowKeyDown);
   }
 
   public render(): React.ReactNode {
@@ -117,6 +120,14 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
     this.setState({
       ...PushboxPreview.defaultState
     });
+  };
+
+  private onWindowKeyDown = (e: KeyboardEvent): void => {
+    if (this.state.dragOrigin){
+      if (e.key === 'q') {
+        this.props.onDelete();
+      }
+    }
   };
 
   private onContainerMouseDown = (e: React.MouseEvent) => {
