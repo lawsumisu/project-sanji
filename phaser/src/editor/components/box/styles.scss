@@ -4,6 +4,25 @@
   &.mod--circle {
     border-radius: 50%;
   }
+  &.mod--capsule {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    .cn--capsule-handles {
+      position: relative;
+      .capsule--handle {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.5;
+        background-color: white;
+        cursor: move;
+        &:hover {
+          opacity: 0.7;
+        }
+      }
+    }
+  }
   &.mod--hurt {
     background-color: rgb(0,128,255);
     &.mod--persistent {

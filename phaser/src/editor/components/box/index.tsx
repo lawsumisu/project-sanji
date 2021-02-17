@@ -80,6 +80,7 @@ interface PushboxProps {
   persistent: boolean;
   origin: Vector2;
   config: PushboxConfig;
+  initialDragOrigin?: Vector2;
   className?: string;
   onChange: (pushbox: PushboxConfig) => void;
   editable: boolean;
@@ -88,7 +89,7 @@ interface PushboxProps {
 interface PushboxState {
   editableValues: { x: boolean; y: boolean; width: boolean; height: boolean };
   editMode: 'size' | 'position';
-  dragOrigin: Vector2;
+  dragOrigin: Vector2 | null;
   originalConfig: PushboxConfig;
 }
 
@@ -100,15 +101,28 @@ export class Pushbox extends React.PureComponent<PushboxProps, PushboxState> {
     editable: true
   };
 
-  private defaultState: PushboxState = {
+  public static getDerivedStateFromProps(props: PushboxProps, state: PushboxState): PushboxState | null {
+    if (props.initialDragOrigin && !state.dragOrigin) {
+      return {
+        editMode: 'size',
+        dragOrigin: props.initialDragOrigin,
+        originalConfig: {...props.config},
+        editableValues: { x: false, y: false, width: true, height: true },
+      }
+    } else {
+      return null;
+    }
+  }
+
+  private static defaultState: PushboxState = {
     editableValues: { x: false, y: false, width: false, height: false },
     editMode: 'size',
-    dragOrigin: Vector2.ZERO,
+    dragOrigin: null,
     originalConfig: { x: 0, y: 0, width: 0, height: 0 }
   };
 
   public state: PushboxState = {
-    ...this.defaultState
+    ...Pushbox.defaultState
   };
 
   public componentDidMount(): void {
@@ -152,7 +166,7 @@ export class Pushbox extends React.PureComponent<PushboxProps, PushboxState> {
   }
 
   private onWindowMouseMove = (e: MouseEvent) => {
-    if (_.some(this.state.editableValues)) {
+    if (_.some(this.state.editableValues) && this.state.dragOrigin) {
       const { scale: s } = this.props;
       const d = new Vector2(e.clientX, e.clientY).subtract(this.state.dragOrigin);
       const newPushbox = { ...this.state.originalConfig };
@@ -178,7 +192,7 @@ export class Pushbox extends React.PureComponent<PushboxProps, PushboxState> {
 
   private onWindowMouseUp = () => {
     this.setState({
-      ...this.defaultState
+      ...Pushbox.defaultState
     });
   };
 
