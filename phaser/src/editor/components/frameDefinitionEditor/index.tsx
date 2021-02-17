@@ -6,7 +6,8 @@ import {
   BoxType,
   CapsuleBoxConfig,
   isCircleBox,
-  PushboxConfig, PushboxDefinition
+  PushboxConfig,
+  PushboxDefinition
 } from 'src/characters/frameData';
 import { Box, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
@@ -20,6 +21,7 @@ import EditableCapsuleBox, { SelectionType } from 'src/editor/components/frameDe
 import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
 import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
 import { Pushbox } from 'src/editor/components/box';
+import HitboxPreview from 'src/editor/components/box/components/hitboxPreview';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -397,18 +399,36 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     });
   };
 
+  private getOnHboxChangeFn(index: number, type: BoxType) {
+    return (config: BoxConfig) => {
+      if (type === BoxType.HURT) {
+        const boxes = [...this.state.hurtboxes];
+        boxes[index] = config;
+        this.setState({
+          hurtboxes: boxes,
+        });
+      } else if (type === BoxType.HIT){
+        const boxes = [...this.state.hitboxes];
+        boxes[index] = config;
+        this.setState({
+          hitboxes: boxes,
+        });
+      }
+    }
+  }
+
   private BoxDisplay = ({ boxes, type, origin }: { boxes: BoxConfig[]; type: BoxType; origin: Vector2 }) => (
     <div>
       {boxes.map((box: BoxConfig, i: number) =>
         isCircleBox(box) ? (
-          <Box
+          <HitboxPreview
             key={i}
             config={box}
             type={type}
             origin={origin}
             scale={this.scale}
             className="editor-box"
-            onMouseDown={this.getBoxOnSelectFn(i, type)}
+            onChange={this.getOnHboxChangeFn(i, type)}
           />
         ) : (
           <EditableCapsuleBox
