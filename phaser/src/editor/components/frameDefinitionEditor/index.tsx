@@ -11,6 +11,7 @@ import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
 import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -259,6 +260,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
               initialDragOrigin={(this.state.newBoxType === BoxType.PUSH && this.state.newBoxOrigin) || undefined}
             />
           )}
+          <FontAwesomeIcon style={{ left: origin.x * this.scale, top: origin.y * this.scale }}className="origin" icon="crosshairs"/>
         </div>
       );
     } else {

@@ -43,11 +43,7 @@
       "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "jump", "frameRate": 15 },
       "pushboxDef": {
         "0": {
-          "box": { "x": -10.4, "y": -109.2, "width": 23.8, "height": 72.4 },
-          "persistThroughFrame": 2
-        },
-        "3": {
-          "box": { "x": -12.8, "y": -99, "width": 31.8, "height": 42.8 },
+          "box": { "x": -17.2, "y": -98.6, "width": 31.8, "height": 42.8 },
           "persistThroughFrame": 4
         }
       }
