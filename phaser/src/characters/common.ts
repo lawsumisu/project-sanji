@@ -57,6 +57,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 > {
   private hitstun = 0;
   protected isLaunched = false;
+  protected knockbackVelocity = Vector2.ZERO;
+  protected comboDamage = 0;
 
   protected states: StateMap<S, D>;
   protected audioKeys: AudioKey[] = [];
@@ -147,7 +149,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
             params.d = jumpDirection ? 1 : -1;
           }
         } else if (!this.sprite.anims.isPlaying && this.currentAnimation === 'SQUAT') {
-          this.setOrientedVelocity({ x: this.walkSpeed * (params.d || 0), y: -this.jumpSpeed });
+          this.setOrientedVelocity({ x: this.airSpeed * (params.d || 0), y: -this.jumpSpeed });
           this.goToNextState(CommonState.JUMP);
         }
       }
@@ -188,9 +190,13 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.HIT]: {
       type: [StateType.HIT],
       update: (tick: number, params: { hit: Hit }) => {
+        const { hit } = params;
         if (tick === 0) {
-          const { hit } = params;
-          this.setHitstun(hit);
+          this.comboDamage += hit.damage;
+          this.hitstun = hit.hitstun;
+          this.knockbackVelocity = Vector2.ZERO;
+          this.velocity = new PolarVector(hit.knockback, hit.angle).toCartesian();
+          // this.setHitstun(hit);
           const t1 =
             hit.type.find((t: HitType) => [HitType.HIGH, HitType.MID, HitType.LOW].includes(t)) || HitType.HIGH;
           const t2 =
@@ -208,8 +214,20 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         if (!this.sprite.anims.isPlaying && this.currentAnimation === 'HIT_HIGH_LAUNCH') {
           this.goToNextState(CommonState.HIT_AIR);
         }
+        if (hit.pushback) {
+          if (this.hitstun > 0) {
+            this.knockbackVelocity.x = Math.max(0, (hit.pushback.base + this.comboDamage * .2) - hit.pushback.decay * tick);
+          } else {
+            this.knockbackVelocity = Vector2.ZERO;
+          }
+          // if (this.isLaunched) {
+          //   this.velocity = Vector2.ZERO;
+          //   v = v.add(new Vector2(0, -60));
+          // }
+        }
         if (this.hitstun === 0 && !this.isAirborne) {
           this.isLaunched = false;
+          this.comboDamage = 0;
           this.goToNextState(CommonState.STAND);
         }
       }
@@ -223,6 +241,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'HIT_LAND',
       update: (tick: number) => {
         if (tick === 0) {
+          this.comboDamage = 0;
           this.velocity = Vector2.ZERO;
           this.isLaunched = false;
           this.playSoundForAnimation('landHeavy');
@@ -336,12 +355,18 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
     }
-    this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
+    this.position = this.position.add(this.velocity.add(this.knockbackVelocity).scale(delta * Unit.toPx));
 
     // TODO handle this in a separate function?
     if (this.position.x < PS.stage.left) {
+      if (this.hitstun) {
+        this.target.position.x -= this.position.x - PS.stage.left;
+      }
       this.position.x = PS.stage.left;
     } else if (this.position.x > PS.stage.right) {
+      if (this.hitstun) {
+        this.target.position.x -= this.position.x - PS.stage.right;
+      }
       this.position.x = PS.stage.right;
     }
     if (this.velocity.y >= 0) {
@@ -366,7 +391,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   }
 
   protected updateHitstun(): void {
-    if (this.hitstun > 0) {
+    if (this.hitstun > 0 && !this.hasFreezeFrames) {
       this.hitstun = Math.max(0, this.hitstun - 1);
       if (this.hitstun === 0 && !this.isAirborne) {
         this.velocity.x = 0;
@@ -456,12 +481,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   }
 
   private setHitstun(hit: Hit): void {
-    this.hitstun = hit.knockback;
-    let v = new PolarVector(hit.knockback, hit.angle).toCartesian();
-    if (this.isLaunched) {
-      this.velocity = Vector2.ZERO;
-      v = v.add(new Vector2(0, -60));
-    }
-    this.velocity = this.velocity.add(v);
+    this.comboDamage += hit.damage;
+    this.hitstun = hit.hitstun;
   }
 }

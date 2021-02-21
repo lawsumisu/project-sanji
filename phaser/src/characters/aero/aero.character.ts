@@ -7,6 +7,7 @@ import { CharacterState, CommonCharacter, CommonState, StateMap, StateType } fro
 import { CommandTrigger } from 'src/characters';
 import { AeroShadow, AeroShadowState } from 'src/characters/aero/shadow';
 import { AudioKey } from 'src/assets/audio';
+import { Unit } from 'src/unit';
 
 enum AeroStateType {
   RIGHT_ARM = 'RIGHT_ARM',
@@ -50,6 +51,13 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   private cancelFlag = false;
   private shadow: AeroShadow;
   private preRollState: CharacterState<AeroState> = CommonState.NULL;
+
+  protected walkSpeed = 240 / Unit.toPx;
+  protected runSpeed = 420 / Unit.toPx;
+  protected dashSpeed = 600 / Unit.toPx;
+  protected jumpSpeed = 550 / Unit.toPx;
+  protected airSpeed = this.walkSpeed;
+  protected gravity = this.jumpSpeed * 4;
 
   protected states: StateMap<AeroState, AeroStateConfig> = {
     [AeroState.STAND_LIGHT_L_1]: {

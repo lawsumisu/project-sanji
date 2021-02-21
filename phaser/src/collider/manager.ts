@@ -156,7 +156,7 @@ export class FrameDefinitionColliderManager extends ColliderManager {
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
       const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
       // TODO allow hitbox data to be overwritten at runtime
-      const hit = { ...frameDefinition!.hitboxDef!.hit, ...frameBoxDef.hit };
+      const hit = _.merge({ pushback: { base: 0, decay: 0 }}, { ...frameDefinition!.hitboxDef!.hit, ...frameBoxDef.hit });
       return new HitboxData(
         frameBoxDef.boxes.map((box: BoxConfig) => {
           if (isCircleBox(box)) {

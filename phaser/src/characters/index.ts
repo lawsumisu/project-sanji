@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import { addAnimationsByDefinition, FrameDefinitionMap, getFrameIndexFromSpriteIndex } from 'src/characters/frameData';
 import { Command } from 'src/command/';
 import { PS } from 'src/global';
-import { StageObject } from 'src/stage/stageObject';
+import { StageObject, UpdateParams } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { Unit } from 'src/unit';
 import * as Phaser from 'phaser';
@@ -28,10 +28,11 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected nextStates: Array<{ state: S; executionTrigger: () => boolean; stateParams: object }> = [];
   protected defaultState: S;
 
-  protected walkSpeed = 100;
-  protected runSpeed = 175;
-  protected dashSpeed = 250;
+  protected walkSpeed = 75;
+  protected runSpeed = 125;
+  protected dashSpeed = 175;
   protected jumpSpeed = 150;
+  protected airSpeed = this.walkSpeed;
   protected gravity = 450;
 
   public readonly playerIndex: number;
@@ -89,7 +90,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.target = stageObject;
   }
 
-  public update(params: { time: number; delta: number }): void {
+  public update(params: UpdateParams): void {
     super.update(params);
     this.updateState();
     if (!this.hasFreezeFrames) {

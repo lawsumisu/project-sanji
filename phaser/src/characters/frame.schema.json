@@ -33,9 +33,10 @@
                     "hitstop": {
                       "type": "array", "items": { "type": "number"}, "maxItems": 2, "minItems": 2
                     },
+                    "hitstun": { "type": "number" },
                     "sfx": {"type": "string"}
                   },
-                  "required": ["damage", "angle", "knockback", "type", "hitstop"]
+                  "required": ["damage", "angle", "knockback", "type", "hitstop", "hitstun"]
                 }
               },
               "patternProperties": {

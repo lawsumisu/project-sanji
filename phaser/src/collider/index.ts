@@ -29,6 +29,11 @@ export interface Hit {
   knockback: number;
   type: string[];
   hitstop: number[];
+  hitstun: number;
+  pushback?: {
+    base: number;
+    decay: number;
+  }
   sfx?: string;
 }
 

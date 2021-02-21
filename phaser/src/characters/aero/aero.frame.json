@@ -1,6 +1,6 @@
 {
   "name": "aero",
-  "tempPushbox": { "x": -20, "y": -100, "width": 40, "height": 100 },
+  "tempPushbox": { "x": -10.6, "y": -80, "width": 23.4, "height": 80 },
   "frameDef": {
     "STAND": {
       "animDef": {
@@ -48,7 +48,15 @@
         }
       }
     },
-    "FALL": { "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "fall", "frameRate": 15 } },
+    "FALL": {
+      "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "fall", "frameRate": 15 },
+      "pushboxDef": {
+        "0": {
+          "box": { "x": -17.2, "y": -98.6, "width": 31.8, "height": 42.8 },
+          "persistThroughFrame": 4
+        }
+      }
+    },
     "LIGHT_JAB_1": {
       "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "attacks/lightjab1", "frameRate": 15 },
       "hurtboxDef": {
@@ -72,7 +80,7 @@
       },
       "hitboxDef": {
         "1": { "boxes": [{ "x1": 16, "y1": -86, "x2": 39.4, "y2": -74.6, "r": 6.5 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5] }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5], "hitstun": 10 }
       }
     },
     "LIGHT_JAB_2": {
@@ -84,21 +92,21 @@
             { "x1": 22.83, "y1": -88.79, "x2": 58.85000000000001, "y2": -92.17, "r": 7 }
           ]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5] }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5], "hitstun": 10 }
       }
     },
     "LIGHT_3": {
       "animDef": { "frames": 5, "assetKey": "vanessa", "prefix": "attacks/light3", "frameRate": 15 },
       "hitboxDef": {
         "1": { "boxes": [{ "x1": 23.2, "y1": -75.8, "x2": 8.6, "y2": -75.6, "r": 6.5 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5] }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5], "hitstun": 10 }
       }
     },
     "LIGHT_4": {
       "animDef": { "frames": 6, "assetKey": "vanessa", "prefix": "attacks/light4", "frameRate": 15 },
       "hitboxDef": {
         "1": { "boxes": [{ "x1": 56.2, "y1": -95, "x2": 16.2, "y2": -87.8, "r": 6.5 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5] }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5], "hitstun": 10 }
       }
     },
     "GUT_PUNCH_1": {
@@ -110,7 +118,14 @@
       },
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 50.8, "y1": -82.82000000000001, "x2": 28.799999999999994, "y2": -57.02, "r": 8.5 }] },
-        "hit": { "damage": 10, "angle": -75, "knockback": 25, "type": ["MEDIUM", "MID"], "hitstop": [5, 10] }
+        "hit": {
+          "damage": 10,
+          "angle": -75,
+          "knockback": 25,
+          "type": ["MEDIUM", "MID"],
+          "hitstop": [5, 5],
+          "hitstun": 10
+        }
       }
     },
     "GUT_PUNCH_2": {
@@ -128,7 +143,14 @@
           ]
         },
         "2": { "boxes": [{ "x": 45, "y": -72.2, "r": 10 }] },
-        "hit": { "damage": 10, "angle": -75, "knockback": 25, "type": ["MEDIUM", "MID"], "hitstop": [5, 5] }
+        "hit": {
+          "damage": 10,
+          "angle": -75,
+          "knockback": 25,
+          "type": ["MEDIUM", "MID"],
+          "hitstop": [5, 5],
+          "hitstun": 10
+        }
       }
     },
     "STAND_MED_R_2": {
@@ -140,7 +162,14 @@
       },
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 46.6, "y1": -65.4, "x2": 12.4, "y2": -60.8, "r": 10 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["MEDIUM", "MID"], "hitstop": [5, 5] }
+        "hit": {
+          "damage": 10,
+          "angle": 0,
+          "knockback": 10,
+          "type": ["MEDIUM", "MID"],
+          "hitstop": [5, 5],
+          "hitstun": 10
+        }
       }
     },
     "STAND_MED_L_2": {
@@ -153,7 +182,14 @@
       "hitboxDef": {
         "3": { "boxes": [{ "x1": 64, "y1": -111.2, "x2": 32.8, "y2": -64, "r": 10 }] },
         "4": { "boxes": [{ "x": 62, "y": -103, "r": 10 }], "persistThroughFrame": 5 },
-        "hit": { "damage": 10, "angle": -10, "knockback": 35, "type": ["MEDIUM", "MID"], "hitstop": [5, 5] }
+        "hit": {
+          "damage": 10,
+          "angle": -10,
+          "knockback": 35,
+          "type": ["MEDIUM", "MID"],
+          "hitstop": [5, 5],
+          "hitstun": 10
+        }
       }
     },
     "STRAIGHT": {
@@ -161,7 +197,7 @@
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 30.4, "y1": -92.37, "x2": 68, "y2": -92.19, "r": 6.5 }] },
         "3": { "boxes": [{ "x1": 32.6, "y1": -89.8, "x2": 67.8, "y2": -89, "r": 6.5 }], "persistThroughFrame": 4 },
-        "hit": { "damage": 20, "angle": 0, "knockback": 50, "type": ["HEAVY", "MID"], "hitstop": [5, 5] }
+        "hit": { "damage": 20, "angle": 0, "knockback": 50, "type": ["HEAVY", "MID"], "hitstop": [5, 5], "hitstun": 10 }
       }
     },
     "STAND_HEAVY_R": {
@@ -174,7 +210,18 @@
       "hitboxDef": {
         "2": { "boxes": [{ "x1": 36.6, "y1": -53.2, "x2": 20.2, "y2": -48.2, "r": 8.5 }] },
         "3": { "boxes": [{ "x": 40.6, "y": -81, "r": 9.5 }] },
-        "hit": { "damage": 20, "angle": 0, "knockback": 25, "type": ["HEAVY", "MID"], "hitstop": [5, 5] }
+        "hit": {
+          "damage": 20,
+          "angle": 0,
+          "knockback": 25,
+          "type": ["HEAVY", "MID"],
+          "hitstop": [10, 10],
+          "hitstun": 17,
+          "pushback": {
+            "base": 100,
+            "decay": 40
+          }
+        }
       }
     },
     "STAND_HEAVY_L": {
@@ -186,7 +233,18 @@
       },
       "hitboxDef": {
         "1": { "boxes": [{ "x": 50.4, "y": -58.8, "r": 16 }], "persistThroughFrame": 2 },
-        "hit": { "damage": 20, "angle": 0, "knockback": 25, "type": ["HEAVY", "MID"], "hitstop": [5, 5] }
+        "hit": {
+          "damage": 20,
+          "angle": 0,
+          "knockback": 25,
+          "type": ["HEAVY", "MID"],
+          "hitstop": [5, 5],
+          "hitstun": 17,
+          "pushback": {
+            "base": 200,
+            "decay": 40
+          }
+        }
       }
     },
     "MACHINE_GUN_R": {
@@ -203,7 +261,8 @@
           "angle": 0,
           "knockback": 35,
           "type": ["MEDIUM", "MID"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -218,7 +277,8 @@
           "angle": 0,
           "knockback": 35,
           "type": ["MEDIUM", "MID"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -300,7 +360,8 @@
           "knockback": 5,
           "type": ["MEDIUM", "MID"],
           "hitstop": [8, 8],
-          "sfx": "hitMed"
+          "sfx": "hitMed",
+          "hitstun": 10
         }
       }
     },
@@ -321,7 +382,8 @@
           "knockback": 10,
           "type": ["MEDIUM", "MID"],
           "hitstop": [8, 8],
-          "sfx": "hitMed"
+          "sfx": "hitMed",
+          "hitstun": 10
         }
       }
     },
@@ -342,7 +404,8 @@
           "knockback": 35,
           "type": ["MEDIUM", "MID"],
           "hitstop": [8, 15],
-          "sfx": "hitHeavy"
+          "sfx": "hitHeavy",
+          "hitstun": 10
         }
       }
     },
@@ -366,7 +429,8 @@
           "knockback": 125,
           "type": ["HIGH", "LAUNCH"],
           "hitstop": [8, 15],
-          "sfx": "hitHeavy"
+          "sfx": "hitHeavy",
+          "hitstun": 10
         }
       }
     },
@@ -397,7 +461,7 @@
         "1": {
           "boxes": [{ "x1": 50.8, "y1": -62.4, "x2": 16.6, "y2": -54.4, "r": 6 }]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LOW", "LIGHT"], "hitstop": [5, 5] }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LOW", "LIGHT"], "hitstop": [5, 5], "hitstun": 10 }
       }
     },
     "CROUCH_LIGHT_2": {
@@ -411,7 +475,7 @@
         "1": {
           "boxes": [{ "x1": 25.6, "y1": -47.8, "x2": 58.4, "y2": -24.8, "r": 6.5 }]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LOW", "LIGHT"], "hitstop": [5, 5] }
+        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LOW", "LIGHT"], "hitstop": [5, 5], "hitstun": 10 }
       }
     },
     "CROUCH_MED": {
@@ -428,7 +492,14 @@
         "4": {
           "boxes": [{ "x": 61, "y": -30, "r": 12.5 }]
         },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LOW", "MEDIUM"], "hitstop": [5, 5] }
+        "hit": {
+          "damage": 10,
+          "angle": 0,
+          "knockback": 10,
+          "type": ["LOW", "MEDIUM"],
+          "hitstop": [5, 5],
+          "hitstun": 10
+        }
       }
     },
     "CROUCH_HEAVY": {
@@ -461,7 +532,8 @@
           "angle": 0,
           "knockback": 35,
           "type": ["HEAVY", "LOW"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -482,7 +554,8 @@
           "angle": 0,
           "knockback": 10,
           "type": ["LIGHT", "HIGH"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -503,7 +576,8 @@
           "angle": 0,
           "knockback": 20,
           "type": ["MEDIUM", "HIGH"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -524,7 +598,8 @@
           "angle": 0,
           "knockback": 25,
           "type": ["HEAVY", "HIGH"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -555,7 +630,8 @@
           "angle": 0,
           "knockback": 15,
           "type": ["HEAVY", "MID"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -578,7 +654,8 @@
           "angle": 0,
           "knockback": 15,
           "type": ["MEDIUM", "MID"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -599,7 +676,8 @@
           "angle": -85,
           "knockback": 125,
           "type": ["LAUNCH", "HIGH"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -620,7 +698,8 @@
           "angle": 15,
           "knockback": 35,
           "type": ["MEDIUM", "MID"],
-          "hitstop": [5, 5]
+          "hitstop": [5, 5],
+          "hitstun": 10
         }
       }
     },
@@ -642,7 +721,8 @@
           "knockback": 50,
           "type": ["MEDIUM", "MID"],
           "hitstop": [5, 5],
-          "sfx": "hitMed"
+          "sfx": "hitMed",
+          "hitstun": 10
         }
       }
     }
