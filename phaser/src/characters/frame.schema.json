@@ -34,6 +34,25 @@
                       "type": "array", "items": { "type": "number"}, "maxItems": 2, "minItems": 2
                     },
                     "hitstun": { "type": "number" },
+                    "velocity": {
+                      "type": "object",
+                      "properties": {
+                        "ground": {
+                          "type": "object",
+                          "properties": {
+                            "angle": {"type": "number"},
+                            "magnitude": {"type": "number"}
+                          }
+                        },
+                        "air": {
+                          "type": "object",
+                          "properties": {
+                            "angle": {"type": "number"},
+                            "magnitude": {"type": "number"}
+                          }
+                        }
+                      }
+                    },
                     "sfx": {"type": "string"}
                   },
                   "required": ["damage", "angle", "knockback", "type", "hitstop", "hitstun"]

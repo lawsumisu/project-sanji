@@ -14,7 +14,7 @@ import {
 import {
   BoxConfig,
   BoxDefinition,
-  BoxType,
+  BoxType, defaultHit,
   FrameDefinitionMap,
   HitboxDefinition,
   isCircleBox
@@ -156,7 +156,7 @@ export class FrameDefinitionColliderManager extends ColliderManager {
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
       const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
       // TODO allow hitbox data to be overwritten at runtime
-      const hit = _.merge({ pushback: { base: 0, decay: 0 }}, { ...frameDefinition!.hitboxDef!.hit, ...frameBoxDef.hit });
+      const hit = _.merge({}, defaultHit, { ...frameDefinition!.hitboxDef!.hit, ...frameBoxDef.hit });
       return new HitboxData(
         frameBoxDef.boxes.map((box: BoxConfig) => {
           if (isCircleBox(box)) {
@@ -197,7 +197,6 @@ export class FrameDefinitionColliderManager extends ColliderManager {
           return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
         };
         const { x, y, width, height } = pushboxDef.box;
-        console.log(pushboxDef);
         return new PushboxData(new Phaser.Geom.Rectangle(x, y, width, height), index, { persist })
       }
     }

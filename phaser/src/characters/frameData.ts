@@ -57,8 +57,24 @@ export interface BoxDefinition {
   persistThroughFrame?: number;
 }
 
+export const defaultHit: Hit = {
+  damage: 0,
+  angle: 0,
+  knockback: 0,
+  velocity: {
+    ground: { magnitude: 0, angle: 0},
+  },
+  type: [],
+  hitstop: [0, 0],
+  hitstun: 0,
+  pushback: {
+    base: 0,
+    decay: 0,
+  }
+};
+
 export interface HitboxDefinition extends BoxDefinition {
-  hit?: Hit;
+  hit?: Partial<Hit>;
 }
 
 export interface PushboxDefinition {
@@ -72,7 +88,7 @@ export interface FrameDefinition {
     [key: number]: BoxDefinition;
   }
   hitboxDef?: {
-    hit: Hit;
+    hit: Partial<Hit>;
     [key: number]: HitboxDefinition;
   };
   pushboxDef?: {

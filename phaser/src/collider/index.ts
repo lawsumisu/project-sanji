@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
-import { Capsule, Scalar, Vector2 } from '@lawsumisu/common-utilities';
+import * as _ from 'lodash';
+import { Capsule, Vector2 } from '@lawsumisu/common-utilities';
 import { CapsuleBoxConfig, CircleBoxConfig } from 'src/characters/frameData';
 
 type BoxType<T = ColliderType> = T extends ColliderType.CIRCLE
@@ -23,6 +24,8 @@ export enum HitType {
   MEDIUM = 'MEDIUM',
   LAUNCH = 'LAUNCH'
 }
+
+// TODO move to frameData.ts
 export interface Hit {
   damage: number;
   angle: number;
@@ -30,10 +33,14 @@ export interface Hit {
   type: string[];
   hitstop: number[];
   hitstun: number;
-  pushback?: {
+  velocity: {
+    ground: { angle: number, magnitude: number };
+    air?: { angle: number, magnitude: number };
+  };
+  pushback: {
     base: number;
     decay: number;
-  }
+  };
   sfx?: string;
 }
 
@@ -149,7 +156,10 @@ export class Hitbox<T extends ColliderType = ColliderType> extends Collider<T> {
 
   public static transformHit(hit: Hit, orientation: Direction): Hit {
     const angleInDegrees = !orientation.x ? 180 - hit.angle : hit.angle;
-    return { ...hit, angle: Scalar.toRadians(angleInDegrees) };
+    return _.merge({}, hit, {
+      velocity: { ground: { angle: !orientation.x ? 180 - hit.velocity.ground.angle : hit.velocity.ground.angle } },
+      angle: angleInDegrees
+    });
   }
 
   public readonly hit: Hit;

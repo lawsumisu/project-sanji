@@ -80,7 +80,15 @@
       },
       "hitboxDef": {
         "1": { "boxes": [{ "x1": 16, "y1": -86, "x2": 39.4, "y2": -74.6, "r": 6.5 }] },
-        "hit": { "damage": 10, "angle": 0, "knockback": 10, "type": ["LIGHT", "MID"], "hitstop": [5, 5], "hitstun": 10 }
+        "hit": {
+          "damage": 10,
+          "angle": 0,
+          "knockback": 10,
+          "type": ["LIGHT", "MID"],
+          "hitstop": [5, 5],
+          "hitstun": 10,
+          "pushback": { "base": 150, "decay": 40 }
+        }
       }
     },
     "LIGHT_JAB_2": {
@@ -124,7 +132,11 @@
           "knockback": 25,
           "type": ["MEDIUM", "MID"],
           "hitstop": [5, 5],
-          "hitstun": 10
+          "hitstun": 10,
+          "pushback": {
+            "base": 150,
+            "decay": 40
+          }
         }
       }
     },
@@ -149,7 +161,11 @@
           "knockback": 25,
           "type": ["MEDIUM", "MID"],
           "hitstop": [5, 5],
-          "hitstun": 10
+          "hitstun": 10,
+          "pushback": {
+            "base": 200,
+            "decay": 40
+          }
         }
       }
     },
@@ -208,7 +224,6 @@
         "frameRate": 15
       },
       "hitboxDef": {
-        "2": { "boxes": [{ "x1": 36.6, "y1": -53.2, "x2": 20.2, "y2": -48.2, "r": 8.5 }] },
         "3": { "boxes": [{ "x": 40.6, "y": -81, "r": 9.5 }] },
         "hit": {
           "damage": 20,
@@ -218,7 +233,7 @@
           "hitstop": [10, 10],
           "hitstun": 17,
           "pushback": {
-            "base": 100,
+            "base": 150,
             "decay": 40
           }
         }

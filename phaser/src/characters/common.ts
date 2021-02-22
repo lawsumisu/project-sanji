@@ -5,7 +5,7 @@ import { playAnimation } from 'src/utilitiesPF/animation.util';
 import * as _ from 'lodash';
 import { FrameDefinitionMap } from 'src/characters/frameData';
 import { PS } from 'src/global';
-import { PolarVector, Vector2 } from '@lawsumisu/common-utilities';
+import { PolarVector, Scalar, Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 import { AudioKey } from 'src/assets/audio';
 import { Hit, HitType } from 'src/collider';
@@ -191,12 +191,20 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       type: [StateType.HIT],
       update: (tick: number, params: { hit: Hit }) => {
         const { hit } = params;
+        // TODO remove this after frameData refactor
+        let hitVelocity = { angle: hit.angle, magnitude: hit.knockback };
+        if (hit.knockback === 0) {
+          hitVelocity = this.isLaunched && hit.velocity.air ? hit.velocity.air : hit.velocity.ground;
+        }
+        hitVelocity.angle = Scalar.toRadians(hitVelocity.angle);
         if (tick === 0) {
           this.comboDamage += hit.damage;
           this.hitstun = hit.hitstun;
           this.knockbackVelocity = Vector2.ZERO;
-          this.velocity = new PolarVector(hit.knockback, hit.angle).toCartesian();
-          // this.setHitstun(hit);
+          this.velocity = new PolarVector(hitVelocity.magnitude, hitVelocity.angle).toCartesian();
+          if (this.isLaunched) {
+            this.velocity = this.velocity.add(new Vector2(0, -60));
+          }
           const t1 =
             hit.type.find((t: HitType) => [HitType.HIGH, HitType.MID, HitType.LOW].includes(t)) || HitType.HIGH;
           const t2 =
@@ -214,16 +222,12 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         if (!this.sprite.anims.isPlaying && this.currentAnimation === 'HIT_HIGH_LAUNCH') {
           this.goToNextState(CommonState.HIT_AIR);
         }
-        if (hit.pushback) {
-          if (this.hitstun > 0) {
-            this.knockbackVelocity.x = Math.max(0, (hit.pushback.base + this.comboDamage * .2) - hit.pushback.decay * tick);
-          } else {
-            this.knockbackVelocity = Vector2.ZERO;
-          }
-          // if (this.isLaunched) {
-          //   this.velocity = Vector2.ZERO;
-          //   v = v.add(new Vector2(0, -60));
-          // }
+        if (this.hitstun > 0) {
+          const s = Math.sign(Math.cos(hitVelocity.angle));
+          this.knockbackVelocity.x =
+            Math.max(0, hit.pushback.base + this.comboDamage * 0.2 - hit.pushback.decay * tick) * s;
+        } else {
+          this.knockbackVelocity = Vector2.ZERO;
         }
         if (this.hitstun === 0 && !this.isAirborne) {
           this.isLaunched = false;
@@ -241,6 +245,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'HIT_LAND',
       update: (tick: number) => {
         if (tick === 0) {
+          this.knockbackVelocity = Vector2.ZERO;
           this.comboDamage = 0;
           this.velocity = Vector2.ZERO;
           this.isLaunched = false;
@@ -339,7 +344,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     // TODO move onHitSound to frame data
     if (config && config.onHitSound) {
       PS.stage.playSound(config.onHitSound, {});
-    } else if ((hit.sfx && this.audioKeys.includes(hit.sfx as AudioKey))) {
+    } else if (hit.sfx && this.audioKeys.includes(hit.sfx as AudioKey)) {
       PS.stage.playSound(hit.sfx as AudioKey, {});
     }
   }
@@ -478,10 +483,5 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     rect.centerX = this.position.x - (pivotX * realWidth - centerX - x) * fx;
     rect.centerY = this.position.y - pivotY * realHeight + centerY + y;
     return rect;
-  }
-
-  private setHitstun(hit: Hit): void {
-    this.comboDamage += hit.damage;
-    this.hitstun = hit.hitstun;
   }
 }

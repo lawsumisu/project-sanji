@@ -162,17 +162,17 @@ export class Stage extends Phaser.Scene {
     // TODO theoretically anything could have a push box, so modify this function to not just expect pushboxes of p1 and p2.
     const intersection = Phaser.Geom.Intersects.GetRectangleIntersection(this.p1.pushbox, this.p2.pushbox);
     if (intersection.width > 0) {
-      const p1 = this.p1.position.x <= this.p2.position.x ? this.p1 : this.p2;
-      const p2 = this.p1.position.x <= this.p2.position.x ? this.p2 : this.p1;
-      let d1 = Math.max(intersection.width / 2, p1.position.x - this.bounds.left);
-      let d2 = Math.min(intersection.width / 2, this.bounds.right - p2.position.x);
+      const leftPlayer = this.p1.position.x <= this.p2.position.x ? this.p1 : this.p2;
+      const rightPlayer = this.p1.position.x <= this.p2.position.x ? this.p2 : this.p1;
+      let d1 = Math.min(intersection.width / 2, leftPlayer.position.x - this.bounds.left);
+      let d2 = Math.min(intersection.width / 2, this.bounds.right - rightPlayer.position.x);
       if (d1 < intersection.width /2 ) {
         d2 = intersection.width - d1;
       } else if (d2 < intersection.width) {
         d1 = intersection.width - d2;
       }
-      p1.position.x -= d1;
-      p2.position.x += d2;
+      leftPlayer.position.x -= d1;
+      rightPlayer.position.x += d2;
     }
   }
 
