@@ -77,12 +77,14 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     });
   }
 
-  public applyHit(hit: Hit): void {
+  public applyHitToSelf(hit: Hit, hitBy: StageObject): void {
+    super.applyHitToSelf(hit, hitBy);
     this.freezeFrames = hit.hitstop[1];
     this.addVfx(Vfx.shake(this.sprite, new Vector2(1, 0), 3, this.freezeFrames));
   }
 
-  public onTargetHit(_stageObject: StageObject, hit: Hit): void {
+  public applyHitToTarget(hit: Hit, stageObject: StageObject): void {
+    super.applyHitToTarget(hit, stageObject);
     this.freezeFrames = hit.hitstop[0];
   }
 

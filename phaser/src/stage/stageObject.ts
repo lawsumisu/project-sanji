@@ -15,6 +15,7 @@ export class StageObject {
   protected freezeFrames: number = 0;
   protected _orientation: Direction = { x: true, y: true };
   protected _sprite: Phaser.GameObjects.Sprite;
+  protected _pushable = true;
   protected activeVfx: Vfx[] = [];
 
   protected constructor() {
@@ -30,9 +31,11 @@ export class StageObject {
     this.activeVfx = this.activeVfx.filter(vfx => vfx.shouldUpdate);
   }
 
-  public applyHit(_hit: Hit): void {}
+  public applyHitToSelf(_hit: Hit, _stageObject: StageObject): void {}
 
-  public onTargetHit(_stageObject: StageObject, _hit: Hit) {}
+  public applyHitToTarget(hit: Hit, stageObject: StageObject, ) {
+    stageObject.applyHitToSelf(hit, this);
+  }
 
   protected setOrientedVelocity(v: { x?: number; y?: number }): void {
     const d = this._orientation.x ? 1 : -1;
@@ -60,5 +63,9 @@ export class StageObject {
 
   get sprite(): Phaser.GameObjects.Sprite {
     return this._sprite;
+  }
+
+  get pushable(): boolean {
+    return this._pushable;
   }
 }

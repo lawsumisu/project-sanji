@@ -253,7 +253,7 @@
           "angle": 0,
           "knockback": 25,
           "type": ["HEAVY", "MID"],
-          "hitstop": [5, 5],
+          "hitstop": [10, 10],
           "hitstun": 17,
           "pushback": {
             "base": 200,

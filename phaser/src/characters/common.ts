@@ -56,6 +56,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   CharacterStateConfig<D>
 > {
   private hitstun = 0;
+  protected lastHitBy: StageObject | null = null;
   protected isLaunched = false;
   protected knockbackVelocity = Vector2.ZERO;
   protected comboDamage = 0;
@@ -228,10 +229,12 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
             Math.max(0, hit.pushback.base + this.comboDamage * 0.2 - hit.pushback.decay * tick) * s;
         } else {
           this.knockbackVelocity = Vector2.ZERO;
+          this.lastHitBy = null;
         }
         if (this.hitstun === 0 && !this.isAirborne) {
           this.isLaunched = false;
           this.comboDamage = 0;
+          this.lastHitBy = null;
           this.goToNextState(CommonState.STAND);
         }
       }
@@ -246,6 +249,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       update: (tick: number) => {
         if (tick === 0) {
           this.knockbackVelocity = Vector2.ZERO;
+          this.lastHitBy = null;
           this.comboDamage = 0;
           this.velocity = Vector2.ZERO;
           this.isLaunched = false;
@@ -338,8 +342,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     // PS.stage.debugDraw.rect(this.bounds);
   }
 
-  public onTargetHit(target: StageObject, hit: Hit): void {
-    super.onTargetHit(target, hit);
+  public applyHitToTarget(hit: Hit, target: StageObject): void {
+    super.applyHitToTarget(hit, target);
     const config = this.states[this.stateManager.current.key];
     // TODO move onHitSound to frame data
     if (config && config.onHitSound) {
@@ -349,9 +353,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     }
   }
 
-  public applyHit(hit: Hit): void {
+  public applyHitToSelf(hit: Hit, hitBy: StageObject): void {
+    super.applyHitToSelf(hit, hitBy);
     console.log(hit);
-    super.applyHit(hit);
+    this.lastHitBy = hitBy;
     this.goToNextState(CommonState.HIT, { hit }, true);
     this.stateManager.update();
   }
@@ -361,18 +366,22 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       this.velocity.y += this.gravity * delta;
     }
     this.position = this.position.add(this.velocity.add(this.knockbackVelocity).scale(delta * Unit.toPx));
+    const pushbox = this.pushbox;
 
     // TODO handle this in a separate function?
-    if (this.position.x < PS.stage.left) {
-      if (this.hitstun) {
-        this.target.position.x -= this.position.x - PS.stage.left;
+    if (pushbox.left < PS.stage.left) {
+      const positionCorrection = PS.stage.left - pushbox.left;
+      if (this.hitstun && this.lastHitBy && this.lastHitBy.pushable) {
+        this.lastHitBy.position.x -= positionCorrection;
+      } else {
+        this.position.x -= positionCorrection;
       }
-      this.position.x = PS.stage.left;
-    } else if (this.position.x > PS.stage.right) {
-      if (this.hitstun) {
-        this.target.position.x -= this.position.x - PS.stage.right;
+    } else if (pushbox.right > PS.stage.right) {
+      const positionCorrection = pushbox.right - PS.stage.right;
+      if (this.hitstun && this.lastHitBy && this.lastHitBy.pushable) {
+        this.lastHitBy.position.x -= positionCorrection;
       }
-      this.position.x = PS.stage.right;
+      this.position.x -= positionCorrection;
     }
     if (this.velocity.y >= 0) {
       if (this.isLaunched || this.checkStateType(StateType.AIR)) {

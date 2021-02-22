@@ -624,8 +624,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     this.shadow.setTarget(so);
   }
 
-  public onTargetHit(target: StageObject, hit: Hit): void {
-    super.onTargetHit(target, hit);
+  public applyHitToTarget(hit: Hit, target: StageObject): void {
+    super.applyHitToTarget(hit, target);
     this.cancelFlag = true;
   }
 

@@ -1,10 +1,9 @@
-import * as _ from 'lodash';
-import { StageObject } from 'src/stage/stageObject';
 import { Hit, Hurtbox, HurtboxData } from 'src/collider';
 import { PolarVector, Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
 import { BaseCharacter } from 'src/characters/index';
 import { ColliderManager } from 'src/collider/manager';
+import { StageObject } from 'src/stage/stageObject';
 
 export class Dummy extends BaseCharacter {
   public position = new Vector2(400, 250);
@@ -48,14 +47,10 @@ export class Dummy extends BaseCharacter {
     }
   }
 
-  public applyHit(hit: Hit): void {
+  public applyHitToSelf(hit: Hit, hitBy: StageObject): void {
     console.log(hit);
-    super.applyHit(hit);
+    super.applyHitToSelf(hit, hitBy);
     this.setHitstun(hit);
-  }
-
-  public onTargetHit(target: StageObject): void {
-    _.noop(target);
   }
 
   private setHitstun(hit: Hit): void {

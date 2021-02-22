@@ -128,6 +128,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     super(aero.playerIndex, frameDefinitionMap);
     this.aero = aero;
     this.onHit = onHit;
+    this._pushable = false;
   }
 
   public create(): void {
@@ -167,8 +168,8 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     this.sprite.setActive(false).setVisible(false);
   }
 
-  public onTargetHit(target: StageObject, hit: Hit): void {
-    super.onTargetHit(target, hit);
+  public applyHitToTarget(hit: Hit, target: StageObject): void {
+    super.applyHitToTarget(hit, target);
     const config = this.states[this.stateManager.current.key];
     if (config && config.onHitSound) {
       PS.stage.playSound(config.onHitSound, {});

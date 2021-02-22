@@ -139,8 +139,7 @@ export class Stage extends Phaser.Scene {
                 const hurtObject = this.getStageObject(hurtboxData.owner);
                 const hitObject = this.getStageObject(hitboxData.owner);
                 const hit = Hitbox.transformHit(hitbox.hit, hitOrientation);
-                hurtObject.applyHit(hit);
-                hitObject.onTargetHit(hurtObject, hit);
+                hitObject.applyHitToTarget(hit, hurtObject);
                 if (hurtbox.isCircular()) {
                   this.contact = { collider: hurtbox.transformBox(hurtOffset, hurtOrientation), owner: hurtObject.tag };
                 } else {
@@ -164,8 +163,8 @@ export class Stage extends Phaser.Scene {
     if (intersection.width > 0) {
       const leftPlayer = this.p1.position.x <= this.p2.position.x ? this.p1 : this.p2;
       const rightPlayer = this.p1.position.x <= this.p2.position.x ? this.p2 : this.p1;
-      let d1 = Math.min(intersection.width / 2, leftPlayer.position.x - this.bounds.left);
-      let d2 = Math.min(intersection.width / 2, this.bounds.right - rightPlayer.position.x);
+      let d1 = Math.min(intersection.width / 2, leftPlayer.pushbox.left - this.bounds.left);
+      let d2 = Math.min(intersection.width / 2, this.bounds.right - rightPlayer.pushbox.right);
       if (d1 < intersection.width /2 ) {
         d2 = intersection.width - d1;
       } else if (d2 < intersection.width) {
