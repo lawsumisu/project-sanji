@@ -5,13 +5,21 @@ import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/componen
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
-import { FrameDataState, getAnchorPosition, getSpriteConfig, getSpriteSource } from 'src/editor/redux/frameData';
+import {
+  frameDataActionCreators,
+  FrameDataState,
+  getAnchorPosition,
+  getSpriteConfig,
+  getSpriteSource
+} from 'src/editor/redux/frameData';
 import 'src/editor/components/frameDefinitionEditor/styles.scss';
 import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
 import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { bindActionCreators, Dispatch } from 'redux';
+import { v4 as uuidv4 } from 'uuid';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -27,6 +35,7 @@ interface State {
   newBoxType: BoxType;
   hitboxes: BoxConfig[];
   hurtboxes: BoxConfig[];
+  pushboxUuid: string;
   pushbox: PushboxConfig | null;
   newBoxOrigin: Vector2 | null;
   mode: BoxMode;
@@ -37,13 +46,26 @@ interface StateMappedProps {
   selected: FrameEditState;
 }
 
+interface DispatchMappedProps {
+  onEditPushbox: typeof frameDataActionCreators.editPushbox;
+}
+
 // TODO add way to modify scale of sprites
-class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State> {
+class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & DispatchMappedProps, State> {
   public static mapStateToProps(state: AppState): StateMappedProps {
     return {
       frameData: state.frameData,
       selected: { ...state.frameEdit }
     };
+  }
+
+  public static mapDispatchToProps(dispatch: Dispatch): DispatchMappedProps {
+    return bindActionCreators(
+      {
+        onEditPushbox: frameDataActionCreators.editPushbox
+      },
+      dispatch
+    );
   }
 
   public static getDerivedStateFromProps(props: StateMappedProps, state: State): State {
@@ -62,6 +84,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
         newBoxType: state.newBoxType,
         hitboxes: hit ? hit.boxes.map(box => ({ ...box })) : [],
         hurtboxes: hurt ? hurt.boxes.map(box => ({ ...box })) : [],
+        pushboxUuid: pushbox ? frameData.normalizedDefinitionMap.frameDef[key].pushboxDef[index] : '',
         pushbox: pushbox ? pushbox.box : null,
         mode: state.mode,
         newBoxOrigin: null
@@ -75,6 +98,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     newBoxType: BoxType.HURT,
     hitboxes: [],
     hurtboxes: [],
+    pushboxUuid: '',
     pushbox: { x: 0, y: 0, width: 0, height: 0 },
     mode: BoxMode.CIRCLE,
     newBoxOrigin: null
@@ -147,9 +171,11 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
           break;
         case BoxType.PUSH:
           this.setState({
+            pushboxUuid: uuidv4(),
             pushbox: { x: ox, y: oy, width: 0, height: 0 },
             newBoxOrigin
           });
+          // TODO add new pushbox to redux
           break;
       }
     }
@@ -203,6 +229,20 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     };
   }
 
+  private onPushboxChange = (pushbox: PushboxConfig) => {
+    if (this.state.pushbox) {
+      this.setState({
+        pushbox
+      });
+    }
+  };
+
+  private onPushboxFinishEdit = () => {
+    if (this.state.pushbox) {
+      this.props.onEditPushbox({ uuid: this.state.pushboxUuid, pushbox: this.state.pushbox });
+    }
+  };
+
   private getOnDeleteFn(type: BoxType, index = 0) {
     return () => {
       if (type === BoxType.HURT) {
@@ -255,12 +295,17 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
               origin={origin}
               config={this.state.pushbox}
               scale={this.scale}
-              onChange={pushbox => this.setState({ pushbox })}
+              onChange={this.onPushboxChange}
               onDelete={this.getOnDeleteFn(BoxType.PUSH)}
               initialDragOrigin={(this.state.newBoxType === BoxType.PUSH && this.state.newBoxOrigin) || undefined}
+              onFinishEdit={this.onPushboxFinishEdit}
             />
           )}
-          <FontAwesomeIcon style={{ left: origin.x * this.scale, top: origin.y * this.scale }}className="origin" icon="crosshairs"/>
+          <FontAwesomeIcon
+            style={{ left: origin.x * this.scale, top: origin.y * this.scale }}
+            className="origin"
+            icon="crosshairs"
+          />
         </div>
       );
     } else {
@@ -271,5 +316,5 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
 
 export const ReduxConnectedFrameDefinitionEditor = connect(
   FrameDefinitionEditor.mapStateToProps,
-  null
+  FrameDefinitionEditor.mapDispatchToProps
 )(FrameDefinitionEditor) as React.ComponentType<{}>;

@@ -1,9 +1,15 @@
 import { FrameConfigTP, TextureDataTP } from 'src/assets';
-import { FrameDefinitionMap, getSpriteIndexFromDefinition } from 'src/characters/frameData';
+import {
+  BoxDefinition,
+  FrameDefinitionMap,
+  getSpriteIndexFromDefinition, PushboxConfig,
+  PushboxDefinition
+} from 'src/characters/frameData';
 import actionCreatorFactory, { isType } from 'typescript-fsa';
 import { Action } from 'redux';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import * as _ from 'lodash';
+import { normalizeDefinitionMap } from 'src/editor/redux/utilities';
 
 interface TextureDataMap {
   [key: string]: FrameConfigTP;
@@ -48,12 +54,38 @@ export function getAnchorPosition(config: FrameConfigTP): Vector2 {
   return new Vector2(Math.floor(config.anchor.x * w - x), Math.floor(config.anchor.y * h - y));
 }
 
+export interface NormalizedFrameDefinitionMap {
+  hurtboxes: {
+    [key: string]: Pick<BoxDefinition, 'boxes'>
+  },
+  hitboxes: {
+    [key: string]: Pick<BoxDefinition, 'boxes'>
+  },
+  pushboxes: {
+    [key: string]: Pick<PushboxDefinition, 'box'>
+  }
+  frameDef: {
+    [key: string]: {
+      hitboxDef: {
+        [key: string]: string;
+      }
+      hurtboxDef: {
+        [key: string]: string;
+      }
+      pushboxDef: {
+        [key: string]: string;
+      }
+    }
+  }
+}
+
 interface SpriteSheetInfo {
   source: string;
   texture: TextureDataMap;
 }
 
 export interface FrameDataState {
+  normalizedDefinitionMap: NormalizedFrameDefinitionMap,
   definitionMap: FrameDefinitionMap['frameDef'];
   spriteSheets: {[key: string]: SpriteSheetInfo}
   selection: { key: string; frame: number } | null;
@@ -61,6 +93,7 @@ export interface FrameDataState {
 
 const initialState: FrameDataState = {
   definitionMap: {},
+  normalizedDefinitionMap: { pushboxes: {}, hitboxes: {}, hurtboxes: {}, frameDef: {}},
   spriteSheets: {},
   selection: null
 };
@@ -69,8 +102,9 @@ const ACF = actionCreatorFactory('frameData');
 
 export const frameDataActionCreators = {
   select: ACF<{ key: string; frame: number }>('SELECT'),
-  loadDefinition: ACF<FrameDefinitionMap['frameDef']>('LOAD'),
+  loadDefinition: ACF<FrameDefinitionMap['frameDef']>('LOAD_DEFINITION'),
   loadSpriteSheet: ACF<{ key: string, source: string, textureData: TextureDataTP }>('LOAD_SPRITE_SHEET'),
+  editPushbox: ACF<{uuid: string, pushbox: Partial<PushboxConfig>}>('EDIT_PUSHBOX'),
 };
 
 export function frameDataReducer(state: FrameDataState = initialState, action: Action): FrameDataState {
@@ -82,7 +116,8 @@ export function frameDataReducer(state: FrameDataState = initialState, action: A
   } else if (isType(action, frameDataActionCreators.loadDefinition)) {
     return {
       ...state,
-      definitionMap: action.payload
+      definitionMap: action.payload,
+      normalizedDefinitionMap: normalizeDefinitionMap(action.payload)
     }
   } else if (isType(action, frameDataActionCreators.loadSpriteSheet)) {
     const { key, source, textureData } = action.payload;
@@ -94,6 +129,25 @@ export function frameDataReducer(state: FrameDataState = initialState, action: A
           source,
           texture: processTextureData(textureData)
         },
+      }
+    }
+  } else if(isType(action, frameDataActionCreators.editPushbox)) {
+    const { uuid, pushbox } = action.payload;
+    // TODO move up one level in redux tree
+    return {
+      ...state,
+      normalizedDefinitionMap: {
+        ...state.normalizedDefinitionMap,
+        pushboxes: {
+          ...state.normalizedDefinitionMap.pushboxes,
+          [uuid]: {
+            ...state.normalizedDefinitionMap.pushboxes[uuid],
+            box: {
+              ...state.normalizedDefinitionMap.pushboxes[uuid].box,
+              ...pushbox
+            },
+          }
+        }
       }
     }
   }

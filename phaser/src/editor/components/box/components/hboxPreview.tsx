@@ -24,6 +24,7 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
     editable: true,
     onChange: _.noop,
     onDelete: _.noop,
+    onFinishEdit: _.noop,
   };
 
   public state: HboxPreviewState = {

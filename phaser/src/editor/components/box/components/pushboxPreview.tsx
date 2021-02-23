@@ -17,6 +17,7 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
   public static defaultProps = {
     onChange: _.noop,
     onDelete: _.noop,
+    onFinishEdit: _.noop,
     scale: 1,
     persistent: false,
     editable: true
@@ -120,6 +121,7 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
     this.setState({
       ...PushboxPreview.defaultState
     });
+    this.props.onFinishEdit();
   };
 
   private onWindowKeyDown = (e: KeyboardEvent): void => {

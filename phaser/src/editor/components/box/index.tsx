@@ -13,6 +13,7 @@ export interface BoxPreviewProps<T> {
   initialDragOrigin?: Vector2;
   onChange: (config: T) => void;
   onDelete: () => void;
+  onFinishEdit: () => void;
 }
 
 export interface BoxPreviewState<T> {
