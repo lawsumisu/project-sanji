@@ -30,7 +30,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
   private readonly aero: Aero;
   private range = 20 * Unit.toPx;
   private speed = 4 * Unit.toPx;
-  private readonly onHit: () => void;
+  // private readonly onHit: () => void;
   private cancelLock = 0;
 
   protected defaultState = AeroShadowState.STAND;
@@ -124,10 +124,10 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
       }
     }
   };
-  constructor(aero: Aero, frameDefinitionMap: FrameDefinitionMap, onHit: () => void = _.noop) {
+  constructor(aero: Aero, frameDefinitionMap: FrameDefinitionMap) {
     super(aero.playerIndex, frameDefinitionMap);
     this.aero = aero;
-    this.onHit = onHit;
+    // this.onHit = onHit;
     this._pushable = false;
   }
 
@@ -176,7 +176,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     } else if ((hit.sfx && this.audioKeys.includes(hit.sfx as AudioKey))) {
       PS.stage.playSound(hit.sfx as AudioKey, {});
     }
-    this.onHit();
+    // this.onHit();
   }
 
   public update(params: UpdateParams): void {

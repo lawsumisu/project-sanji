@@ -226,7 +226,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
         if (this.hitstun > 0) {
           const s = Math.sign(Math.cos(hitVelocity.angle));
           this.knockbackVelocity.x =
-            Math.max(0, hit.pushback.base + this.comboDamage * 0.2 - hit.pushback.decay * tick) * s;
+            Math.max(0, hit.pushback.base + this.comboDamage * 0.1 - hit.pushback.decay * tick) * s;
         } else {
           this.knockbackVelocity = Vector2.ZERO;
           this.lastHitBy = null;

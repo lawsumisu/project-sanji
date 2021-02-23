@@ -9,6 +9,7 @@ import { AeroShadow, AeroShadowState } from 'src/characters/aero/shadow';
 import { AudioKey } from 'src/assets/audio';
 import { Unit } from 'src/unit';
 
+// TODO modify aero to buffer cancels into shadow
 enum AeroStateType {
   RIGHT_ARM = 'RIGHT_ARM',
   LEFT_ARM = 'LEFT_ARM',
@@ -49,6 +50,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   protected audioKeys: AudioKey[] = ['hitLight', 'hitMed', 'hitHeavy', 'punch1', 'punch2', 'jabVoice'];
 
   private cancelFlag = false;
+  private freeChainFlag = false;
   private shadow: AeroShadow;
   private preRollState: CharacterState<AeroState> = CommonState.NULL;
 
@@ -219,12 +221,18 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
               this.shadow.enable({ state: stateParams.shadowState });
               delete stateParams.shadowState;
             }
-          } else {
+          } else if (this.currentAnimation === 'ROLL_RECOVERY') {
             // Exiting roll
             this.stateManager.setState(CommonState.STAND);
             this.preRollState = CommonState.NULL;
+          } else {
+            this.playAnimation('ROLL_RECOVERY');
           }
         }
+        const rollCondition = (['ROLL_1', 'ROLL_2'].includes(this.currentAnimation) &&
+          [3, 4, 5].includes(this.sprite.anims.currentFrame.index)) ||
+          this.currentAnimation === 'ROLL_RECOVERY';
+        this.freeChainFlag = rollCondition && this.shadow.canCancel(4) && this.nextStates.length === 0;
       },
       checkInputs: () => {
         const { params: stateParams } = this.stateManager.current;
@@ -345,7 +353,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
       startAnimation: 'SP_TEMPEST_DASH',
       type: [StateType.STAND, StateType.ATTACK],
       cancelPotential: 4,
-      update: (tick: number, params: { lastAnimation?: string, shadowState?: AeroShadowState }) => {
+      update: (tick: number, params: { lastAnimation?: string; shadowState?: AeroShadowState }) => {
         if (tick === 0) {
           this.setOrientedVelocity({ x: 35 });
         }
@@ -393,9 +401,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
 
   constructor(playerIndex = 0) {
     super(playerIndex, aero);
-    this.shadow = new AeroShadow(this, aero, () => {
-      this.cancelFlag = !this.isCurrentState(AeroState.SP_TEMPEST);
-    });
+    this.shadow = new AeroShadow(this, aero);
   }
 
   protected getCommandList(): Array<CommandTrigger<CharacterState<AeroState>>> {
@@ -411,7 +417,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         command: new Command('a', 1),
         trigger: () => {
           if (this.canBeatCancel()) {
-            return true;
+            return () => this.currentAnimation === 'ROLL_RECOVERY';
           } else if (this.canChainFrom(AeroState.STAND_LIGHT_R_1) || this.canChainFrom(AeroState.STAND_LIGHT_R_2, 5)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
           } else {
@@ -436,7 +442,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         command: new Command('*6+a', 1),
         trigger: () => {
           if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState!)) {
-            return true;
+            return () => this.currentAnimation === 'ROLL_RECOVERY';
           } else if (this.canChainFrom(AeroState.STAND_LIGHT_R_1) || this.canChainFrom(AeroState.STAND_LIGHT_R_2)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
           } else {
@@ -457,7 +463,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         command: new Command('b', 1),
         trigger: () => {
           if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState)) {
-            return true;
+            return () => this.currentAnimation === 'ROLL_RECOVERY';
           } else if (this.canChainFrom(AeroState.STAND_MED_R_2)) {
             return () => this.sprite.anims.currentFrame.index >= 4;
           } else if (this.canChainFrom(AeroState.STAND_MED_R_1)) {
@@ -485,7 +491,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         command: new Command('*6+b', 1),
         trigger: () => {
           if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState)) {
-            return true;
+            return () => this.currentAnimation === 'ROLL_RECOVERY';
           } else if (this.canChainFrom(AeroState.STAND_MED_R_2) || this.canChainFrom(AeroState.STAND_MED_R_1)) {
             return () => {
               const i = this.stateManager.current.key === AeroState.STAND_MED_R_1 ? 4 : 5;
@@ -509,7 +515,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
         command: new Command('c', 1),
         trigger: () => {
           if (this.canBeatCancel() && this.checkStateType([AeroStateType.RIGHT_ARM], this.preRollState)) {
-            return true;
+            return () => this.currentAnimation === 'ROLL_RECOVERY';
           } else if (this.canChainFrom(AeroState.STAND_HEAVY_R)) {
             return () => this.sprite.anims.currentFrame.index >= 6;
           } else {
@@ -641,6 +647,11 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     ) {
       this.shadow.enable({ state: AeroShadowState.STAND_DUNK });
     }
+    if (this.freeChainFlag) {
+      this.sprite.tint = 0x0000ff;
+    } else {
+      this.sprite.tint = 0xffffff;
+    }
   }
 
   protected checkInputs(): void {
@@ -662,7 +673,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   }
 
   private canBeatCancel(): boolean {
-    return this.cancelFlag && this.isCurrentState(AeroState.ROLL);
+    return this.freeChainFlag && this.isCurrentState(AeroState.ROLL) && this.nextStates.length === 0;
   }
 
   private setupShadow(): void {
@@ -680,6 +691,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
   protected beforeStateTransition(nextKey: CharacterState<AeroState>): void {
     super.beforeStateTransition(nextKey);
     this.cancelFlag = false;
+    this.freeChainFlag = false;
     if (nextKey === AeroState.ROLL && this.checkStateType(StateType.ATTACK)) {
       this.preRollState = this.stateManager.current.key;
     }
