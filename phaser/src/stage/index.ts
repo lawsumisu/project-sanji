@@ -2,13 +2,15 @@ import * as Phaser from 'phaser';
 import * as _ from 'lodash';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
-import { Collider, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
+import { Collider, Hitbox, HitboxData, Hurtbox, HurtboxData } from 'src/collider';
 import { PS } from 'src/global';
 import { BaseCharacter } from 'src/characters';
 import { StageObject } from 'src/stage/stageObject';
-import { Dummy } from 'src/characters/dummy';
 import Aero from 'src/characters/aero/aero.character';
 import { Vector2 } from '@lawsumisu/common-utilities';
+import Jack from 'src/characters/jack/jack.character';
+import { KeyboardPluginPS } from 'src/plugins/keyboard.plugin';
+import { AudioKey, SoundLibrary } from 'src/assets/audio';
 
 export class Stage extends Phaser.Scene {
   protected hitData: { [tag: string]: HitboxData } = {};
@@ -20,10 +22,16 @@ export class Stage extends Phaser.Scene {
 
   public ground = 0;
 
+  private contact: { collider: Phaser.Geom.Circle; owner: string } | null = null;
+  private debugSettings = {
+    colliders: false,
+    enableSounds: true
+  };
+
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
-    this.p1 = new Aero();
-    this.p2 = new Dummy();
+    this.p1 = new Aero(0);
+    this.p2 = new Jack(1);
     this.addStageObject(this.p1);
     this.addStageObject(this.p2);
     PS.stage = this;
@@ -49,8 +57,10 @@ export class Stage extends Phaser.Scene {
   public update(time: number, delta: number): void {
     this.stageObjects.forEach((so: StageObject) => so.update({ time, delta: delta / 1000 }));
     this.updateBounds();
+    this.updateCollisions();
     this.updateHits();
     this.updateCamera();
+    this.updateDebugSettings();
     this.draw();
   }
 
@@ -64,7 +74,7 @@ export class Stage extends Phaser.Scene {
     this.p1.setTarget(this.p2);
     this.p2.setTarget(this.p1);
     this.p1.position.x = 200;
-    this.p2.position = new Vector2(400, this.ground - 25);
+    this.p2.position = new Vector2(400, this.ground);
   }
 
   private updateBounds(): void {
@@ -100,32 +110,40 @@ export class Stage extends Phaser.Scene {
     camera.scrollY = p.y - camera.height / 2 + offset.y;
   }
 
+  private updateDebugSettings(): void {
+    const keycodes = Phaser.Input.Keyboard.KeyCodes;
+    if (this.keyboard.isKeyPressed(keycodes.ONE)) {
+      this.debugSettings.colliders = !this.debugSettings.colliders;
+    }
+    if (this.keyboard.isKeyPressed(keycodes.TWO)) {
+      this.debugSettings.enableSounds = !this.debugSettings.enableSounds;
+      console.log(`Sound ${this.debugSettings.enableSounds ? 'enabled' : 'disabled'}`);
+    }
+  }
+
   private updateHits(): void {
     _.forEach(this.hitData, (hitboxData: HitboxData) => {
       _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
         if (!hitboxData.hasCollided(hurtboxData) && !hitboxData.canIgnoreCollision(hurtboxData.owner)) {
-          const hitOffset = this.getStageObject(hitboxData.owner).position;
-          const hurtOffset = this.getStageObject(hurtboxData.owner).position;
+          const { position: hitOffset, orientation: hitOrientation } = this.getStageObject(hitboxData.owner);
+          const { position: hurtOffset, orientation: hurtOrientation } = this.getStageObject(hurtboxData.owner);
           for (let hitbox of hitboxData.data) {
             for (const hurtbox of hurtboxData.data) {
-              if (Collider.checkCollision(hitbox, hurtbox, { offset1: hitOffset, offset2: hurtOffset })) {
+              if (
+                Collider.checkCollision(hitbox, hurtbox, {
+                  c1: { offset: hitOffset, orientation: hitOrientation },
+                  c2: { offset: hurtOffset, orientation: hurtOrientation }
+                })
+              ) {
                 hitboxData.registerCollision(hurtboxData);
-                // TODO handle hits
                 const hurtObject = this.getStageObject(hurtboxData.owner);
                 const hitObject = this.getStageObject(hitboxData.owner);
-                hurtObject.applyHit(hitbox.hit);
-                hitObject.onTargetHit(hurtObject, hitbox.hit);
+                const hit = Hitbox.transformHit(hitbox.hit, hitOrientation);
+                hitObject.applyHitToTarget(hit, hurtObject);
                 if (hurtbox.isCircular()) {
-                  const { x, y, radius: r } = hurtbox.transformBox(hurtOffset);
-                  this.debugDraw.circle(
-                    { x, y, r },
-                    {
-                      fill: {
-                        color: 0xffff00,
-                        alpha: 0.6
-                      }
-                    }
-                  );
+                  this.contact = { collider: hurtbox.transformBox(hurtOffset, hurtOrientation), owner: hurtObject.tag };
+                } else {
+                  this.contact = null;
                 }
                 break;
               }
@@ -137,6 +155,24 @@ export class Stage extends Phaser.Scene {
         }
       });
     });
+  }
+
+  public updateCollisions(): void {
+    // TODO theoretically anything could have a push box, so modify this function to not just expect pushboxes of p1 and p2.
+    const intersection = Phaser.Geom.Intersects.GetRectangleIntersection(this.p1.pushbox, this.p2.pushbox);
+    if (intersection.width > 0) {
+      const leftPlayer = this.p1.position.x <= this.p2.position.x ? this.p1 : this.p2;
+      const rightPlayer = this.p1.position.x <= this.p2.position.x ? this.p2 : this.p1;
+      let d1 = Math.min(intersection.width / 2, leftPlayer.pushbox.left - this.bounds.left);
+      let d2 = Math.min(intersection.width / 2, this.bounds.right - rightPlayer.pushbox.right);
+      if (d1 < intersection.width /2 ) {
+        d2 = intersection.width - d1;
+      } else if (d2 < intersection.width) {
+        d1 = intersection.width - d2;
+      }
+      leftPlayer.position.x -= d1;
+      rightPlayer.position.x += d2;
+    }
   }
 
   public addHitboxData(hit: HitboxData): void {
@@ -153,13 +189,15 @@ export class Stage extends Phaser.Scene {
 
   public addHurtboxData(hurt: HurtboxData): void {
     if (!hurt.isEmpty) {
-      this.hurtData[hurt.tag] = hurt;
+      const key = [hurt.tag, hurt.owner].join('-');
+      this.hurtData[key] = hurt;
     }
   }
 
-  public removeHurtboxData(tag: string): void {
-    if (_.has(this.hurtData, tag)) {
-      delete this.hurtData[tag];
+  public removeHurtboxData(tag: string, owner: string): void {
+    const key = [tag, owner].join('-');
+    if (_.has(this.hurtData, key)) {
+      delete this.hurtData[key];
     }
   }
 
@@ -171,6 +209,10 @@ export class Stage extends Phaser.Scene {
     return (<any>this.sys).GI;
   }
 
+  public get keyboard(): KeyboardPluginPS {
+    return (<any>this.sys).keyboard;
+  }
+
   public get left(): number {
     return this.bounds.left;
   }
@@ -180,6 +222,9 @@ export class Stage extends Phaser.Scene {
   }
 
   private draw(): void {
+    if (!this.debugSettings.colliders) {
+      return;
+    }
     const hitboxOptions = {
       fill: {
         color: 0xff0000,
@@ -193,35 +238,59 @@ export class Stage extends Phaser.Scene {
       }
     };
     _.forEach(this.hitData, (hitboxData: HitboxData) => {
-      const p = this.getStageObject(hitboxData.owner).position;
+      const { position, orientation } = this.getStageObject(hitboxData.owner);
       hitboxData.data.forEach((hitbox: Collider) => {
         if (hitbox.isCircular()) {
-          const { x, y, radius: r } = hitbox.transformBox(p);
+          const { x, y, radius: r } = hitbox.transformBox(position, orientation);
           this.debugDraw.circle({ x, y, r }, hitboxOptions);
         } else if (hitbox.isCapsular()) {
-          this.debugDraw.capsule(hitbox.transformBox(p), hitboxOptions);
+          this.debugDraw.capsule(hitbox.transformBox(position, orientation), hitboxOptions);
         }
       });
     });
 
     _.forEach(this.hurtData, (hurtboxData: HurtboxData) => {
-      const p = this.getStageObject(hurtboxData.owner).position;
-      if (hurtboxData.owner === this.p2.tag) {
+      const { position, orientation } = this.getStageObject(hurtboxData.owner);
+      if (hurtboxData.owner !== this.p1.tag) {
         hurtboxData.data.forEach((hurtbox: Hurtbox) => {
           if (hurtbox.isCircular()) {
-            const { x, y, radius: r } = hurtbox.transformBox(p);
+            const { x, y, radius: r } = hurtbox.transformBox(position, orientation);
             this.debugDraw.circle({ x, y, r }, hurtboxOptions);
           } else if (hurtbox.isCapsular()) {
-            this.debugDraw.capsule(hurtbox.transformBox(p), hurtboxOptions);
+            this.debugDraw.capsule(hurtbox.transformBox(position, orientation), hurtboxOptions);
           }
         });
       }
     });
 
+    if (this.contact && this.getStageObject(this.contact.owner).hasFreezeFrames) {
+      const { x, y, radius: r } = this.contact.collider;
+      this.debugDraw.circle(
+        { x, y, r },
+        {
+          fill: {
+            color: 0xffff00,
+            alpha: 0.6
+          }
+        }
+      );
+    }
+
     this.debugDraw.rect(this.bounds, { lineColor: 0xffff00 });
+    [this.p1.pushbox, this.p2.pushbox].forEach(pushbox => this.debugDraw.rect(pushbox, { lineColor: 0xff00ff }));
   }
 
   private getStageObject(owner: string): StageObject {
     return this.stageObjects.find((so: StageObject) => so.tag === owner)!;
+  }
+
+  public get settings() {
+    return { ...this.debugSettings };
+  }
+
+  public playSound(key: AudioKey, extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker): void {
+    if (this.settings.enableSounds) {
+      this.sound.play(key, { volume: SoundLibrary.defaultVolume, ...extra });
+    }
   }
 }

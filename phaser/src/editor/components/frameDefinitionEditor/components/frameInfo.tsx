@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { BoxConfig } from 'src/characters';
 import cx from 'classnames';
+import { BoxConfig, PushboxConfig } from 'src/characters/frameData';
 
 interface Props {
   hurtboxes: BoxConfig[];
   hitboxes: BoxConfig[];
+  pushbox: PushboxConfig | null;
 }
 
 function stringify(o: any): string {
@@ -26,6 +27,12 @@ export class FrameInfo extends React.PureComponent<Props> {
           <div className={cx('frame-info--boxes', 'mod--hit')}>
             <div className="boxes--header">Hitboxes</div>
             <div className="boxes--info">{stringify(this.props.hitboxes)}</div>
+          </div>
+        )}
+        {this.props.pushbox && (
+          <div className={cx('frame-info--boxes', 'mod--push')}>
+            <div className="boxes--header">Pushbox</div>
+            <div className="boxes--info">{stringify(this.props.pushbox)}</div>
           </div>
         )}
       </div>

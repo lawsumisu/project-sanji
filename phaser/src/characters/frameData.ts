@@ -16,6 +16,13 @@ export interface CapsuleBoxConfig {
   r: number;
 }
 
+export interface PushboxConfig {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export function isCircleBox(box: BoxConfig): box is CircleBoxConfig {
   return _.has(box, 'x');
 }
@@ -27,6 +34,7 @@ export interface AnimationFrameConfig {
   endIndex?: number;
   loop?: number;
   prefix?: string;
+  sfx?: string;
 }
 
 export interface AnimationDefinition {
@@ -39,7 +47,8 @@ export interface AnimationDefinition {
 
 export enum BoxType {
   HIT = 'HIT',
-  HURT = 'HURT'
+  HURT = 'HURT',
+  PUSH = 'PUSH',
 }
 
 export interface BoxDefinition {
@@ -48,8 +57,29 @@ export interface BoxDefinition {
   persistThroughFrame?: number;
 }
 
+export const defaultHit: Hit = {
+  damage: 0,
+  angle: 0,
+  knockback: 0,
+  velocity: {
+    ground: { magnitude: 0, angle: 0},
+  },
+  type: [],
+  hitstop: [0, 0],
+  hitstun: 0,
+  pushback: {
+    base: 0,
+    decay: 0,
+  }
+};
+
 export interface HitboxDefinition extends BoxDefinition {
-  hit?: Hit;
+  hit?: Partial<Hit>;
+}
+
+export interface PushboxDefinition {
+  box: PushboxConfig;
+  persistThroughFrame?: number;
 }
 
 export interface FrameDefinition {
@@ -58,22 +88,31 @@ export interface FrameDefinition {
     [key: number]: BoxDefinition;
   }
   hitboxDef?: {
-    hit: Hit;
+    hit: Partial<Hit>;
     [key: number]: HitboxDefinition;
   };
+  pushboxDef?: {
+    [key: number]: PushboxDefinition;
+  }
 }
 
-export type FrameDefinitionMap<T extends string = string> = {
-  [key in T]: FrameDefinition;
+export type FrameDefinitionMap = {
+  name: string;
+  tempPushbox: {x: number, y: number, width: number, height: number};
+  frameDef: {
+    [key: string]: FrameDefinition;
+  }
 };
 
 export function addAnimationsByDefinition(sprite: Phaser.GameObjects.Sprite, definitionMap: FrameDefinitionMap): void {
-  _.forEach(definitionMap, (definition, key: string) => {
+  const { name, frameDef } = definitionMap;
+  _.forEach(frameDef, (definition, key: string) => {
     const { frames, prefix, frameRate, repeat = 0, assetKey } = definition.animDef;
+    const animKey = [name, key].join('-');
     if (_.isNumber(frames)) {
-      addAnimation(sprite, key, assetKey, frames, prefix, frameRate, repeat);
+      addAnimation(sprite, animKey, assetKey, frames, prefix, frameRate, repeat);
     } else {
-      addAnimationByFrames(sprite, key, assetKey, frames, prefix, frameRate, repeat);
+      addAnimationByFrames(sprite, animKey, assetKey, frames, prefix, frameRate, repeat);
     }
   });
 }

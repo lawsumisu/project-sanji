@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as _ from 'lodash';
-import { BoxConfig, BoxType, CapsuleBoxConfig, isCircleBox } from 'src/characters/frameData';
-import { Box, SpriteRenderer } from 'src/editor/components';
+import { BoxConfig, BoxDefinition, BoxType, PushboxConfig, PushboxDefinition } from 'src/characters/frameData';
+import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/components';
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
@@ -9,11 +9,9 @@ import { FrameDataState, getAnchorPosition, getSpriteConfig, getSpriteSource } f
 import 'src/editor/components/frameDefinitionEditor/styles.scss';
 import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
-import EditableCapsuleBox, {
-  SelectionType
-} from 'src/editor/components/frameDefinitionEditor/components/capsule.component';
 import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
 import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -29,8 +27,8 @@ interface State {
   newBoxType: BoxType;
   hitboxes: BoxConfig[];
   hurtboxes: BoxConfig[];
-  selectedBox: { offset: Vector2; index: number; selectionType: SelectionType; boxType: BoxType } | null;
-  incompleteCapsule: { x: number; y: number } | null;
+  pushbox: PushboxConfig | null;
+  newBoxOrigin: Vector2 | null;
   mode: BoxMode;
 }
 
@@ -39,6 +37,7 @@ interface StateMappedProps {
   selected: FrameEditState;
 }
 
+// TODO add way to modify scale of sprites
 class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State> {
   public static mapStateToProps(state: AppState): StateMappedProps {
     return {
@@ -49,21 +48,23 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
 
   public static getDerivedStateFromProps(props: StateMappedProps, state: State): State {
     if (props.selected.frame && !_.isEqual(props.selected.frame, state.selectedFrame)) {
-      const hit = getBoxDefinition(props.frameData, props.selected.frame.key, props.selected.frame.index, BoxType.HIT);
-      const hurt = getBoxDefinition(
-        props.frameData,
-        props.selected.frame.key,
-        props.selected.frame.index,
-        BoxType.HURT
-      );
+      const {
+        frameData,
+        selected: {
+          frame: { key, index }
+        }
+      } = props;
+      const hit = getBoxDefinition(frameData, key, index, BoxType.HIT) as BoxDefinition | null;
+      const hurt = getBoxDefinition(frameData, key, index, BoxType.HURT) as BoxDefinition | null;
+      const pushbox = getBoxDefinition(frameData, key, index, BoxType.PUSH) as PushboxDefinition | null;
       return {
         selectedFrame: props.selected.frame,
         newBoxType: state.newBoxType,
         hitboxes: hit ? hit.boxes.map(box => ({ ...box })) : [],
         hurtboxes: hurt ? hurt.boxes.map(box => ({ ...box })) : [],
-        selectedBox: null,
+        pushbox: pushbox ? pushbox.box : null,
         mode: state.mode,
-        incompleteCapsule: null
+        newBoxOrigin: null
       };
     }
     return state;
@@ -74,9 +75,9 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     newBoxType: BoxType.HURT,
     hitboxes: [],
     hurtboxes: [],
-    selectedBox: null,
+    pushbox: { x: 0, y: 0, width: 0, height: 0 },
     mode: BoxMode.CIRCLE,
-    incompleteCapsule: null
+    newBoxOrigin: null
   };
 
   private scale = 5;
@@ -86,14 +87,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
   public render(): React.ReactNode {
     return (
       <div className="cn--frame-editor">
-        <div
-          className="cn--frame"
-          onMouseMove={this.onMouseMove}
-          onKeyDown={this.onKeyDown}
-          tabIndex={0}
-          onMouseUp={this.onMouseUp}
-          onMouseDown={this.onMouseDown}
-        >
+        <div className="cn--frame" tabIndex={0} onMouseUp={this.onMouseUp} onMouseDown={this.onMouseDown}>
           <this.SelectedFrame />
         </div>
         <div>
@@ -113,22 +107,12 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
                 { onSelect: this.getNewBoxOnSelectFn(BoxType.HIT), name: 'Hitbox' }
               ]}
             />
+            <Tool options={[{ onSelect: this.getNewBoxOnSelectFn(BoxType.PUSH), name: 'Pushbox' }]} />
           </div>
-          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} />
+          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} pushbox={this.state.pushbox} />
         </div>
       </div>
     );
-  }
-
-  private deleteBox(): void {
-    if (this.state.selectedBox) {
-      const { index } = this.state.selectedBox;
-      const key = this.getSelectedBoxKey()!;
-      this.setState({
-        selectedBox: null,
-        [key]: this.state[key].filter((__, i: number) => i !== index)
-      } as any);
-    }
   }
 
   private get origin(): Vector2 {
@@ -137,142 +121,36 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     return config ? getAnchorPosition(config) : Vector2.ZERO;
   }
 
-  private getSelectedBoxKey(): 'hitboxes' | 'hurtboxes' | null {
-    if (this.state.selectedBox) {
-      return this.state.selectedBox.boxType === BoxType.HIT ? 'hitboxes' : 'hurtboxes';
-    } else {
-      return null;
-    }
-  }
-
   private onMouseDown = (e: React.MouseEvent): void => {
-    if (this.ref && _.isNil(this.state.selectedBox)) {
+    if (this.ref) {
       const o = new Vector2(e.clientX, e.clientY)
         .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
         .scale(1 / this.scale)
         .subtract(this.origin);
       const ox = round(o.x);
       const oy = round(o.y);
-      const key = this.state.newBoxType === BoxType.HIT ? 'hitboxes' : 'hurtboxes';
-      if (this.state.mode === BoxMode.CIRCLE) {
-        const box = { x: ox, y: oy, r: 10 };
-        this.setState({
-          selectedBox: {
-            offset: Vector2.ZERO,
-            index: this.state[key].length,
-            selectionType: SelectionType.BOX,
-            boxType: this.state.newBoxType
-          },
-          [key]: [...this.state[key], box]
-        } as any);
-      } else {
-        if (this.state.incompleteCapsule) {
-          const { x, y } = this.state.incompleteCapsule;
-          const box = { x1: x, y1: y, x2: ox, y2: oy, r: 10 };
+      const newBoxOrigin = new Vector2(e.clientX, e.clientY);
+      switch (this.state.newBoxType) {
+        case BoxType.HURT:
+        case BoxType.HIT:
+          let box: BoxConfig;
+          const key = this.state.newBoxType === BoxType.HIT ? 'hitboxes' : 'hurtboxes';
+          if (this.state.mode === BoxMode.CIRCLE) {
+            box = { x: ox, y: oy, r: 10 };
+          } else {
+            box = { x1: ox, y1: oy, x2: ox, y2: oy, r: 10 };
+          }
           this.setState({
-            selectedBox: {
-              offset: Vector2.ZERO,
-              index: this.state[key].length,
-              selectionType: SelectionType.HANDLE_2,
-              boxType: this.state.newBoxType
-            },
             [key]: [...this.state[key], box],
-            incompleteCapsule: null
+            newBoxOrigin
           } as any);
-        } else {
+          break;
+        case BoxType.PUSH:
           this.setState({
-            incompleteCapsule: { x: ox, y: oy }
+            pushbox: { x: ox, y: oy, width: 0, height: 0 },
+            newBoxOrigin
           });
-        }
-      }
-    }
-  };
-
-  private onMouseMove = (e: React.MouseEvent): void => {
-    if (this.ref && this.state.selectedBox) {
-      const { index, offset } = this.state.selectedBox;
-      const o = new Vector2(e.clientX, e.clientY)
-        .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
-        .scale(1 / this.scale)
-        .subtract(offset)
-        .subtract(this.origin);
-      const nx = round(o.x);
-      const ny = round(o.y);
-      const key = this.getSelectedBoxKey()!;
-      if (isCircleBox(this.state[key][index])) {
-        const boxes = [...this.state[key]];
-        boxes[index] = { ...boxes[index], x: nx, y: ny };
-        this.setState({
-          [key]: boxes
-        } as any);
-      } else {
-        this.updateCapsuleBoxPosition(nx, ny);
-      }
-    }
-  };
-
-  private updateCapsuleBoxPosition(nx: number, ny: number): void {
-    if (this.state.selectedBox) {
-      const { index, selectionType = SelectionType.BOX } = this.state.selectedBox;
-      const key = this.getSelectedBoxKey()!;
-      const box = { ...this.state[key][index] } as CapsuleBoxConfig;
-      switch (selectionType) {
-        case SelectionType.HANDLE_1: {
-          box.x1 = nx;
-          box.y1 = ny;
           break;
-        }
-        case SelectionType.HANDLE_2: {
-          box.x2 = nx;
-          box.y2 = ny;
-          break;
-        }
-        case SelectionType.BOX: {
-          const oldX = (box.x1 + box.x2) / 2;
-          const oldY = (box.y1 + box.y2) / 2;
-          box.x1 = round(box.x1 + nx - oldX);
-          box.x2 = round(box.x2 + nx - oldX);
-          box.y1 = round(box.y1 + ny - oldY);
-          box.y2 = round(box.y2 + ny - oldY);
-          break;
-        }
-      }
-      this.updateSelectedBox(box);
-    }
-  }
-
-  public updateSelectedBox(newConfig: BoxConfig) {
-    if (this.state.selectedBox) {
-      const key = this.getSelectedBoxKey()!;
-      const { index } = this.state.selectedBox;
-      const boxes = [...this.state[key]];
-      boxes[index] = newConfig;
-      this.setState({
-        [key]: boxes
-      } as any);
-    }
-  }
-
-  private onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
-    if (this.state.selectedBox) {
-      if (e.key === 'q') {
-        this.deleteBox();
-      }
-      const s = 0.5;
-      let delta = 0;
-      if (e.key === 'w') {
-        delta = s;
-      } else if (e.key === 's') {
-        delta = -s;
-      }
-      if (delta !== 0) {
-        const { index } = this.state.selectedBox;
-        const key = this.getSelectedBoxKey()!;
-        const boxes = [...this.state[key]];
-        boxes[index] = { ...boxes[index], r: boxes[index].r + delta };
-        this.setState({
-          [key]: boxes
-        } as any);
       }
     }
   };
@@ -301,92 +179,88 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps, State>
     this.ref = ref;
   };
 
-  private getBoxOnSelectFn(index: number, type: BoxType): any {
-    return (e: React.MouseEvent, selectionType: SelectionType = SelectionType.BOX) => {
-      const boxes = type === BoxType.HIT ? this.state.hitboxes : this.state.hurtboxes;
-      e.stopPropagation();
-      if (this.ref) {
-        const box = boxes[index];
-        let bx, by;
-        if (isCircleBox(box)) {
-          bx = box.x;
-          by = box.y;
-        } else {
-          switch (selectionType) {
-            case SelectionType.HANDLE_1: {
-              bx = box.x1;
-              by = box.y1;
-              break;
-            }
-            case SelectionType.HANDLE_2: {
-              bx = box.x2;
-              by = box.y2;
-              break;
-            }
-            case SelectionType.BOX: {
-              bx = (box.x1 + box.x2) / 2;
-              by = (box.y1 + box.y2) / 2;
-              break;
-            }
-          }
-        }
-        const origin = this.origin;
-        const x = (e.clientX - this.ref.offsetLeft) / this.scale - bx - origin.x;
-        const y = (e.clientY - this.ref.offsetTop) / this.scale - by - origin.y;
+  private onMouseUp = (): void => {
+    this.setState({
+      newBoxOrigin: null
+    });
+  };
+
+  private getOnHboxChangeFn(type: BoxType, index: number) {
+    return (config: BoxConfig) => {
+      if (type === BoxType.HURT) {
+        const boxes = [...this.state.hurtboxes];
+        boxes[index] = config;
         this.setState({
-          selectedBox: { index, offset: new Vector2(x, y), selectionType, boxType: type }
+          hurtboxes: boxes
+        });
+      } else if (type === BoxType.HIT) {
+        const boxes = [...this.state.hitboxes];
+        boxes[index] = config;
+        this.setState({
+          hitboxes: boxes
         });
       }
     };
   }
 
-  private onMouseUp = (): void => {
-    this.setState({
-      selectedBox: null
-    });
-  };
+  private getOnDeleteFn(type: BoxType, index = 0) {
+    return () => {
+      if (type === BoxType.HURT) {
+        this.setState({
+          hurtboxes: this.state.hurtboxes.filter((__, i: number) => i !== index)
+        });
+      } else if (type === BoxType.HIT) {
+        this.setState({
+          hitboxes: this.state.hitboxes.filter((__, i: number) => i !== index)
+        });
+      } else {
+        this.setState({
+          pushbox: null
+        });
+      }
+    };
+  }
 
   private BoxDisplay = ({ boxes, type, origin }: { boxes: BoxConfig[]; type: BoxType; origin: Vector2 }) => (
     <div>
-      {boxes.map((box: BoxConfig, i: number) =>
-        isCircleBox(box) ? (
-          <Box
-            key={i}
-            config={box}
-            type={type}
-            origin={origin}
-            scale={this.scale}
-            className="editor-box"
-            onMouseDown={this.getBoxOnSelectFn(i, type)}
-          />
-        ) : (
-          <EditableCapsuleBox
-            key={i}
-            config={box}
-            scale={this.scale}
-            type={type}
-            origin={origin}
-            onSelect={this.getBoxOnSelectFn(i, type)}
-          />
-        )
-      )}
-      {this.state.incompleteCapsule && (
-        <Box type={type} config={{ ...this.state.incompleteCapsule, r: 3 }} scale={this.scale} origin={origin} />
-      )}
+      {boxes.map((box: BoxConfig, i: number) => (
+        <HboxPreview
+          key={i}
+          config={box}
+          type={type}
+          origin={origin}
+          scale={this.scale}
+          className="editor-box"
+          onChange={this.getOnHboxChangeFn(type, i)}
+          onDelete={this.getOnDeleteFn(type, i)}
+          initialDragOrigin={this.state.newBoxOrigin || undefined}
+        />
+      ))}
     </div>
   );
 
   private SelectedFrame = () => {
     if (this.state.selectedFrame) {
       const { key, index } = this.state.selectedFrame;
-      const config = getSpriteConfig(this.props.frameData, key, index);
       const source = getSpriteSource(this.props.frameData, key);
+      const config = source && getSpriteConfig(this.props.frameData, key, index);
       const origin = this.origin;
       return (
         <div ref={this.setRef}>
           {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
           {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
           {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
+          {this.state.pushbox && (
+            <PushboxPreview
+              origin={origin}
+              config={this.state.pushbox}
+              scale={this.scale}
+              onChange={pushbox => this.setState({ pushbox })}
+              onDelete={this.getOnDeleteFn(BoxType.PUSH)}
+              initialDragOrigin={(this.state.newBoxType === BoxType.PUSH && this.state.newBoxOrigin) || undefined}
+            />
+          )}
+          <FontAwesomeIcon style={{ left: origin.x * this.scale, top: origin.y * this.scale }}className="origin" icon="crosshairs"/>
         </div>
       );
     } else {

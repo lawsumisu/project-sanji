@@ -1,7 +1,7 @@
 import * as React from 'react';
 import 'src/editor/components/frameRenderer/styles.scss';
-import { BoxConfig, BoxType } from 'src/characters/frameData';
-import { Box, SpriteRenderer } from 'src/editor/components';
+import { BoxConfig, BoxType, PushboxConfig } from 'src/characters/frameData';
+import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
 import { FrameDataState, getAnchorPosition, getSpriteConfig, getSpriteSource } from 'src/editor/redux/frameData';
@@ -20,7 +20,11 @@ export interface SpriteFrameProps {
   hurt: {
     boxes: BoxConfig[];
     persistent?: boolean;
-  }
+  };
+  push?: {
+    box: PushboxConfig;
+    persistent?: boolean;
+  };
 }
 
 interface StateMappedSpriteFrameProps {
@@ -57,20 +61,42 @@ class FrameRenderer extends React.PureComponent<
   }
 
   public render(): React.ReactNode {
-    const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.props.frameIndex);
     const source = getSpriteSource(this.props.frameData, this.props.frameKey);
+    const config = source && getSpriteConfig(this.props.frameData, this.props.frameKey, this.props.frameIndex);
     const origin = config ? getAnchorPosition(config) : Vector2.ZERO;
     return (
       <div className={cx('cn--sprite-frame', this.isSelected && 'mod--selected')} onClick={this.onClick}>
         <div className="cn--sprite">
-          {config && source && <SpriteRenderer config={config} source={source} /> }
+          {config && source && <SpriteRenderer config={config} source={source} />}
           <div className="cn--box-display">
             {this.props.hurt.boxes.map((box: BoxConfig, i: number) => (
-              <Box key={i} config={box} persistent={this.props.hurt.persistent} type={BoxType.HURT} origin={origin} />
+              <HboxPreview
+                key={i}
+                config={box}
+                persistent={this.props.hurt.persistent}
+                type={BoxType.HURT}
+                origin={origin}
+                editable={false}
+              />
             ))}
             {this.props.hit.boxes.map((box: BoxConfig, i: number) => (
-              <Box key={i} config={box} persistent={this.props.hit.persistent} type={BoxType.HIT} origin={origin} />
+              <HboxPreview
+                key={i}
+                config={box}
+                persistent={this.props.hit.persistent}
+                type={BoxType.HIT}
+                origin={origin}
+                editable={false}
+              />
             ))}
+            {this.props.push && (
+              <PushboxPreview
+                origin={origin}
+                config={this.props.push.box}
+                persistent={this.props.push.persistent}
+                editable={false}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -83,8 +109,11 @@ class FrameRenderer extends React.PureComponent<
 
   private get isSelected(): boolean {
     const { frameIndex, frameKey, selectedFrame } = this.props;
-    return selectedFrame ? (selectedFrame.index === frameIndex && selectedFrame.key === frameKey) : false;
+    return selectedFrame ? selectedFrame.index === frameIndex && selectedFrame.key === frameKey : false;
   }
 }
 
-export const ReduxConnectedFrameRenderer = connect(FrameRenderer.mapStateToProps, FrameRenderer.mapDispatchToProps)(FrameRenderer);
+export const ReduxConnectedFrameRenderer = connect(
+  FrameRenderer.mapStateToProps,
+  FrameRenderer.mapDispatchToProps
+)(FrameRenderer);

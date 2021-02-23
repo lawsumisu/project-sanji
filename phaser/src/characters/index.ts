@@ -5,13 +5,14 @@ import * as _ from 'lodash';
 import { addAnimationsByDefinition, FrameDefinitionMap, getFrameIndexFromSpriteIndex } from 'src/characters/frameData';
 import { Command } from 'src/command/';
 import { PS } from 'src/global';
-import { StageObject } from 'src/stage/stageObject';
+import { StageObject, UpdateParams } from 'src/stage/stageObject';
 import { Hit } from 'src/collider';
 import { Unit } from 'src/unit';
 import * as Phaser from 'phaser';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { ColliderManager, FrameDefinitionColliderManager } from 'src/collider/manager';
 import { AudioKey } from 'src/assets/audio';
+import { Vfx } from 'src/vfx';
 
 export interface CommandTrigger<S extends string> {
   command: Command;
@@ -27,17 +28,12 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected nextStates: Array<{ state: S; executionTrigger: () => boolean; stateParams: object }> = [];
   protected defaultState: S;
 
-  protected sprite: Phaser.GameObjects.Sprite;
-
-  protected walkSpeed = 100;
-  protected runSpeed = 175;
-  protected dashSpeed = 250;
+  protected walkSpeed = 75;
+  protected runSpeed = 125;
+  protected dashSpeed = 175;
   protected jumpSpeed = 150;
+  protected airSpeed = this.walkSpeed;
   protected gravity = 450;
-
-  protected velocity: Vector2 = Vector2.ZERO;
-  public position: Vector2 = Vector2.ZERO;
-  protected direction: -1 | 1 = 1;
 
   public readonly playerIndex: number;
   protected target: StageObject;
@@ -46,6 +42,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
 
   protected states: { [key in S]?: D };
   protected audioKeys: AudioKey[] = [];
+  protected playedAnimationSounds = new Set();
 
   constructor(playerIndex = 0) {
     super();
@@ -54,15 +51,10 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.stateManager = new StateManager<S, D>();
     this.stateManager.onBeforeTransition((key: S) => this.beforeStateTransition(key));
     this.stateManager.onAfterTransition((config, params) => this.afterStateTransition(config, params));
-    this.stateManager.addEventListener(
-      'playSound',
-      (
-        stateParams: { playedSounds?: Set<AudioKey> },
-        key: AudioKey,
-        extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
-        force = false
-      ) => this.onPlaySoundEvent(stateParams, key, extra, force)
-    );
+  }
+
+  public get pushbox(): Phaser.Geom.Rectangle {
+    return this.colliderManager.getPushbox(this.position);
   }
 
   public preload(): void {
@@ -85,44 +77,33 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     });
   }
 
-  public applyHit(hit: Hit): void {
-    this.setHitlag(hit);
+  public applyHitToSelf(hit: Hit, hitBy: StageObject): void {
+    super.applyHitToSelf(hit, hitBy);
+    this.freezeFrames = hit.hitstop[1];
+    this.addVfx(Vfx.shake(this.sprite, new Vector2(1, 0), 3, this.freezeFrames));
   }
 
-  public onTargetHit(_stageObject: StageObject, hit: Hit): void {
-    this.setHitlag(hit);
+  public applyHitToTarget(hit: Hit, stageObject: StageObject): void {
+    super.applyHitToTarget(hit, stageObject);
+    this.freezeFrames = hit.hitstop[0];
   }
 
   public setTarget(stageObject: StageObject): void {
     this.target = stageObject;
   }
 
-  public update(params: { time: number; delta: number }): void {
+  public update(params: UpdateParams): void {
     super.update(params);
     this.updateState();
-    if (!this.isHitlagged) {
+    if (!this.hasFreezeFrames) {
       this.updateKinematics(params.delta);
       this.updateSprite();
     }
   }
 
   protected updateState(): void {
-    for (const { command, trigger = () => true, state, stateParams = {} } of this.commandList) {
-      if (this.isCommandExecuted(command)) {
-        const canTransition = trigger();
-        if (_.isFunction(canTransition)) {
-          // chainable state, so add to queue
-          this.queueNextState(state, stateParams, canTransition);
-          break;
-        } else if (canTransition && !this.isCurrentState(state)) {
-          // Immediately transition to next state.
-          this.isHitlagged ? this.queueNextState(state, stateParams) : this.goToNextState(state, stateParams);
-          console.log(command.toString());
-          break;
-        }
-      }
-    }
-    if (this.isHitlagged) {
+    this.checkInputs();
+    if (this.hasFreezeFrames) {
       this.sprite.anims.pause();
     } else {
       this.sprite.anims.resume();
@@ -135,6 +116,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected updateSprite(): void {
     this.sprite.x = this.position.x;
     this.sprite.y = this.position.y;
+    this.sprite.flipX = !this._orientation.x;
   }
 
   protected updateKinematics(delta: number): void {
@@ -155,8 +137,26 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     }
   }
 
+  protected checkInputs(): void {
+    for (const { command, trigger = () => true, state, stateParams = {} } of this.commandList) {
+      if (this.isCommandExecuted(command)) {
+        const canTransition = trigger();
+        if (_.isFunction(canTransition)) {
+          // chainable state, so add to queue
+          this.queueNextState(state, stateParams, canTransition);
+          break;
+        } else if (canTransition && !this.isCurrentState(state)) {
+          // Immediately transition to next state.
+          this.hasFreezeFrames ? this.queueNextState(state, stateParams) : this.goToNextState(state, stateParams);
+          console.log(command.toString());
+          break;
+        }
+      }
+    }
+  }
+
   protected setupSprite(): void {
-    this.sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
+    this._sprite = PS.stage.add.sprite(this.position.x, this.position.y, '');
     this.sprite.depth = 20;
   }
 
@@ -175,11 +175,12 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
    * If a state is provided directly, transition to that state immediately (this will clear the transition queue).
    * @param state
    * @param stateParams
+   * @param force
    */
-  protected goToNextState(state?: S, stateParams: object = {}): void {
+  protected goToNextState(state?: S, stateParams: object = {}, force = false): void {
     if (state) {
       this.nextStates = [];
-      this.stateManager.setState(state, stateParams);
+      this.stateManager.setState(state, stateParams, force);
     } else if (this.nextStates.length >= 1) {
       const [nextState, ...rest] = this.nextStates;
       if (nextState.executionTrigger()) {
@@ -197,32 +198,20 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     _.noop(config, params);
   }
 
-  protected beforeStateTransition(nextKey: S): void {
-    _.noop(nextKey);
+  protected beforeStateTransition(_nextKey: S): void {
+    this.playedAnimationSounds.clear();
   }
 
-  protected onPlaySoundEvent(
-    stateParams: { playedSounds?: Set<AudioKey> },
+  protected playSoundForAnimation(
     key: AudioKey,
     extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
     force = false
-  ): void {
-    const { playedSounds = new Set() } = stateParams;
-    if (!(PS.stage.sound.get(key) && playedSounds.has(key)) || force) {
-      PS.stage.sound.play(key, extra);
-      if (!stateParams.playedSounds) {
-        stateParams.playedSounds = new Set();
-      }
-      stateParams.playedSounds!.add(key);
+  ) {
+    const animationSoundKey = `${this.currentAnimation}-${this.sprite.anims.currentFrame.index}`;
+    if (!this.playedAnimationSounds.has(animationSoundKey) || force) {
+      this.playedAnimationSounds.add(animationSoundKey);
+      PS.stage.playSound(key, extra);
     }
-  }
-
-  protected playSound(
-    key: AudioKey,
-    extra?: Phaser.Types.Sound.SoundConfig | Phaser.Types.Sound.SoundMarker,
-    force = false
-  ): void {
-    this.stateManager.dispatchEvent('playSound', key, extra, force);
   }
 
   protected isCurrentState(state: S): boolean {
@@ -230,7 +219,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   }
 
   protected isCommandExecuted(command: Command): boolean {
-    return command.isExecuted(this.playerIndex, this.direction === 1);
+    return command.isExecuted(this.playerIndex, this._orientation.x);
   }
 
   protected get input(): InputHistory {
@@ -258,12 +247,31 @@ export class BaseCharacterWithFrameDefinition<
     this.frameDefinitionMap = frameDefinitionMap;
     this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
       const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
-      return {
-        index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap[anim.key].animDef, frame.index),
-        direction: { x: !this.sprite.flipX, y: true },
-        frameKey: anim.key
-      };
+      const animKey = anim.key.split('-')[1];
+      if (this.frameDefinitionMap.frameDef[animKey]) {
+        return {
+          index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap.frameDef[animKey].animDef, frame.index),
+          direction: { x: !this.sprite.flipX, y: true },
+          frameKey: animKey
+        };
+      } else {
+        return null;
+      }
     });
+  }
+
+  protected updateSprite(): void {
+    super.updateSprite();
+    const frames = this.frameDefinitionMap.frameDef[this.currentAnimation]!.animDef.frames;
+    if (_.isArray(frames)) {
+      const animFrame = frames[this.sprite.anims.currentFrame.index - 1];
+      // TODO remove non-null check once loop logic is removed from animations
+      if (animFrame && !_.isNumber(animFrame)) {
+        if (animFrame.sfx && this.audioKeys.includes(animFrame.sfx as AudioKey)) {
+          this.playSoundForAnimation(animFrame.sfx as AudioKey);
+        }
+      }
+    }
   }
 
   protected setupSprite(): void {
@@ -271,7 +279,11 @@ export class BaseCharacterWithFrameDefinition<
     addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
   }
 
-  protected playAnimation(key: string, force = false) {
-    playAnimation(this.sprite, key, { force });
+  protected playAnimation(key: string, params: { force?: boolean; startFrame?: number } = {}) {
+    playAnimation(this.sprite, [this.frameDefinitionMap.name, key].join('-'), params);
+  }
+
+  protected get currentAnimation(): string {
+    return this.sprite.anims.currentAnim.key.split('-')[1];
   }
 }

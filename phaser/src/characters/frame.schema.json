@@ -4,49 +4,80 @@
   "title": "Frame Definition",
   "description": "frame data for a collection of animations",
   "type": "object",
-  "patternProperties": {
-    "^[A-Z][A-Z0-9_]*$": {
-      "type": "object",
-      "properties": {
-        "animDef": {
+  "properties": {
+    "name": { "type": "string" },
+    "frameDef": {
+      "patternProperties": {
+        "^[A-Z][A-Z0-9_]*$": {
           "type": "object",
           "properties": {
-            "frames": { "type": ["array", "integer"], "items": { "type": ["integer", "object"] } },
-            "assetKey": { "type": "string" },
-            "prefix": { "type": "string" },
-            "frameRate": { "type": "integer" }
-          }
-        },
-        "hitboxDef": {
-          "type": "object",
-          "properties": {
-            "hit": {
+            "animDef": {
               "type": "object",
               "properties": {
-                "damage": { "type": "number" },
-                "angle": { "type": "number" },
-                "knockback": { "type": "number" }
-              },
-              "required": ["damage", "angle", "knockback"]
-            }
-          },
-          "patternProperties": {
-            "^[1-9][0-9]*$": {
-              "properties": {
-                "boxes": {
-                  "type": "array",
-                  "items": {"type": "object"}
-                },
-                "tag": {
-                  "type": ["string", "number"]
-                },
-                "persistThroughFrame": { "type": "number" }
+                "frames": { "type": ["array", "integer"], "items": { "type": ["integer", "object"] } },
+                "assetKey": { "type": "string" },
+                "prefix": { "type": "string" },
+                "frameRate": { "type": "integer" }
               }
+            },
+            "hitboxDef": {
+              "type": "object",
+              "properties": {
+                "hit": {
+                  "type": "object",
+                  "properties": {
+                    "damage": { "type": "number" },
+                    "angle": { "type": "number" },
+                    "knockback": { "type": "number" },
+                    "type": { "type": "array", "items": { "type": "string" } },
+                    "hitstop": {
+                      "type": "array", "items": { "type": "number"}, "maxItems": 2, "minItems": 2
+                    },
+                    "hitstun": { "type": "number" },
+                    "velocity": {
+                      "type": "object",
+                      "properties": {
+                        "ground": {
+                          "type": "object",
+                          "properties": {
+                            "angle": {"type": "number"},
+                            "magnitude": {"type": "number"}
+                          }
+                        },
+                        "air": {
+                          "type": "object",
+                          "properties": {
+                            "angle": {"type": "number"},
+                            "magnitude": {"type": "number"}
+                          }
+                        }
+                      }
+                    },
+                    "sfx": {"type": "string"}
+                  },
+                  "required": ["damage", "angle", "knockback", "type", "hitstop", "hitstun"]
+                }
+              },
+              "patternProperties": {
+                "^[1-9][0-9]*$": {
+                  "properties": {
+                    "boxes": {
+                      "type": "array",
+                      "items": { "type": "object" }
+                    },
+                    "tag": {
+                      "type": ["string", "number"]
+                    },
+                    "persistThroughFrame": { "type": "number" }
+                  }
+                }
+              },
+              "required": ["hit"]
             }
-          },
-          "required": ["hit"]
+          }
         }
       }
     }
-  }
+  },
+  "required": ["name", "frameDef"]
 }

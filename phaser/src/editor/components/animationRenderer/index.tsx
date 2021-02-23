@@ -15,16 +15,17 @@ interface State {
 }
 
 export default class AnimationRenderer extends React.PureComponent<Props, State> {
-  public state = {
-    currentIndex: 0
+  public state: State = {
+    currentIndex: 0,
   };
 
   private requestId = 0;
   private start = -1;
+  private uniqueFrameCount: number;
 
   public componentDidMount(): void {
-    const { frames, frameRate } = this.props.frameData.definitionMap[this.props.frameKey].animDef;
-    const uniqueFrameCount = _.isNumber(frames)
+    const { frames } = this.props.frameData.definitionMap[this.props.frameKey].animDef;
+    this.uniqueFrameCount = _.isNumber(frames)
       ? frames
       : _.reduce(
           frames,
@@ -38,18 +39,17 @@ export default class AnimationRenderer extends React.PureComponent<Props, State>
           },
           0
         );
-    window.requestAnimationFrame(timestamp => this.animate(timestamp, frameRate, uniqueFrameCount))
   }
 
   public componentWillUnmount(): void {
-    window.cancelAnimationFrame(this.requestId);
+    this.pauseAnimation();
   }
 
   public render(): React.ReactNode {
-    const config = getSpriteConfig(this.props.frameData, this.props.frameKey, this.state.currentIndex);
     const source = getSpriteSource(this.props.frameData, this.props.frameKey);
+    const config = source && getSpriteConfig(this.props.frameData, this.props.frameKey, this.state.currentIndex);
     return (
-      <div className="cn--animation-renderer">
+      <div className="cn--animation-renderer" onMouseEnter={this.startAnimation} onMouseLeave={this.pauseAnimation}>
         {config && source && <SpriteRenderer config={config} source={source} scale={0.5} />}
       </div>
     );
@@ -66,4 +66,13 @@ export default class AnimationRenderer extends React.PureComponent<Props, State>
     }
     this.requestId = window.requestAnimationFrame(timestamp => this.animate(timestamp, frameRate, uniqueFrameCount));
   }
+
+  private startAnimation = () => {
+    const { frameRate } = this.props.frameData.definitionMap[this.props.frameKey].animDef;
+    window.requestAnimationFrame(timestamp => this.animate(timestamp, frameRate, this.uniqueFrameCount));
+  };
+  private pauseAnimation = () => {
+    window.cancelAnimationFrame(this.requestId);
+    this.start = -1;
+  };
 }

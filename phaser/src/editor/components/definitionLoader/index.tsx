@@ -41,7 +41,7 @@ class DefinitionLoader extends React.PureComponent<Props & DispatchMappedProps> 
     const fileReader = new FileReader();
     fileReader.onload = (e => {
       if (e.target && e.target.result) {
-        this.props.actions.loadDefinition(JSON.parse(e.target.result as string) as FrameDefinitionMap);
+        this.props.actions.loadDefinition((JSON.parse(e.target.result as string).frameDef) as FrameDefinitionMap['frameDef']);
       }
     });
     fileReader.readAsText(target.files![0])

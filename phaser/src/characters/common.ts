@@ -3,13 +3,13 @@ import { StateDefinition } from 'src/state';
 import { Command } from 'src/command';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
 import * as _ from 'lodash';
-import { GameInput } from 'src/plugins/gameInput.plugin';
-import { FrameDefinitionMap, getFrameIndexFromSpriteIndex } from 'src/characters/frameData';
+import { FrameDefinitionMap } from 'src/characters/frameData';
 import { PS } from 'src/global';
-import { Vector2 } from '@lawsumisu/common-utilities';
+import { PolarVector, Scalar, Vector2 } from '@lawsumisu/common-utilities';
 import { Unit } from 'src/unit';
-import { FrameDefinitionColliderManager } from 'src/collider/manager';
 import { AudioKey } from 'src/assets/audio';
+import { Hit, HitType } from 'src/collider';
+import { StageObject } from 'src/stage/stageObject';
 
 export enum StateType {
   AIR = 'AIR',
@@ -17,7 +17,8 @@ export enum StateType {
   CROUCH = 'CROUCH',
   IDLE = 'IDLE',
   ATTACK = 'ATTACK',
-  BLOCK = 'BLOCK'
+  BLOCK = 'BLOCK',
+  HIT = 'HIT'
 }
 
 export interface CommonStateConfig {
@@ -38,7 +39,11 @@ export enum CommonState {
   CROUCH = 'CROUCH',
   RUN = 'RUN',
   BLOCK_STAND = 'BLOCK_STAND',
-  BLOCK_CROUCH = 'BLOCK_CROUCH'
+  BLOCK_CROUCH = 'BLOCK_CROUCH',
+  HIT = 'HIT',
+  HIT_AIR = 'HIT_AIR',
+  HIT_LAND = 'HIT_LAND',
+  WAKE_UP = 'WAKE_UP'
 }
 
 export type CharacterState<T extends string> = T | CommonState;
@@ -50,6 +55,12 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   CharacterState<S>,
   CharacterStateConfig<D>
 > {
+  private hitstun = 0;
+  protected lastHitBy: StageObject | null = null;
+  protected isLaunched = false;
+  protected knockbackVelocity = Vector2.ZERO;
+  protected comboDamage = 0;
+
   protected states: StateMap<S, D>;
   protected audioKeys: AudioKey[] = [];
 
@@ -57,12 +68,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.NULL]: { type: [] },
     [CommonState.STAND]: {
       startAnimation: 'STAND',
-      type: [StateType.IDLE, StateType.STAND],
-      update: () => {
-        this.velocity.y = 0;
-        this.velocity.x = 0;
-
-      }
+      type: [StateType.IDLE, StateType.STAND]
     },
     [CommonState.WALK]: {
       type: [StateType.IDLE, StateType.STAND],
@@ -73,22 +79,21 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
           const animation = this.isCommandExecuted(Command.registry.FORWARD) ? 'WALK_FWD' : 'WALK_BACK';
           const d = this.isCommandExecuted(Command.registry.FORWARD) ? 1 : -1;
           this.playAnimation(animation);
-          this.velocity.x = this.walkSpeed * this.direction * d;
+          this.setOrientedVelocity({ x: this.walkSpeed * d });
         }
       }
     },
     [CommonState.CROUCH_TRANSITION]: {
       type: [StateType.IDLE, StateType.CROUCH],
       update: (tick: number) => {
-        this.velocity.x = 0;
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
           this.playAnimation('STAND_UP');
         } else if (tick === 0) {
           this.playAnimation('SQUAT');
-        } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
+        } else if (!this.sprite.anims.isPlaying && this.currentAnimation === 'SQUAT') {
           this.stateManager.setState(CommonState.CROUCH);
         }
-        if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
+        if (!this.sprite.anims.isPlaying && this.currentAnimation === 'STAND_UP') {
           this.stateManager.setState(CommonState.STAND);
         }
       }
@@ -97,11 +102,10 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'CROUCH',
       type: [StateType.IDLE, StateType.CROUCH],
       update: () => {
-        this.velocity.x = 0;
         if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
           this.playAnimation('STAND_UP');
         }
-        if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'STAND_UP') {
+        if (!this.sprite.anims.isPlaying && this.currentAnimation === 'STAND_UP') {
           this.stateManager.setState(CommonState.STAND);
         }
       }
@@ -110,7 +114,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       startAnimation: 'RUN',
       type: [StateType.IDLE, StateType.STAND],
       update: () => {
-        this.velocity.x = this.runSpeed * this.direction;
+        this.setOrientedVelocity({ x: this.runSpeed });
         if (!this.isCommandExecuted(Command.registry.FORWARD)) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -121,7 +125,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       type: [StateType.IDLE, StateType.STAND],
       update: (tick: number) => {
         if (tick === 0) {
-          this.velocity.x = this.dashSpeed * -this.direction;
+          this.setOrientedVelocity({ x: -this.dashSpeed });
         } else if (tick < 9 && this.sprite.anims.currentFrame.index === 2) {
           this.sprite.anims.pause();
         } else if (tick === 10) {
@@ -138,16 +142,15 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       type: [StateType.STAND],
       update: (tick: number, params: { d?: -1 | 1 }) => {
         if (tick <= 2) {
-          if (tick === 0) {
-            this.velocity.x = 0;
+          if (
+            this.isCommandExecuted(Command.registry.FORWARD_ANY) ||
+            this.isCommandExecuted(Command.registry.BACK_ANY)
+          ) {
+            const jumpDirection = this.isCommandExecuted(Command.registry.FORWARD_ANY);
+            params.d = jumpDirection ? 1 : -1;
           }
-          if (_.some([GameInput.UP_RIGHT, GameInput.UP_LEFT], (gi: GameInput) => this.input.isInputDown(gi))) {
-            const jumpDirection = this.input.isInputDown(GameInput.UP_RIGHT) ? 1 : -1;
-            params.d = jumpDirection === this.direction ? 1 : -1;
-          }
-        } else if (!this.sprite.anims.isPlaying && this.sprite.anims.currentAnim.key === 'SQUAT') {
-          this.velocity.y = -this.jumpSpeed;
-          this.velocity.x = this.walkSpeed * this.direction * (params.d || 0);
+        } else if (!this.sprite.anims.isPlaying && this.currentAnimation === 'SQUAT') {
+          this.setOrientedVelocity({ x: this.airSpeed * (params.d || 0), y: -this.jumpSpeed });
           this.goToNextState(CommonState.JUMP);
         }
       }
@@ -168,10 +171,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.BLOCK_STAND]: {
       startAnimation: 'BLOCK_STAND',
       type: [StateType.BLOCK, StateType.STAND],
-      update: (tick: number) => {
-        if (tick === 0) {
-          this.velocity.x = 0;
-        }
+      update: () => {
         if (!this.isCommandExecuted(Command.registry.GUARD)) {
           this.stateManager.setState(CommonState.STAND);
         }
@@ -180,32 +180,102 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     [CommonState.BLOCK_CROUCH]: {
       startAnimation: 'BLOCK_CROUCH',
       type: [StateType.BLOCK, StateType.CROUCH],
-      update: (tick: number) => {
-        if (tick === 0) {
-          this.velocity.x = 0;
-        }
+      update: () => {
         if (!this.isCommandExecuted(Command.registry.GUARD)) {
           this.stateManager.setState(CommonState.CROUCH);
         } else if (!this.isCommandExecuted(new Command('*1|*2|*3', 1))) {
           this.stateManager.setState(CommonState.BLOCK_STAND);
         }
       }
+    },
+    [CommonState.HIT]: {
+      type: [StateType.HIT],
+      update: (tick: number, params: { hit: Hit }) => {
+        const { hit } = params;
+        // TODO remove this after frameData refactor
+        let hitVelocity = { angle: hit.angle, magnitude: hit.knockback };
+        if (hit.knockback === 0) {
+          hitVelocity = this.isLaunched && hit.velocity.air ? hit.velocity.air : hit.velocity.ground;
+        }
+        hitVelocity.angle = Scalar.toRadians(hitVelocity.angle);
+        if (tick === 0) {
+          this.comboDamage += hit.damage;
+          this.hitstun = hit.hitstun;
+          this.knockbackVelocity = Vector2.ZERO;
+          this.velocity = new PolarVector(hitVelocity.magnitude, hitVelocity.angle).toCartesian();
+          if (this.isLaunched) {
+            this.velocity = this.velocity.add(new Vector2(0, -60));
+          }
+          const t1 =
+            hit.type.find((t: HitType) => [HitType.HIGH, HitType.MID, HitType.LOW].includes(t)) || HitType.HIGH;
+          const t2 =
+            hit.type.find((t: HitType) => [HitType.LAUNCH, HitType.HEAVY, HitType.MEDIUM, HitType.LIGHT].includes(t)) ||
+            HitType.LIGHT;
+          let animKey = ['HIT', t1, t2].join('_');
+          if (this.isLaunched) {
+            animKey = 'HIT_HIGH_LAUNCH';
+          }
+          this.playAnimation(animKey, { force: true });
+          if (animKey === 'HIT_HIGH_LAUNCH') {
+            this.isLaunched = true;
+          }
+        }
+        if (!this.sprite.anims.isPlaying && this.currentAnimation === 'HIT_HIGH_LAUNCH') {
+          this.goToNextState(CommonState.HIT_AIR);
+        }
+        if (this.hitstun > 0) {
+          const s = Math.sign(Math.cos(hitVelocity.angle));
+          this.knockbackVelocity.x =
+            Math.max(0, hit.pushback.base + this.comboDamage * 0.1 - hit.pushback.decay * tick) * s;
+        } else {
+          this.knockbackVelocity = Vector2.ZERO;
+          this.lastHitBy = null;
+        }
+        if (this.hitstun === 0 && !this.isAirborne) {
+          this.isLaunched = false;
+          this.comboDamage = 0;
+          this.lastHitBy = null;
+          this.goToNextState(CommonState.STAND);
+        }
+      }
+    },
+    [CommonState.HIT_AIR]: {
+      type: [StateType.HIT, StateType.AIR],
+      startAnimation: 'HIT_HIGH_FALL'
+    },
+    [CommonState.HIT_LAND]: {
+      type: [StateType.HIT],
+      startAnimation: 'HIT_LAND',
+      update: (tick: number) => {
+        if (tick === 0) {
+          this.knockbackVelocity = Vector2.ZERO;
+          this.lastHitBy = null;
+          this.comboDamage = 0;
+          this.velocity = Vector2.ZERO;
+          this.isLaunched = false;
+          this.playSoundForAnimation('landHeavy');
+        }
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.WAKE_UP);
+        }
+      }
+    },
+    [CommonState.WAKE_UP]: {
+      type: [StateType.STAND],
+      startAnimation: 'WAKE_UP_STAND',
+      update: () => {
+        if (!this.sprite.anims.isPlaying) {
+          this.goToNextState(CommonState.STAND);
+        }
+      }
     }
   };
-  private commonAudioKeys: AudioKey[] = ['land'];
+  private commonAudioKeys: AudioKey[] = ['land', 'landHeavy'];
 
-  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap = {}) {
+  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
     super(playerIndex, frameDefinitionMap);
     this.defaultState = CommonState.STAND;
     this.commandList = this.getCommandList();
-    this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
-      const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
-      return {
-        index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap[anim.key].animDef, frame.index),
-        direction: { x: !this.sprite.flipX, y: true },
-        frameKey: anim.key
-      };
-    });
   }
 
   protected getCommandList(): Array<CommandTrigger<CharacterState<S>>> {
@@ -239,7 +309,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
       },
       {
         command: Command.registry.GUARD,
-        trigger: () =>  this.isIdle && this.isStanding,
+        trigger: () => this.isIdle && this.isStanding,
         state: CommonState.BLOCK_STAND,
         priority: 1
       },
@@ -254,7 +324,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
 
   public preload() {
     this.states = { ...this.commonStates, ...this.states };
-    this.audioKeys = [ ...this.commonAudioKeys, ...this.audioKeys ];
+    this.audioKeys = [...this.commonAudioKeys, ...this.audioKeys];
     super.preload();
   }
 
@@ -264,40 +334,82 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   }
 
   public update(params: { time: number; delta: number }): void {
-    this.direction = this.position.x < this.target.position.x ? 1 : -1;
+    if (this.isIdle && !this.isAirborne) {
+      this._orientation.x = this.position.x < this.target.position.x;
+    }
     super.update(params);
+    this.updateHitstun();
+    // PS.stage.debugDraw.rect(this.bounds);
+  }
+
+  public applyHitToTarget(hit: Hit, target: StageObject): void {
+    super.applyHitToTarget(hit, target);
+    const config = this.states[this.stateManager.current.key];
+    // TODO move onHitSound to frame data
+    if (config && config.onHitSound) {
+      PS.stage.playSound(config.onHitSound, {});
+    } else if (hit.sfx && this.audioKeys.includes(hit.sfx as AudioKey)) {
+      PS.stage.playSound(hit.sfx as AudioKey, {});
+    }
+  }
+
+  public applyHitToSelf(hit: Hit, hitBy: StageObject): void {
+    super.applyHitToSelf(hit, hitBy);
+    console.log(hit);
+    this.lastHitBy = hitBy;
+    this.goToNextState(CommonState.HIT, { hit }, true);
+    this.stateManager.update();
   }
 
   protected updateKinematics(delta: number): void {
     if (this.isAirborne) {
       this.velocity.y += this.gravity * delta;
     }
-    this.position = this.position.add(this.velocity.scale(delta * Unit.toPx));
+    this.position = this.position.add(this.velocity.add(this.knockbackVelocity).scale(delta * Unit.toPx));
+    const pushbox = this.pushbox;
 
     // TODO handle this in a separate function?
-    if (this.position.x < PS.stage.left) {
-      this.position.x = PS.stage.left;
-    } else if (this.position.x > PS.stage.right) {
-      this.position.x = PS.stage.right;
-    }
-    if (this.isAirborne) {
-      const bounds = this.bounds;
-      if (bounds.bottom > PS.stage.ground) {
-        this.position.y = PS.stage.ground;
-        this.velocity.y = 0;
-        this.stateManager.setState(CommonState.STAND);
-        this.playSound('land', { volume: 0.5 }, true);
-        this.sprite.flipX = this.direction === -1;
+    if (pushbox.left < PS.stage.left) {
+      const positionCorrection = PS.stage.left - pushbox.left;
+      if (this.hitstun && this.lastHitBy && this.lastHitBy.pushable) {
+        this.lastHitBy.position.x -= positionCorrection;
+      } else {
+        this.position.x -= positionCorrection;
       }
-    } else if (this.position.y > PS.stage.ground) {
-      this.position.y = PS.stage.ground;
+    } else if (pushbox.right > PS.stage.right) {
+      const positionCorrection = pushbox.right - PS.stage.right;
+      if (this.hitstun && this.lastHitBy && this.lastHitBy.pushable) {
+        this.lastHitBy.position.x -= positionCorrection;
+      }
+      this.position.x -= positionCorrection;
+    }
+    if (this.velocity.y >= 0) {
+      if (this.isLaunched || this.checkStateType(StateType.AIR)) {
+        // const bounds = this.bounds;
+        if (this.position.y > PS.stage.ground) {
+          this.position.y = PS.stage.ground;
+          this.velocity.y = 0;
+          if (this.isHit) {
+            this.goToNextState(CommonState.HIT_LAND);
+          } else {
+            // TODO add this to landing state.
+            this.goToNextState(CommonState.STAND);
+            PS.stage.playSound('land', {});
+          }
+        }
+      } else if (this.position.y > PS.stage.ground) {
+        this.position.y = PS.stage.ground;
+        this.velocity = Vector2.ZERO;
+      }
     }
   }
 
-  protected updateSprite(): void {
-    super.updateSprite();
-    if (this.isIdle && !this.isAirborne) {
-      this.sprite.flipX = this.direction === -1;
+  protected updateHitstun(): void {
+    if (this.hitstun > 0 && !this.hasFreezeFrames) {
+      this.hitstun = Math.max(0, this.hitstun - 1);
+      if (this.hitstun === 0 && !this.isAirborne) {
+        this.velocity.x = 0;
+      }
     }
   }
 
@@ -305,7 +417,18 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, startAnimation, { force: true, startFrame: params.startFrame });
+      playAnimation(this.sprite, [this.frameDefinitionMap.name, startAnimation].join('-'), {
+        force: true,
+        startFrame: params.startFrame
+      });
+    }
+    if (this.checkStateType(StateType.ATTACK)) {
+      this.sprite.depth = 25;
+    } else {
+      this.sprite.depth = 20;
+    }
+    if (!this.isAirborne) {
+      this.velocity = Vector2.ZERO;
     }
   }
 
@@ -317,12 +440,16 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     return this.checkStateType(StateType.CROUCH);
   }
 
+  protected get isHit(): boolean {
+    return this.checkStateType(StateType.HIT);
+  }
+
   protected get isIdle(): boolean {
     return this.checkStateType(StateType.IDLE);
   }
 
   protected get isAirborne(): boolean {
-    return super.isAirborne || this.checkStateType(StateType.AIR);
+    return super.isAirborne || this.checkStateType(StateType.AIR) || this.isLaunched;
   }
 
   protected checkStateType(

@@ -206,7 +206,8 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   };
 
   private histories: InputHistory[] = [
-    new InputHistory(GameInputPlugin.defaultInputs, { pad: 'pad1'})
+    new InputHistory(GameInputPlugin.defaultInputs, { pad: 'pad1'}),
+    new InputHistory(GameInputPlugin.defaultInputs, { pad: 'pad2'})
   ];
 
   public boot(): void {

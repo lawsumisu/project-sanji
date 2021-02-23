@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 export type StateDefinition<C = {}> = C & {
-  update?: (tick: number, stateTemporaryValues: object) => void;
+  update?: (tick: number, params: object) => void;
 };
 
 type State<K extends string, C> = StateDefinition<C> & {
@@ -23,7 +23,6 @@ export class StateManager<K extends string, C = {}> {
     };
   } = {};
 
-  // TODO: separate out collider management from state management via a colliderManager object.
   public update(): void {
     if (this.currentState.update) {
       this.currentState.update(this.tick++, this.stateParams);
@@ -74,8 +73,8 @@ export class StateManager<K extends string, C = {}> {
     }
   }
 
-  public get current(): { tick: number; key: K } {
-    return { tick: this.tick, key: this.currentState.key };
+  public get current(): { tick: number; key: K, params: {[key: string]: unknown} } {
+    return { tick: this.tick, key: this.currentState.key, params: this.stateParams };
   }
 
   public getStateDefinition(key: K): StateDefinition<C> {

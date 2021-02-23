@@ -82,7 +82,11 @@ export class JunctiveInput implements Input {
   }
 
   public toString(): string {
-    return '(' + this.inputs.map(i => i.toString()).join(this.isAnd ? '+' : '/') + ')';
+    if (this.isAnd) {
+      return this.inputs.map(i => i.toString()).join('+');
+    } else {
+      return '(' + this.inputs.map(i => i.toString()).join('/') + ')';
+    }
   }
 
   public equals(i: Input): boolean {
@@ -119,16 +123,21 @@ export class Command {
     l: GameInput.INPUT5
   };
 
-  private static reverseGameInputMap: { [key in GameInput]?: GameInput } = {
-    [GameInput.RIGHT]: GameInput.LEFT,
-    [GameInput.LEFT]: GameInput.RIGHT,
-    [GameInput.DOWN_RIGHT]: GameInput.DOWN_LEFT,
-    [GameInput.DOWN_LEFT]: GameInput.DOWN_RIGHT
-  };
+  private static reverseGameInputMap: { [key in GameInput]?: GameInput } = [
+    [GameInput.RIGHT, GameInput.LEFT],
+    [GameInput.UP_RIGHT, GameInput.UP_LEFT],
+    [GameInput.DOWN_RIGHT, GameInput.DOWN_LEFT]
+  ].reduce((acc, [k1, k2]) => {
+    acc[k1] = k2;
+    acc[k2] = k1;
+    return acc;
+  }, {});
 
   public static registry = {
     FORWARD: new Command('*6', 1),
+    FORWARD_ANY: new Command('*3|*6|*9', 1),
     BACK: new Command('*4', 1),
+    BACK_ANY: new Command('*1|*4|*7', 1),
     GUARD: new Command('*l', 1)
   };
 
@@ -217,7 +226,7 @@ export class Command {
           return Command.getInputFromToken(token.nestedTokens[1] || token.nestedTokens[0]);
         }
         default:
-          throw new Error('Token does not correspond to valid input')
+          throw new Error('Token does not correspond to valid input');
       }
     } else {
       switch (token.type) {
@@ -232,7 +241,7 @@ export class Command {
           }
         }
         default:
-          throw new Error('Token does not correspond to valid input')
+          throw new Error('Token does not correspond to valid input');
       }
     }
   }

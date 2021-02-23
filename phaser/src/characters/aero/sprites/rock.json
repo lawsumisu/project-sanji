@@ -4,8 +4,8 @@
 			"image": "rock.png",
 			"format": "RGBA8888",
 			"size": {
-				"w": 1504,
-				"h": 508
+				"w": 1812,
+				"h": 509
 			},
 			"scale": 1,
 			"frames": [
@@ -30,8 +30,8 @@
 						"h": 127
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -55,8 +55,8 @@
 						"h": 121
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -105,8 +105,8 @@
 						"h": 117
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -205,8 +205,8 @@
 						"h": 114
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -230,8 +230,8 @@
 						"h": 112
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -380,8 +380,8 @@
 						"h": 109
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -405,8 +405,8 @@
 						"h": 109
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -485,6 +485,56 @@
 					}
 				},
 				{
+					"filename": "attacks/forcepalm/01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 0,
+						"w": 82,
+						"h": 107
+					},
+					"frame": {
+						"x": 303,
+						"y": 335,
+						"w": 82,
+						"h": 107
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/dunk/11.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 122
+					},
+					"spriteSourceSize": {
+						"x": 27,
+						"y": 58,
+						"w": 70,
+						"h": 64
+					},
+					"frame": {
+						"x": 303,
+						"y": 444,
+						"w": 70,
+						"h": 64
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 1
+					}
+				},
+				{
 					"filename": "attacks/reppuken/18.png",
 					"rotated": false,
 					"trimmed": true,
@@ -499,43 +549,18 @@
 						"h": 107
 					},
 					"frame": {
-						"x": 303,
-						"y": 335,
+						"x": 371,
+						"y": 222,
 						"w": 72,
 						"h": 107
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
 					"filename": "idle/02.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 71,
-						"h": 118
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 11,
-						"w": 71,
-						"h": 107
-					},
-					"frame": {
-						"x": 371,
-						"y": 222,
-						"w": 71,
-						"h": 107
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 1
-					}
-				},
-				{
-					"filename": "idle/03.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -560,7 +585,7 @@
 					}
 				},
 				{
-					"filename": "idle/11.png",
+					"filename": "idle/03.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -585,7 +610,7 @@
 					}
 				},
 				{
-					"filename": "idle/21.png",
+					"filename": "idle/11.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
@@ -599,7 +624,7 @@
 						"h": 107
 					},
 					"frame": {
-						"x": 377,
+						"x": 387,
 						"y": 331,
 						"w": 71,
 						"h": 107
@@ -624,7 +649,7 @@
 						"h": 67
 					},
 					"frame": {
-						"x": 377,
+						"x": 387,
 						"y": 440,
 						"w": 70,
 						"h": 67
@@ -635,24 +660,24 @@
 					}
 				},
 				{
-					"filename": "attacks/dunk/11.png",
+					"filename": "idle/21.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 122,
-						"h": 122
+						"w": 71,
+						"h": 118
 					},
 					"spriteSourceSize": {
-						"x": 27,
-						"y": 58,
-						"w": 70,
-						"h": 64
+						"x": 0,
+						"y": 11,
+						"w": 71,
+						"h": 107
 					},
 					"frame": {
-						"x": 449,
-						"y": 440,
-						"w": 70,
-						"h": 64
+						"x": 445,
+						"y": 219,
+						"w": 71,
+						"h": 107
 					},
 					"anchor": {
 						"x": 0.5,
@@ -674,14 +699,14 @@
 						"h": 106
 					},
 					"frame": {
-						"x": 444,
-						"y": 219,
+						"x": 471,
+						"y": 110,
 						"w": 100,
 						"h": 106
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -699,14 +724,14 @@
 						"h": 106
 					},
 					"frame": {
-						"x": 471,
-						"y": 110,
+						"x": 492,
+						"y": 1,
 						"w": 84,
 						"h": 106
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -724,39 +749,14 @@
 						"h": 106
 					},
 					"frame": {
-						"x": 492,
-						"y": 1,
+						"x": 460,
+						"y": 328,
 						"w": 72,
 						"h": 106
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
-					}
-				},
-				{
-					"filename": "idle/01.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 71,
-						"h": 118
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 12,
-						"w": 71,
-						"h": 106
-					},
-					"frame": {
-						"x": 450,
-						"y": 327,
-						"w": 71,
-						"h": 106
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 1
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -774,13 +774,38 @@
 						"h": 72
 					},
 					"frame": {
-						"x": 521,
-						"y": 435,
+						"x": 460,
+						"y": 436,
 						"w": 84,
 						"h": 72
 					},
 					"anchor": {
 						"x": 0.4,
+						"y": 1
+					}
+				},
+				{
+					"filename": "idle/01.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 71,
+						"h": 118
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 12,
+						"w": 71,
+						"h": 106
+					},
+					"frame": {
+						"x": 518,
+						"y": 218,
+						"w": 71,
+						"h": 106
+					},
+					"anchor": {
+						"x": 0.5,
 						"y": 1
 					}
 				},
@@ -799,8 +824,8 @@
 						"h": 106
 					},
 					"frame": {
-						"x": 523,
-						"y": 327,
+						"x": 573,
+						"y": 109,
 						"w": 71,
 						"h": 106
 					},
@@ -824,8 +849,8 @@
 						"h": 106
 					},
 					"frame": {
-						"x": 546,
-						"y": 218,
+						"x": 578,
+						"y": 1,
 						"w": 67,
 						"h": 106
 					},
@@ -849,7 +874,7 @@
 						"h": 106
 					},
 					"frame": {
-						"x": 596,
+						"x": 534,
 						"y": 326,
 						"w": 67,
 						"h": 106
@@ -860,27 +885,27 @@
 					}
 				},
 				{
-					"filename": "attacks/uppercut/02.png",
+					"filename": "attacks/forcepalm/02.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 99,
-						"h": 103
+						"w": 122,
+						"h": 109
 					},
 					"spriteSourceSize": {
-						"x": 1,
-						"y": 31,
+						"x": 0,
+						"y": 3,
 						"w": 84,
-						"h": 72
+						"h": 105
 					},
 					"frame": {
-						"x": 607,
-						"y": 434,
+						"x": 591,
+						"y": 217,
 						"w": 84,
-						"h": 72
+						"h": 105
 					},
 					"anchor": {
-						"x": 0.4,
+						"x": 0.30000000000000004,
 						"y": 1
 					}
 				},
@@ -899,14 +924,14 @@
 						"h": 105
 					},
 					"frame": {
-						"x": 557,
+						"x": 646,
 						"y": 109,
 						"w": 82,
 						"h": 105
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -924,14 +949,114 @@
 						"h": 105
 					},
 					"frame": {
-						"x": 566,
+						"x": 647,
 						"y": 1,
 						"w": 79,
 						"h": 105
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/16.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 3,
+						"w": 72,
+						"h": 105
+					},
+					"frame": {
+						"x": 728,
+						"y": 1,
+						"w": 72,
+						"h": 105
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/uppercut/02.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 99,
+						"h": 103
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 31,
+						"w": 84,
+						"h": 72
+					},
+					"frame": {
+						"x": 546,
+						"y": 434,
+						"w": 84,
+						"h": 72
+					},
+					"anchor": {
+						"x": 0.4,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/15.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 4,
+						"w": 72,
+						"h": 104
+					},
+					"frame": {
+						"x": 603,
+						"y": 324,
+						"w": 72,
+						"h": 104
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/uppercut/03.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 99,
+						"h": 103
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 25,
+						"w": 83,
+						"h": 78
+					},
+					"frame": {
+						"x": 632,
+						"y": 430,
+						"w": 83,
+						"h": 78
+					},
+					"anchor": {
+						"x": 0.4,
+						"y": 1
 					}
 				},
 				{
@@ -949,7 +1074,7 @@
 						"h": 104
 					},
 					"frame": {
-						"x": 615,
+						"x": 677,
 						"y": 216,
 						"w": 71,
 						"h": 104
@@ -974,7 +1099,7 @@
 						"h": 104
 					},
 					"frame": {
-						"x": 641,
+						"x": 730,
 						"y": 108,
 						"w": 71,
 						"h": 104
@@ -999,7 +1124,7 @@
 						"h": 104
 					},
 					"frame": {
-						"x": 647,
+						"x": 802,
 						"y": 1,
 						"w": 71,
 						"h": 104
@@ -1024,7 +1149,7 @@
 						"h": 104
 					},
 					"frame": {
-						"x": 665,
+						"x": 677,
 						"y": 322,
 						"w": 67,
 						"h": 104
@@ -1035,27 +1160,27 @@
 					}
 				},
 				{
-					"filename": "attacks/uppercut/03.png",
+					"filename": "attacks/dunk/12.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 99,
-						"h": 103
+						"w": 122,
+						"h": 122
 					},
 					"spriteSourceSize": {
-						"x": 1,
-						"y": 25,
-						"w": 83,
-						"h": 78
+						"x": 27,
+						"y": 45,
+						"w": 70,
+						"h": 77
 					},
 					"frame": {
-						"x": 693,
+						"x": 717,
 						"y": 428,
-						"w": 83,
-						"h": 78
+						"w": 70,
+						"h": 77
 					},
 					"anchor": {
-						"x": 0.4,
+						"x": 0.5,
 						"y": 1
 					}
 				},
@@ -1074,8 +1199,8 @@
 						"h": 103
 					},
 					"frame": {
-						"x": 688,
-						"y": 214,
+						"x": 746,
+						"y": 322,
 						"w": 89,
 						"h": 103
 					},
@@ -1099,14 +1224,14 @@
 						"h": 103
 					},
 					"frame": {
-						"x": 714,
-						"y": 107,
+						"x": 750,
+						"y": 214,
 						"w": 76,
 						"h": 103
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -1124,8 +1249,8 @@
 						"h": 103
 					},
 					"frame": {
-						"x": 720,
-						"y": 1,
+						"x": 803,
+						"y": 107,
 						"w": 73,
 						"h": 103
 					},
@@ -1149,8 +1274,8 @@
 						"h": 103
 					},
 					"frame": {
-						"x": 734,
-						"y": 319,
+						"x": 875,
+						"y": 1,
 						"w": 73,
 						"h": 103
 					},
@@ -1174,13 +1299,13 @@
 						"h": 103
 					},
 					"frame": {
-						"x": 779,
+						"x": 828,
 						"y": 212,
 						"w": 72,
 						"h": 103
 					},
 					"anchor": {
-						"x": 0.30000000000000004,
+						"x": 0.3,
 						"y": 0.95
 					}
 				},
@@ -1199,7 +1324,7 @@
 						"h": 103
 					},
 					"frame": {
-						"x": 792,
+						"x": 878,
 						"y": 106,
 						"w": 71,
 						"h": 103
@@ -1224,7 +1349,7 @@
 						"h": 103
 					},
 					"frame": {
-						"x": 795,
+						"x": 950,
 						"y": 1,
 						"w": 71,
 						"h": 103
@@ -1235,27 +1360,27 @@
 					}
 				},
 				{
-					"filename": "attacks/dunk/12.png",
+					"filename": "attacks/forcepalm/05.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
 						"w": 122,
-						"h": 122
+						"h": 109
 					},
 					"spriteSourceSize": {
-						"x": 27,
-						"y": 45,
-						"w": 70,
-						"h": 77
+						"x": 0,
+						"y": 6,
+						"w": 84,
+						"h": 102
 					},
 					"frame": {
-						"x": 778,
-						"y": 424,
-						"w": 70,
-						"h": 77
+						"x": 837,
+						"y": 317,
+						"w": 84,
+						"h": 102
 					},
 					"anchor": {
-						"x": 0.5,
+						"x": 0.30000000000000004,
 						"y": 1
 					}
 				},
@@ -1274,13 +1399,13 @@
 						"h": 102
 					},
 					"frame": {
-						"x": 809,
-						"y": 317,
+						"x": 902,
+						"y": 211,
 						"w": 84,
 						"h": 102
 					},
 					"anchor": {
-						"x": 0.30000000000000004,
+						"x": 0.3,
 						"y": 0.95
 					}
 				},
@@ -1299,89 +1424,39 @@
 						"h": 102
 					},
 					"frame": {
-						"x": 853,
-						"y": 211,
+						"x": 951,
+						"y": 106,
 						"w": 84,
 						"h": 102
 					},
 					"anchor": {
-						"x": 0.30000000000000004,
+						"x": 0.3,
 						"y": 0.95
 					}
 				},
 				{
-					"filename": "attacks/overhead/03.png",
+					"filename": "attacks/forcepalm/03.png",
 					"rotated": false,
 					"trimmed": true,
 					"sourceSize": {
-						"w": 114,
-						"h": 106
+						"w": 122,
+						"h": 109
 					},
 					"spriteSourceSize": {
 						"x": 0,
-						"y": 1,
+						"y": 6,
 						"w": 83,
 						"h": 102
 					},
 					"frame": {
-						"x": 865,
-						"y": 106,
+						"x": 1023,
+						"y": 1,
 						"w": 83,
 						"h": 102
 					},
 					"anchor": {
 						"x": 0.30000000000000004,
-						"y": 0.95
-					}
-				},
-				{
-					"filename": "attacks/overhead/11.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 114,
-						"h": 106
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 1,
-						"w": 78,
-						"h": 102
-					},
-					"frame": {
-						"x": 868,
-						"y": 1,
-						"w": 78,
-						"h": 102
-					},
-					"anchor": {
-						"x": 0.30000000000000004,
-						"y": 0.95
-					}
-				},
-				{
-					"filename": "attacks/reppuken/02.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 106,
-						"h": 130
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 27,
-						"w": 84,
-						"h": 101
-					},
-					"frame": {
-						"x": 948,
-						"y": 1,
-						"w": 84,
-						"h": 101
-					},
-					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"y": 1
 					}
 				},
 				{
@@ -1399,13 +1474,188 @@
 						"h": 84
 					},
 					"frame": {
-						"x": 850,
+						"x": 837,
 						"y": 421,
 						"w": 72,
 						"h": 84
 					},
 					"anchor": {
 						"x": 0.4,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/overhead/03.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 114,
+						"h": 106
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 1,
+						"w": 83,
+						"h": 102
+					},
+					"frame": {
+						"x": 923,
+						"y": 315,
+						"w": 83,
+						"h": 102
+					},
+					"anchor": {
+						"x": 0.3,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "attacks/overhead/05.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 114,
+						"h": 106
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 14,
+						"w": 96,
+						"h": 89
+					},
+					"frame": {
+						"x": 923,
+						"y": 419,
+						"w": 96,
+						"h": 89
+					},
+					"anchor": {
+						"x": 0.3,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/14.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 78,
+						"h": 102
+					},
+					"frame": {
+						"x": 988,
+						"y": 210,
+						"w": 78,
+						"h": 102
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/overhead/11.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 114,
+						"h": 106
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 1,
+						"w": 78,
+						"h": 102
+					},
+					"frame": {
+						"x": 1037,
+						"y": 105,
+						"w": 78,
+						"h": 102
+					},
+					"anchor": {
+						"x": 0.3,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/04.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 7,
+						"w": 85,
+						"h": 101
+					},
+					"frame": {
+						"x": 1108,
+						"y": 1,
+						"w": 85,
+						"h": 101
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/reppuken/02.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 106,
+						"h": 130
+					},
+					"spriteSourceSize": {
+						"x": 2,
+						"y": 27,
+						"w": 84,
+						"h": 101
+					},
+					"frame": {
+						"x": 1008,
+						"y": 314,
+						"w": 84,
+						"h": 101
+					},
+					"anchor": {
+						"x": 0.471698,
+						"y": 0.972308
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/11.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 18,
+						"w": 121,
+						"h": 91
+					},
+					"frame": {
+						"x": 1021,
+						"y": 417,
+						"w": 121,
+						"h": 91
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
 						"y": 1
 					}
 				},
@@ -1424,39 +1674,14 @@
 						"h": 101
 					},
 					"frame": {
-						"x": 895,
-						"y": 315,
+						"x": 1068,
+						"y": 209,
 						"w": 74,
 						"h": 101
 					},
 					"anchor": {
 						"x": 0.4,
 						"y": 1
-					}
-				},
-				{
-					"filename": "attacks/overhead/05.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 114,
-						"h": 106
-					},
-					"spriteSourceSize": {
-						"x": 2,
-						"y": 14,
-						"w": 96,
-						"h": 89
-					},
-					"frame": {
-						"x": 924,
-						"y": 418,
-						"w": 96,
-						"h": 89
-					},
-					"anchor": {
-						"x": 0.30000000000000004,
-						"y": 0.95
 					}
 				},
 				{
@@ -1474,8 +1699,8 @@
 						"h": 100
 					},
 					"frame": {
-						"x": 939,
-						"y": 210,
+						"x": 1117,
+						"y": 104,
 						"w": 90,
 						"h": 100
 					},
@@ -1499,39 +1724,14 @@
 						"h": 100
 					},
 					"frame": {
-						"x": 971,
-						"y": 312,
+						"x": 1195,
+						"y": 1,
 						"w": 79,
 						"h": 100
 					},
 					"anchor": {
 						"x": 0.4,
 						"y": 1
-					}
-				},
-				{
-					"filename": "attacks/overhead/08.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 114,
-						"h": 106
-					},
-					"spriteSourceSize": {
-						"x": 8,
-						"y": 13,
-						"w": 73,
-						"h": 93
-					},
-					"frame": {
-						"x": 1022,
-						"y": 414,
-						"w": 73,
-						"h": 93
-					},
-					"anchor": {
-						"x": 0.30000000000000004,
-						"y": 0.95
 					}
 				},
 				{
@@ -1549,13 +1749,38 @@
 						"h": 99
 					},
 					"frame": {
-						"x": 950,
-						"y": 104,
+						"x": 1094,
+						"y": 312,
 						"w": 118,
 						"h": 99
 					},
 					"anchor": {
 						"x": 0.5,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/hook/03.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 99,
+						"h": 103
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 8,
+						"w": 99,
+						"h": 95
+					},
+					"frame": {
+						"x": 1144,
+						"y": 413,
+						"w": 99,
+						"h": 95
+					},
+					"anchor": {
+						"x": 0.4,
 						"y": 1
 					}
 				},
@@ -1574,8 +1799,8 @@
 						"h": 99
 					},
 					"frame": {
-						"x": 1034,
-						"y": 1,
+						"x": 1144,
+						"y": 206,
 						"w": 78,
 						"h": 99
 					},
@@ -1599,8 +1824,8 @@
 						"h": 97
 					},
 					"frame": {
-						"x": 1031,
-						"y": 205,
+						"x": 1209,
+						"y": 103,
 						"w": 115,
 						"h": 97
 					},
@@ -1624,14 +1849,14 @@
 						"h": 97
 					},
 					"frame": {
-						"x": 1070,
-						"y": 102,
+						"x": 1276,
+						"y": 1,
 						"w": 96,
 						"h": 97
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -1649,14 +1874,14 @@
 						"h": 97
 					},
 					"frame": {
-						"x": 1114,
-						"y": 1,
+						"x": 1214,
+						"y": 307,
 						"w": 86,
 						"h": 97
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
 					}
 				},
 				{
@@ -1674,8 +1899,8 @@
 						"h": 97
 					},
 					"frame": {
-						"x": 1052,
-						"y": 304,
+						"x": 1245,
+						"y": 406,
 						"w": 80,
 						"h": 97
 					},
@@ -1699,8 +1924,8 @@
 						"h": 97
 					},
 					"frame": {
-						"x": 1097,
-						"y": 403,
+						"x": 1224,
+						"y": 202,
 						"w": 79,
 						"h": 97
 					},
@@ -1724,13 +1949,38 @@
 						"h": 97
 					},
 					"frame": {
-						"x": 1134,
-						"y": 304,
+						"x": 1302,
+						"y": 301,
 						"w": 79,
 						"h": 97
 					},
 					"anchor": {
 						"x": 0.4,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/13.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 12,
+						"w": 86,
+						"h": 96
+					},
+					"frame": {
+						"x": 1305,
+						"y": 202,
+						"w": 86,
+						"h": 96
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
 						"y": 1
 					}
 				},
@@ -1749,8 +1999,8 @@
 						"h": 96
 					},
 					"frame": {
-						"x": 1148,
-						"y": 201,
+						"x": 1326,
+						"y": 100,
 						"w": 80,
 						"h": 96
 					},
@@ -1774,8 +2024,8 @@
 						"h": 96
 					},
 					"frame": {
-						"x": 1168,
-						"y": 100,
+						"x": 1374,
+						"y": 1,
 						"w": 79,
 						"h": 96
 					},
@@ -1799,39 +2049,14 @@
 						"h": 96
 					},
 					"frame": {
-						"x": 1202,
-						"y": 1,
+						"x": 1327,
+						"y": 400,
 						"w": 75,
 						"h": 96
 					},
 					"anchor": {
-						"x": 0.30000000000000004,
+						"x": 0.3,
 						"y": 0.95
-					}
-				},
-				{
-					"filename": "attacks/hook/03.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 99,
-						"h": 103
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 8,
-						"w": 99,
-						"h": 95
-					},
-					"frame": {
-						"x": 1178,
-						"y": 403,
-						"w": 99,
-						"h": 95
-					},
-					"anchor": {
-						"x": 0.4,
-						"y": 1
 					}
 				},
 				{
@@ -1849,13 +2074,38 @@
 						"h": 95
 					},
 					"frame": {
-						"x": 1215,
-						"y": 299,
+						"x": 1383,
+						"y": 300,
 						"w": 86,
 						"h": 95
 					},
 					"anchor": {
 						"x": 0.5,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/06.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 14,
+						"w": 84,
+						"h": 95
+					},
+					"frame": {
+						"x": 1393,
+						"y": 198,
+						"w": 84,
+						"h": 95
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
 						"y": 1
 					}
 				},
@@ -1874,8 +2124,8 @@
 						"h": 95
 					},
 					"frame": {
-						"x": 1230,
-						"y": 198,
+						"x": 1408,
+						"y": 99,
 						"w": 72,
 						"h": 95
 					},
@@ -1899,13 +2149,13 @@
 						"h": 95
 					},
 					"frame": {
-						"x": 1249,
-						"y": 99,
+						"x": 1455,
+						"y": 1,
 						"w": 70,
 						"h": 95
 					},
 					"anchor": {
-						"x": 0.30000000000000004,
+						"x": 0.3,
 						"y": 0.95
 					}
 				},
@@ -1924,13 +2174,113 @@
 						"h": 94
 					},
 					"frame": {
-						"x": 1279,
-						"y": 1,
+						"x": 1404,
+						"y": 397,
 						"w": 64,
 						"h": 94
 					},
 					"anchor": {
 						"x": 0.4,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/overhead/08.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 114,
+						"h": 106
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 13,
+						"w": 73,
+						"h": 93
+					},
+					"frame": {
+						"x": 1470,
+						"y": 397,
+						"w": 73,
+						"h": 93
+					},
+					"anchor": {
+						"x": 0.3,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/08.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 17,
+						"w": 122,
+						"h": 92
+					},
+					"frame": {
+						"x": 1471,
+						"y": 295,
+						"w": 122,
+						"h": 92
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/09.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 17,
+						"w": 121,
+						"h": 92
+					},
+					"frame": {
+						"x": 1479,
+						"y": 196,
+						"w": 121,
+						"h": 92
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/10.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 17,
+						"w": 121,
+						"h": 92
+					},
+					"frame": {
+						"x": 1482,
+						"y": 98,
+						"w": 121,
+						"h": 92
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
 						"y": 1
 					}
 				},
@@ -1949,8 +2299,8 @@
 						"h": 92
 					},
 					"frame": {
-						"x": 1279,
-						"y": 396,
+						"x": 1527,
+						"y": 1,
 						"w": 98,
 						"h": 92
 					},
@@ -1974,14 +2324,39 @@
 						"h": 92
 					},
 					"frame": {
-						"x": 1303,
-						"y": 295,
+						"x": 1545,
+						"y": 389,
 						"w": 94,
 						"h": 92
 					},
 					"anchor": {
-						"x": 0.47169811,
-						"y": 0.97230769
+						"x": 0.471698,
+						"y": 0.972308
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/07.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 17,
+						"w": 89,
+						"h": 92
+					},
+					"frame": {
+						"x": 1595,
+						"y": 290,
+						"w": 89,
+						"h": 92
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
 					}
 				},
 				{
@@ -1999,39 +2374,14 @@
 						"h": 91
 					},
 					"frame": {
-						"x": 1304,
-						"y": 196,
+						"x": 1602,
+						"y": 192,
 						"w": 113,
 						"h": 91
 					},
 					"anchor": {
-						"x": 0.30000000000000004,
+						"x": 0.3,
 						"y": 0.95
-					}
-				},
-				{
-					"filename": "attacks/dunk/08.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 122,
-						"h": 122
-					},
-					"spriteSourceSize": {
-						"x": 10,
-						"y": 11,
-						"w": 97,
-						"h": 91
-					},
-					"frame": {
-						"x": 1321,
-						"y": 97,
-						"w": 97,
-						"h": 91
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 1
 					}
 				},
 				{
@@ -2049,7 +2399,7 @@
 						"h": 91
 					},
 					"frame": {
-						"x": 1345,
+						"x": 1717,
 						"y": 1,
 						"w": 94,
 						"h": 91
@@ -2057,81 +2407,6 @@
 					"anchor": {
 						"x": 0.4,
 						"y": 1
-					}
-				},
-				{
-					"filename": "attacks/overhead/06.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 114,
-						"h": 106
-					},
-					"spriteSourceSize": {
-						"x": 3,
-						"y": 14,
-						"w": 83,
-						"h": 89
-					},
-					"frame": {
-						"x": 1420,
-						"y": 94,
-						"w": 83,
-						"h": 89
-					},
-					"anchor": {
-						"x": 0.30000000000000004,
-						"y": 0.95
-					}
-				},
-				{
-					"filename": "attacks/uppercut/09.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 99,
-						"h": 103
-					},
-					"spriteSourceSize": {
-						"x": 27,
-						"y": 3,
-						"w": 45,
-						"h": 89
-					},
-					"frame": {
-						"x": 1441,
-						"y": 1,
-						"w": 45,
-						"h": 89
-					},
-					"anchor": {
-						"x": 0.4,
-						"y": 1
-					}
-				},
-				{
-					"filename": "attacks/overhead/07.png",
-					"rotated": false,
-					"trimmed": true,
-					"sourceSize": {
-						"w": 114,
-						"h": 106
-					},
-					"spriteSourceSize": {
-						"x": 6,
-						"y": 16,
-						"w": 78,
-						"h": 90
-					},
-					"frame": {
-						"x": 1420,
-						"y": 185,
-						"w": 78,
-						"h": 90
-					},
-					"anchor": {
-						"x": 0.30000000000000004,
-						"y": 0.95
 					}
 				},
 				{
@@ -2149,8 +2424,8 @@
 						"h": 91
 					},
 					"frame": {
-						"x": 1399,
-						"y": 289,
+						"x": 1717,
+						"y": 94,
 						"w": 94,
 						"h": 91
 					},
@@ -2174,10 +2449,135 @@
 						"h": 91
 					},
 					"frame": {
-						"x": 1399,
-						"y": 382,
+						"x": 1717,
+						"y": 187,
 						"w": 94,
 						"h": 91
+					},
+					"anchor": {
+						"x": 0.4,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/dunk/08.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 122
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 11,
+						"w": 97,
+						"h": 91
+					},
+					"frame": {
+						"x": 1605,
+						"y": 95,
+						"w": 97,
+						"h": 91
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/overhead/07.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 114,
+						"h": 106
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 16,
+						"w": 78,
+						"h": 90
+					},
+					"frame": {
+						"x": 1627,
+						"y": 1,
+						"w": 78,
+						"h": 90
+					},
+					"anchor": {
+						"x": 0.3,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "attacks/forcepalm/12.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 122,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 19,
+						"w": 121,
+						"h": 90
+					},
+					"frame": {
+						"x": 1686,
+						"y": 285,
+						"w": 121,
+						"h": 90
+					},
+					"anchor": {
+						"x": 0.30000000000000004,
+						"y": 1
+					}
+				},
+				{
+					"filename": "attacks/overhead/06.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 114,
+						"h": 106
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 14,
+						"w": 83,
+						"h": 89
+					},
+					"frame": {
+						"x": 1641,
+						"y": 384,
+						"w": 83,
+						"h": 89
+					},
+					"anchor": {
+						"x": 0.3,
+						"y": 0.95
+					}
+				},
+				{
+					"filename": "attacks/uppercut/09.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 99,
+						"h": 103
+					},
+					"spriteSourceSize": {
+						"x": 27,
+						"y": 3,
+						"w": 45,
+						"h": 89
+					},
+					"frame": {
+						"x": 1726,
+						"y": 377,
+						"w": 45,
+						"h": 89
 					},
 					"anchor": {
 						"x": 0.4,
@@ -2190,6 +2590,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:4e62b4a19bf4630dcb94c3a64c6726e6:f8026ea95f3545b1231a7d3957bc3437:936b2f0ef876fe993b907de9e132dd63$"
+		"smartupdate": "$TexturePacker:SmartUpdate:88ec3a210f567fe107e01b173a3d5fa9:8433059fa9bf2acc09925995229a7520:936b2f0ef876fe993b907de9e132dd63$"
 	}
 }

@@ -4,6 +4,7 @@ import { Scene } from 'phaser';
 const audio =  {
   rush1: 'sfx/hits/song203.ogg',
   land: 'sfx/land.ogg',
+  landHeavy: 'sfx/land_heavy.ogg',
   hitLight: 'sfx/hits/SE_00007.ogg',
   hitMed: 'sfx/hits/SE_00008.ogg',
   hitHeavy: 'sfx/hits/SE_00009.ogg',
@@ -15,6 +16,7 @@ const audio =  {
 export type AudioKey = keyof typeof audio;
 
 export class SoundLibrary {
+  public static defaultVolume = 0.4;
   private readonly scene: Scene;
 
   private registeredSounds: {[key in AudioKey]?: object} = {};
