@@ -48,6 +48,8 @@ interface StateMappedProps {
 
 interface DispatchMappedProps {
   onEditPushbox: typeof frameDataActionCreators.editPushbox;
+  onAddPushbox: typeof frameDataActionCreators.addPushbox;
+  onDeletePushbox: typeof frameDataActionCreators.deletePushbox;
 }
 
 // TODO add way to modify scale of sprites
@@ -62,7 +64,9 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
   public static mapDispatchToProps(dispatch: Dispatch): DispatchMappedProps {
     return bindActionCreators(
       {
-        onEditPushbox: frameDataActionCreators.editPushbox
+        onEditPushbox: frameDataActionCreators.editPushbox,
+        onAddPushbox: frameDataActionCreators.addPushbox,
+        onDeletePushbox: frameDataActionCreators.deletePushbox,
       },
       dispatch
     );
@@ -170,12 +174,17 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
           } as any);
           break;
         case BoxType.PUSH:
-          this.setState({
-            pushboxUuid: uuidv4(),
-            pushbox: { x: ox, y: oy, width: 0, height: 0 },
-            newBoxOrigin
-          });
-          // TODO add new pushbox to redux
+          if (this.props.selected.frame) {
+            const { key: frameKey, index: frameIndex } = this.props.selected.frame;
+            const uuid = uuidv4();
+            const pushbox = { x: ox, y: oy, width: 0, height: 0 };
+            this.setState({
+              pushboxUuid: uuid,
+              pushbox,
+              newBoxOrigin
+            });
+            this.props.onAddPushbox({ uuid, pushbox, frameKey, frameIndex });
+          }
           break;
       }
     }
@@ -254,9 +263,12 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
           hitboxes: this.state.hitboxes.filter((__, i: number) => i !== index)
         });
       } else {
-        this.setState({
-          pushbox: null
-        });
+        if (this.props.selected.frame) {
+          this.setState({
+            pushbox: null
+          });
+          this.props.onDeletePushbox({ frameKey: this.props.selected.frame.key, uuid: this.state.pushboxUuid })
+        }
       }
     };
   }

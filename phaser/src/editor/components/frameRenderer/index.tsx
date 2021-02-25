@@ -64,6 +64,7 @@ class FrameRenderer extends React.PureComponent<
     const source = getSpriteSource(this.props.frameData, this.props.frameKey);
     const config = source && getSpriteConfig(this.props.frameData, this.props.frameKey, this.props.frameIndex);
     const origin = config ? getAnchorPosition(config) : Vector2.ZERO;
+    const pushboxPreviewProps = this.getPushboxPreviewProps();
     return (
       <div className={cx('cn--sprite-frame', this.isSelected && 'mod--selected')} onClick={this.onClick}>
         <div className="cn--sprite">
@@ -89,11 +90,11 @@ class FrameRenderer extends React.PureComponent<
                 editable={false}
               />
             ))}
-            {this.props.push && (
+            {pushboxPreviewProps && (
               <PushboxPreview
                 origin={origin}
-                config={this.props.push.box}
-                persistent={this.props.push.persistent}
+                config={pushboxPreviewProps.config}
+                persistent={pushboxPreviewProps.persistent}
                 editable={false}
               />
             )}
@@ -110,6 +111,26 @@ class FrameRenderer extends React.PureComponent<
   private get isSelected(): boolean {
     const { frameIndex, frameKey, selectedFrame } = this.props;
     return selectedFrame ? selectedFrame.index === frameIndex && selectedFrame.key === frameKey : false;
+  }
+
+  private getPushboxPreviewProps(): { config: PushboxConfig, persistent: boolean } | null {
+    const { normalizedDefinitionMap: { pushboxes, frameDef: {[this.props.frameKey]: { pushboxDef }}}} = this.props.frameData;
+    if (pushboxDef[this.props.frameIndex]) {
+      return { config: pushboxes[pushboxDef[this.props.frameIndex]].box, persistent: false };
+    } else {
+      for (let i = this.props.frameIndex - 1; i >= 0; i--) {
+        const pushboxUuid = pushboxDef[i];
+        if (pushboxUuid) {
+          const pushbox = pushboxes[pushboxUuid];
+          if (pushbox.persistThroughFrame && pushbox.persistThroughFrame > i) {
+            return { config: pushbox.box, persistent: true };
+          } else {
+            break;
+          }
+        }
+      }
+    }
+    return null;
   }
 }
 
