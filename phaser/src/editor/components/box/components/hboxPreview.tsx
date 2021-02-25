@@ -131,10 +131,13 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
   };
 
   private onWindowMouseUp = () => {
-    this.setState({
-      dragOrigin: null,
-      originalConfig: null
-    });
+    if (this.state.dragOrigin) {
+      this.setState({
+        dragOrigin: null,
+        originalConfig: null
+      });
+      this.props.onFinishEdit();
+    }
   };
 
   private onWindowKeyDown = (e: KeyboardEvent): void => {

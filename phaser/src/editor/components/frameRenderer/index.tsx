@@ -1,6 +1,6 @@
 import * as React from 'react';
 import 'src/editor/components/frameRenderer/styles.scss';
-import { BoxConfig, BoxType, PushboxConfig, PushboxDefinition } from 'src/characters/frameData';
+import { BoxConfig, BoxDefinition, BoxType, PushboxConfig, PushboxDefinition } from 'src/characters/frameData';
 import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
@@ -14,14 +14,6 @@ import { getFrameDefData } from 'src/editor/redux/frameData/frameDefinitionEdit'
 export interface SpriteFrameProps {
   frameKey: string;
   frameIndex: number;
-  hit: {
-    boxes: BoxConfig[];
-    persistent?: boolean;
-  };
-  hurt: {
-    boxes: BoxConfig[];
-    persistent?: boolean;
-  };
 }
 
 interface StateMappedSpriteFrameProps {
@@ -38,10 +30,6 @@ interface DispatchMappedSpriteFrameProps {
 class FrameRenderer extends React.PureComponent<
   SpriteFrameProps & StateMappedSpriteFrameProps & DispatchMappedSpriteFrameProps
 > {
-  public static defaultProps = {
-    hit: { boxes: [] }
-  };
-
   public static mapStateToProps(state: AppState): StateMappedSpriteFrameProps {
     return { frameData: state.frameData, selectedFrame: state.frameEdit.frame };
   }
@@ -61,27 +49,29 @@ class FrameRenderer extends React.PureComponent<
     const source = getSpriteSource(this.props.frameData, this.props.frameKey);
     const config = source && getSpriteConfig(this.props.frameData, this.props.frameKey, this.props.frameIndex);
     const origin = config ? getAnchorPosition(config) : Vector2.ZERO;
+    const hurtboxPreviewProps = this.getHBoxPreviewProps(BoxType.HURT);
+    const hitboxPreviewProps = this.getHBoxPreviewProps(BoxType.HIT);
     const pushboxPreviewProps = this.getPushboxPreviewProps();
     return (
       <div className={cx('cn--sprite-frame', this.isSelected && 'mod--selected')} onClick={this.onClick}>
         <div className="cn--sprite">
           {config && source && <SpriteRenderer config={config} source={source} />}
           <div className="cn--box-display">
-            {this.props.hurt.boxes.map((box: BoxConfig, i: number) => (
+            {hurtboxPreviewProps.config.map((box: BoxConfig, i: number) => (
               <HboxPreview
                 key={i}
                 config={box}
-                persistent={this.props.hurt.persistent}
+                persistent={hurtboxPreviewProps.persistent}
                 type={BoxType.HURT}
                 origin={origin}
                 editable={false}
               />
             ))}
-            {this.props.hit.boxes.map((box: BoxConfig, i: number) => (
+            {hitboxPreviewProps.config.map((box: BoxConfig, i: number) => (
               <HboxPreview
                 key={i}
                 config={box}
-                persistent={this.props.hit.persistent}
+                persistent={hurtboxPreviewProps.persistent}
                 type={BoxType.HIT}
                 origin={origin}
                 editable={false}
@@ -110,7 +100,23 @@ class FrameRenderer extends React.PureComponent<
     return selectedFrame ? selectedFrame.index === frameIndex && selectedFrame.key === frameKey : false;
   }
 
-  private getPushboxPreviewProps(): { config: PushboxConfig, persistent: boolean } | null {
+  private getHBoxPreviewProps(type: BoxType.HURT | BoxType.HIT): { config: BoxConfig[]; persistent?: boolean } {
+    const { frameData, frameKey, frameIndex } = this.props;
+    const frameDefData: BoxDefinition | null = getFrameDefData(frameData, frameKey, frameIndex, type);
+    if (frameDefData) {
+      return { config: frameDefData.boxes, persistent: false };
+    } else {
+      for (let i = this.props.frameIndex - 1; i >= 0; i--) {
+        const data: BoxDefinition | null = getFrameDefData(frameData, frameKey, frameIndex, type);
+        if (data && data.persistThroughFrame && data.persistThroughFrame > i) {
+          return { config: data.boxes, persistent: true };
+        }
+      }
+    }
+    return { config: [] };
+  }
+
+  private getPushboxPreviewProps(): { config: PushboxConfig; persistent: boolean } | null {
     const { frameData, frameKey, frameIndex } = this.props;
     const frameDefData: PushboxDefinition | null = getFrameDefData(frameData, frameKey, frameIndex, BoxType.PUSH);
     if (frameDefData) {

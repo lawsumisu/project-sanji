@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 import actionCreatorFactory, { isType } from 'typescript-fsa';
-import { BoxType, PushboxDefinition } from 'src/characters/frameData';
+import { BoxDefinition, BoxType, HitboxDefinition, PushboxDefinition } from 'src/characters/frameData';
 import * as _ from 'lodash';
 import { FrameDataState } from 'src/editor/redux/frameData/index';
 
@@ -19,13 +19,25 @@ export function getFrameDefData<T extends BoxType>(
   frameKey: string,
   frameIndex: number,
   type: T
-): (T extends BoxType.PUSH ? PushboxDefinition : never) | null {
+):
+  | (T extends BoxType.PUSH
+      ? PushboxDefinition
+      : T extends BoxType.HIT
+      ? HitboxDefinition
+      : T extends BoxType.HURT
+      ? BoxDefinition
+      : never)
+  | null {
   const { definitionMap, frameDefinitionEdits } = frameDataState;
+  const id = getFrameDefId(frameKey, frameIndex, type);
+  const originalData = _.get(definitionMap, id, null);
+  const data = _.merge({}, originalData, (frameDefinitionEdits[id] || {}).data);
   switch (type) {
+    case BoxType.HURT:
+    case BoxType.HIT: {
+      return data.boxes ? data : null;
+    }
     case BoxType.PUSH: {
-      const id = getFrameDefId(frameKey, frameIndex, BoxType.PUSH);
-      const originalData = _.get(definitionMap, id, null);
-      const data = _.merge({}, originalData, (frameDefinitionEdits[id] || {}).data);
       return data.box ? data : null;
     }
     default: {
@@ -39,24 +51,60 @@ export function getFrameDefId(frameKey: string, frameIndex: number, type: BoxTyp
   return [frameKey, definitionString, frameIndex].join('.');
 }
 
+type WithFrameId<T = {}> = T & { frameIndex: number; frameKey: string };
 export const frameDefinitionEditActionCreators = {
-  addPushbox: ACF<{ pushboxDef: PushboxDefinition; frameIndex: number; frameKey: string }>('ADD_PUSHBOX'),
-  editPushbox: ACF<{ pushboxDef: Partial<PushboxDefinition>; frameIndex: number; frameKey: string }>('EDIT_PUSHBOX'),
-  deletePushbox: ACF<{ frameIndex: number; frameKey: string }>('DELETE_PUSHBOX')
+  addHurtbox: ACF<WithFrameId<{ hurtboxDef: BoxDefinition }>>('ADD_HURTBOX'),
+  editHurtbox: ACF<WithFrameId<{ hurtboxDef: Partial<BoxDefinition> }>>('EDIT_HURTBOX'),
+  deleteHurtbox: ACF<WithFrameId>('DELETE_HURTBOX'),
+  addHitbox: ACF<WithFrameId<{ hitboxDef: HitboxDefinition }>>('ADD_HITBOX'),
+  editHitbox: ACF<WithFrameId<{ hitboxDef: Partial<HitboxDefinition> }>>('EDIT_HITBOX'),
+  deleteHitbox: ACF<WithFrameId>('DELETE_HITBOX'),
+  addPushbox: ACF<WithFrameId<{ pushboxDef: PushboxDefinition }>>('ADD_PUSHBOX'),
+  editPushbox: ACF<WithFrameId<{ pushboxDef: Partial<PushboxDefinition> }>>('EDIT_PUSHBOX'),
+  deletePushbox: ACF<WithFrameId>('DELETE_PUSHBOX')
 };
 
 // TODO update edits field on change to support undo/redo
 export function frameDefinitionEditReducer(state: FrameDefinitionEditState, action: Action): FrameDefinitionEditState {
   if (
+    isType(action, frameDefinitionEditActionCreators.addHurtbox) ||
+    isType(action, frameDefinitionEditActionCreators.editHurtbox)
+  ) {
+    const { frameKey, frameIndex, hurtboxDef } = action.payload;
+    const id = getFrameDefId(frameKey, frameIndex, BoxType.HURT);
+    const newState = _.merge({}, state, { [id]: {} });
+    newState[id].data = hurtboxDef;
+    return newState;
+  } else if (
+    isType(action, frameDefinitionEditActionCreators.addHitbox) ||
+    isType(action, frameDefinitionEditActionCreators.editHitbox)
+  ) {
+    const { frameKey, frameIndex, hitboxDef } = action.payload;
+    const id = getFrameDefId(frameKey, frameIndex, BoxType.PUSH);
+    const newState = _.merge({}, state, { [id]: {} });
+    newState[id].data = hitboxDef;
+    return newState;
+  } else if (
     isType(action, frameDefinitionEditActionCreators.addPushbox) ||
     isType(action, frameDefinitionEditActionCreators.editPushbox)
   ) {
     const { frameKey, frameIndex, pushboxDef } = action.payload;
     const id = getFrameDefId(frameKey, frameIndex, BoxType.PUSH);
     return _.merge({}, state, { [id]: { data: pushboxDef } });
-  } else if (isType(action, frameDefinitionEditActionCreators.deletePushbox)) {
+  } else if (
+    isType(action, frameDefinitionEditActionCreators.deleteHurtbox) ||
+    isType(action, frameDefinitionEditActionCreators.deleteHitbox) ||
+    isType(action, frameDefinitionEditActionCreators.deletePushbox)
+  ) {
+    const { deleteHurtbox, deleteHitbox } = frameDefinitionEditActionCreators;
     const { frameKey, frameIndex } = action.payload;
-    const id = getFrameDefId(frameKey, frameIndex, BoxType.PUSH);
+    const type =
+      action.type === deleteHurtbox.type
+        ? BoxType.HURT
+        : action.type === deleteHitbox.type
+        ? BoxType.HIT
+        : BoxType.PUSH;
+    const id = getFrameDefId(frameKey, frameIndex, type);
     return _.merge({}, state, { [id]: { data: null } });
   }
   return state;

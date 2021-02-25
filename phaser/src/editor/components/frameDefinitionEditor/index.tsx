@@ -5,20 +5,14 @@ import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/componen
 import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
-import {
-  FrameDataState,
-  getAnchorPosition,
-  getSpriteConfig,
-  getSpriteSource
-} from 'src/editor/redux/frameData';
+import { FrameDataState, getAnchorPosition, getSpriteConfig, getSpriteSource } from 'src/editor/redux/frameData';
 import 'src/editor/components/frameDefinitionEditor/styles.scss';
-import { getBoxDefinition } from 'src/editor/redux/utilities';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { Tool } from 'src/editor/components/frameDefinitionEditor/components/tool';
 import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { bindActionCreators, Dispatch } from 'redux';
-import { frameDefinitionEditActionCreators } from 'src/editor/redux/frameData/frameDefinitionEdit';
+import { frameDefinitionEditActionCreators, getFrameDefData } from 'src/editor/redux/frameData/frameDefinitionEdit';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -45,12 +39,19 @@ interface StateMappedProps {
 }
 
 interface DispatchMappedProps {
+  onAddHurtbox: typeof frameDefinitionEditActionCreators.addHurtbox;
+  onEditHurtbox: typeof frameDefinitionEditActionCreators.editHurtbox;
+  onDeleteHurtbox: typeof frameDefinitionEditActionCreators.deleteHurtbox;
+  onAddHitbox: typeof frameDefinitionEditActionCreators.addHitbox;
+  onEditHitbox: typeof frameDefinitionEditActionCreators.editHitbox;
+  onDeleteHitbox: typeof frameDefinitionEditActionCreators.deleteHitbox;
   onAddPushbox: typeof frameDefinitionEditActionCreators.addPushbox;
   onEditPushbox: typeof frameDefinitionEditActionCreators.editPushbox;
   onDeletePushbox: typeof frameDefinitionEditActionCreators.deletePushbox;
 }
 
 // TODO add way to modify scale of sprites
+// TODO render Editor with non null selected frame props
 class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & DispatchMappedProps, State> {
   public static mapStateToProps(state: AppState): StateMappedProps {
     return {
@@ -62,6 +63,12 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
   public static mapDispatchToProps(dispatch: Dispatch): DispatchMappedProps {
     return bindActionCreators(
       {
+        onAddHurtbox: frameDefinitionEditActionCreators.addHurtbox,
+        onEditHurtbox: frameDefinitionEditActionCreators.editHurtbox,
+        onDeleteHurtbox: frameDefinitionEditActionCreators.deleteHurtbox,
+        onAddHitbox: frameDefinitionEditActionCreators.addHitbox,
+        onEditHitbox: frameDefinitionEditActionCreators.editHitbox,
+        onDeleteHitbox: frameDefinitionEditActionCreators.deleteHitbox,
         onAddPushbox: frameDefinitionEditActionCreators.addPushbox,
         onEditPushbox: frameDefinitionEditActionCreators.editPushbox,
         onDeletePushbox: frameDefinitionEditActionCreators.deletePushbox
@@ -70,6 +77,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
     );
   }
 
+  //TODO Set state in constructor and use key to refresh when props change
   public static getDerivedStateFromProps(props: StateMappedProps, state: State): State {
     if (props.selected.frame && !_.isEqual(props.selected.frame, state.selectedFrame)) {
       const {
@@ -78,9 +86,9 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
           frame: { key, index }
         }
       } = props;
-      const hit = getBoxDefinition(frameData, key, index, BoxType.HIT) as BoxDefinition | null;
-      const hurt = getBoxDefinition(frameData, key, index, BoxType.HURT) as BoxDefinition | null;
-      const pushbox = getBoxDefinition(frameData, key, index, BoxType.PUSH) as PushboxDefinition | null;
+      const hit = getFrameDefData(frameData, key, index, BoxType.HIT) as BoxDefinition | null;
+      const hurt = getFrameDefData(frameData, key, index, BoxType.HURT) as BoxDefinition | null;
+      const pushbox = getFrameDefData(frameData, key, index, BoxType.PUSH) as PushboxDefinition | null;
       return {
         selectedFrame: props.selected.frame,
         newBoxType: state.newBoxType,
@@ -158,16 +166,29 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
         case BoxType.HURT:
         case BoxType.HIT:
           let box: BoxConfig;
-          const key = this.state.newBoxType === BoxType.HIT ? 'hitboxes' : 'hurtboxes';
           if (this.state.mode === BoxMode.CIRCLE) {
             box = { x: ox, y: oy, r: 10 };
           } else {
             box = { x1: ox, y1: oy, x2: ox, y2: oy, r: 10 };
           }
-          this.setState({
-            [key]: [...this.state[key], box],
-            newBoxOrigin
-          } as any);
+          if (this.props.selected.frame) {
+            const { key: frameKey, index: frameIndex } = this.props.selected.frame;
+            if (this.state.newBoxType === BoxType.HURT) {
+              this.setState({
+                hurtboxes: [...this.state.hurtboxes, box],
+                newBoxOrigin
+              }, () => {
+                this.props.onAddHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameIndex, frameKey})
+              });
+            } else {
+              this.setState({
+                hurtboxes: [...this.state.hurtboxes, box],
+                newBoxOrigin
+              }, () => {
+                this.props.onAddHitbox({ hitboxDef: { boxes: this.state.hitboxes }, frameIndex, frameKey})
+              });
+            }
+          }
           break;
         case BoxType.PUSH:
           if (this.props.selected.frame) {
@@ -232,6 +253,28 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
     };
   }
 
+  private getFinishEditFn(type: BoxType) {
+    return () => {
+      if (this.props.selected.frame) {
+        const { key: frameKey, index: frameIndex } = this.props.selected.frame;
+        switch(type) {
+          case BoxType.HURT: {
+            this.props.onEditHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameKey, frameIndex });
+            break;
+          }
+          case BoxType.HIT: {
+            this.props.onEditHitbox({ hitboxDef: { boxes: this.state.hitboxes }, frameKey, frameIndex });
+            break;
+          }
+          case BoxType.PUSH: {
+            this.props.onEditPushbox({ pushboxDef: { box: this.state.pushbox! }, frameKey, frameIndex });
+            break;
+          }
+        }
+      }
+    }
+  }
+
   private onPushboxChange = (pushbox: PushboxConfig) => {
     if (this.state.pushbox) {
       this.setState({
@@ -240,35 +283,49 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
     }
   };
 
-  private onPushboxFinishEdit = () => {
-    if (this.state.pushbox && this.props.selected.frame) {
-      const { key: frameKey, index: frameIndex } = this.props.selected.frame;
-      this.props.onEditPushbox({ pushboxDef: { box: this.state.pushbox }, frameKey, frameIndex });
-    }
-  };
-
   private getOnDeleteFn(type: BoxType, index = 0) {
     return () => {
       if (type === BoxType.HURT) {
         this.setState({
           hurtboxes: this.state.hurtboxes.filter((__, i: number) => i !== index)
+        }, () => {
+          if (this.props.selected.frame) {
+            const { key: frameKey, index: frameIndex } = this.props.selected.frame;
+            if (this.state.hurtboxes.length === 0 && this.props.selected.frame) {
+              this.props.onDeleteHurtbox({ frameIndex, frameKey })
+            } else {
+              this.props.onEditHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameKey, frameIndex });
+            }
+          }
         });
       } else if (type === BoxType.HIT) {
         this.setState({
           hitboxes: this.state.hitboxes.filter((__, i: number) => i !== index)
+        }, () => {
+          if (this.props.selected.frame) {
+            const { key: frameKey, index: frameIndex } = this.props.selected.frame;
+            if (this.state.hurtboxes.length === 0 && this.props.selected.frame) {
+              this.props.onDeleteHitbox({ frameIndex, frameKey })
+            } else {
+              this.props.onEditHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameKey, frameIndex });
+            }
+          }
         });
       } else {
         if (this.props.selected.frame) {
           this.setState({
             pushbox: null
           });
-          this.props.onDeletePushbox({ frameKey: this.props.selected.frame.key, frameIndex:this.props.selected.frame.index })
+          this.props.onDeletePushbox({
+            frameKey: this.props.selected.frame.key,
+            frameIndex: this.props.selected.frame.index
+          });
         }
       }
     };
   }
 
-  private BoxDisplay = ({ boxes, type, origin }: { boxes: BoxConfig[]; type: BoxType; origin: Vector2 }) => (
+  private HBoxesPreview = ({ boxes, type, origin }: { boxes: BoxConfig[]; type: BoxType; origin: Vector2 }) => (
     <div>
       {boxes.map((box: BoxConfig, i: number) => (
         <HboxPreview
@@ -281,6 +338,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
           onChange={this.getOnHboxChangeFn(type, i)}
           onDelete={this.getOnDeleteFn(type, i)}
           initialDragOrigin={this.state.newBoxOrigin || undefined}
+          onFinishEdit={this.getFinishEditFn(type)}
         />
       ))}
     </div>
@@ -295,8 +353,8 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
       return (
         <div ref={this.setRef}>
           {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
-          {this.BoxDisplay({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
-          {this.BoxDisplay({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
+          {this.HBoxesPreview({ origin, type: BoxType.HURT, boxes: this.state.hurtboxes })}
+          {this.HBoxesPreview({ origin, type: BoxType.HIT, boxes: this.state.hitboxes })}
           {this.state.pushbox && (
             <PushboxPreview
               origin={origin}
@@ -305,7 +363,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
               onChange={this.onPushboxChange}
               onDelete={this.getOnDeleteFn(BoxType.PUSH)}
               initialDragOrigin={(this.state.newBoxType === BoxType.PUSH && this.state.newBoxOrigin) || undefined}
-              onFinishEdit={this.onPushboxFinishEdit}
+              onFinishEdit={this.getFinishEditFn(BoxType.PUSH)}
             />
           )}
           <FontAwesomeIcon

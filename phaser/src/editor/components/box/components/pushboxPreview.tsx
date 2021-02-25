@@ -118,10 +118,12 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
   };
 
   private onWindowMouseUp = () => {
-    this.setState({
-      ...PushboxPreview.defaultState
-    });
-    this.props.onFinishEdit();
+    if (this.state.dragOrigin) {
+      this.setState({
+        ...PushboxPreview.defaultState
+      });
+      this.props.onFinishEdit();
+    }
   };
 
   private onWindowKeyDown = (e: KeyboardEvent): void => {
