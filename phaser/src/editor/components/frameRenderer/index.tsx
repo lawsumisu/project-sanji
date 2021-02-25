@@ -1,6 +1,6 @@
 import * as React from 'react';
 import 'src/editor/components/frameRenderer/styles.scss';
-import { BoxConfig, BoxType, PushboxConfig } from 'src/characters/frameData';
+import { BoxConfig, BoxType, PushboxConfig, PushboxDefinition } from 'src/characters/frameData';
 import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/components';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
@@ -9,6 +9,7 @@ import { bindActionCreators, Dispatch } from 'redux';
 import { frameEditActionCreators, FrameEditState } from 'src/editor/redux/frameEdit';
 import cx from 'classnames';
 import { Vector2 } from '@lawsumisu/common-utilities';
+import { getFrameDefData } from 'src/editor/redux/frameData/frameDefinitionEdit';
 
 export interface SpriteFrameProps {
   frameKey: string;
@@ -19,10 +20,6 @@ export interface SpriteFrameProps {
   };
   hurt: {
     boxes: BoxConfig[];
-    persistent?: boolean;
-  };
-  push?: {
-    box: PushboxConfig;
     persistent?: boolean;
   };
 }
@@ -114,19 +111,15 @@ class FrameRenderer extends React.PureComponent<
   }
 
   private getPushboxPreviewProps(): { config: PushboxConfig, persistent: boolean } | null {
-    const { normalizedDefinitionMap: { pushboxes, frameDef: {[this.props.frameKey]: { pushboxDef }}}} = this.props.frameData;
-    if (pushboxDef[this.props.frameIndex]) {
-      return { config: pushboxes[pushboxDef[this.props.frameIndex]].box, persistent: false };
+    const { frameData, frameKey, frameIndex } = this.props;
+    const frameDefData: PushboxDefinition | null = getFrameDefData(frameData, frameKey, frameIndex, BoxType.PUSH);
+    if (frameDefData) {
+      return { config: frameDefData.box, persistent: false };
     } else {
       for (let i = this.props.frameIndex - 1; i >= 0; i--) {
-        const pushboxUuid = pushboxDef[i];
-        if (pushboxUuid) {
-          const pushbox = pushboxes[pushboxUuid];
-          if (pushbox.persistThroughFrame && pushbox.persistThroughFrame > i) {
-            return { config: pushbox.box, persistent: true };
-          } else {
-            break;
-          }
+        const data: PushboxDefinition | null = getFrameDefData(frameData, frameKey, frameIndex, BoxType.PUSH);
+        if (data && data.persistThroughFrame && data.persistThroughFrame > i) {
+          return { config: data.box, persistent: true };
         }
       }
     }

@@ -6,7 +6,6 @@ import { FrameEditState } from 'src/editor/redux/frameEdit';
 import { connect } from 'react-redux';
 import { AppState } from 'src/editor/redux';
 import {
-  frameDataActionCreators,
   FrameDataState,
   getAnchorPosition,
   getSpriteConfig,
@@ -19,7 +18,7 @@ import { Tool } from 'src/editor/components/frameDefinitionEditor/components/too
 import { FrameInfo } from 'src/editor/components/frameDefinitionEditor/components/frameInfo';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { bindActionCreators, Dispatch } from 'redux';
-import { v4 as uuidv4 } from 'uuid';
+import { frameDefinitionEditActionCreators } from 'src/editor/redux/frameData/frameDefinitionEdit';
 
 enum BoxMode {
   CIRCLE = 'CIRCLE',
@@ -35,7 +34,6 @@ interface State {
   newBoxType: BoxType;
   hitboxes: BoxConfig[];
   hurtboxes: BoxConfig[];
-  pushboxUuid: string;
   pushbox: PushboxConfig | null;
   newBoxOrigin: Vector2 | null;
   mode: BoxMode;
@@ -47,9 +45,9 @@ interface StateMappedProps {
 }
 
 interface DispatchMappedProps {
-  onEditPushbox: typeof frameDataActionCreators.editPushbox;
-  onAddPushbox: typeof frameDataActionCreators.addPushbox;
-  onDeletePushbox: typeof frameDataActionCreators.deletePushbox;
+  onAddPushbox: typeof frameDefinitionEditActionCreators.addPushbox;
+  onEditPushbox: typeof frameDefinitionEditActionCreators.editPushbox;
+  onDeletePushbox: typeof frameDefinitionEditActionCreators.deletePushbox;
 }
 
 // TODO add way to modify scale of sprites
@@ -64,9 +62,9 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
   public static mapDispatchToProps(dispatch: Dispatch): DispatchMappedProps {
     return bindActionCreators(
       {
-        onEditPushbox: frameDataActionCreators.editPushbox,
-        onAddPushbox: frameDataActionCreators.addPushbox,
-        onDeletePushbox: frameDataActionCreators.deletePushbox,
+        onAddPushbox: frameDefinitionEditActionCreators.addPushbox,
+        onEditPushbox: frameDefinitionEditActionCreators.editPushbox,
+        onDeletePushbox: frameDefinitionEditActionCreators.deletePushbox
       },
       dispatch
     );
@@ -88,7 +86,6 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
         newBoxType: state.newBoxType,
         hitboxes: hit ? hit.boxes.map(box => ({ ...box })) : [],
         hurtboxes: hurt ? hurt.boxes.map(box => ({ ...box })) : [],
-        pushboxUuid: pushbox ? frameData.normalizedDefinitionMap.frameDef[key].pushboxDef[index] : '',
         pushbox: pushbox ? pushbox.box : null,
         mode: state.mode,
         newBoxOrigin: null
@@ -102,7 +99,6 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
     newBoxType: BoxType.HURT,
     hitboxes: [],
     hurtboxes: [],
-    pushboxUuid: '',
     pushbox: { x: 0, y: 0, width: 0, height: 0 },
     mode: BoxMode.CIRCLE,
     newBoxOrigin: null
@@ -176,14 +172,12 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
         case BoxType.PUSH:
           if (this.props.selected.frame) {
             const { key: frameKey, index: frameIndex } = this.props.selected.frame;
-            const uuid = uuidv4();
             const pushbox = { x: ox, y: oy, width: 0, height: 0 };
             this.setState({
-              pushboxUuid: uuid,
               pushbox,
               newBoxOrigin
             });
-            this.props.onAddPushbox({ uuid, pushbox, frameKey, frameIndex });
+            this.props.onAddPushbox({ pushboxDef: { box: pushbox }, frameKey, frameIndex });
           }
           break;
       }
@@ -247,8 +241,9 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
   };
 
   private onPushboxFinishEdit = () => {
-    if (this.state.pushbox) {
-      this.props.onEditPushbox({ uuid: this.state.pushboxUuid, pushbox: this.state.pushbox });
+    if (this.state.pushbox && this.props.selected.frame) {
+      const { key: frameKey, index: frameIndex } = this.props.selected.frame;
+      this.props.onEditPushbox({ pushboxDef: { box: this.state.pushbox }, frameKey, frameIndex });
     }
   };
 
@@ -267,7 +262,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
           this.setState({
             pushbox: null
           });
-          this.props.onDeletePushbox({ frameKey: this.props.selected.frame.key, uuid: this.state.pushboxUuid })
+          this.props.onDeletePushbox({ frameKey: this.props.selected.frame.key, frameIndex:this.props.selected.frame.index })
         }
       }
     };

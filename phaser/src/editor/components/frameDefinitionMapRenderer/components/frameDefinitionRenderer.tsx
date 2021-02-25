@@ -27,7 +27,6 @@ export default class FrameDefinitionRenderer extends React.PureComponent<Props> 
           },
           0
         );
-    const { pushboxDef } = this.props.definition;
     return (
       <div className={cx('cn--frame-definition-renderer', this.props.className)}>
         {_.times(uniqueFrames, (i: number) => {
@@ -38,14 +37,6 @@ export default class FrameDefinitionRenderer extends React.PureComponent<Props> 
               frameIndex={i}
               hit={this.getBoxes(i, 'hitboxDef')}
               hurt={this.getBoxes(i, 'hurtboxDef')}
-              push={
-                pushboxDef && pushboxDef[i]
-                  ? {
-                      box: pushboxDef[i].box,
-                      persistent: pushboxDef[i].persistThroughFrame && pushboxDef[i].persistThroughFrame! > i
-                    }
-                  : undefined
-              }
             />
           );
         })}
