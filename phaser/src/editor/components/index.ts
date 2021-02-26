@@ -6,4 +6,5 @@ export { ReduxConnectedFrameRenderer as FrameRenderer } from 'src/editor/compone
 export { ReduxConnectedFrameDefinitionEditor as FrameDefinitionEditor } from 'src/editor/components/frameDefinitionEditor';
 export { ReduxConnectedDefinitionLoader as DefinitionLoader } from 'src/editor/components/definitionLoader';
 export { ReduxConnectedSpriteSheetLoader as SpriteSheetLoader } from 'src/editor/components/spriteSheetLoader';
+export { ReduxConnectedFrameDefinitionDownloader as FrameDefinitionLoader } from 'src/editor/components/frameDefinitionDownloader';
 export { default as Root } from 'src/editor/components/root';

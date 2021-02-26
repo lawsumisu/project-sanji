@@ -8,7 +8,8 @@ import {
   faCopy,
   faCrosshairs,
   faFileCode,
-  faFileImage
+  faFileImage,
+  faFileDownload,
 } from '@fortawesome/free-solid-svg-icons';
 import { getFrameDefId } from 'src/editor/redux/frameData/frameDefinitionEdit';
 
@@ -33,7 +34,7 @@ export function getBoxDefinition(
 }
 
 export function initializeFontAwesome(): void {
-  library.add(faAngleRight, faAngleLeft, faCopy, faFileCode, faFileImage, faCrosshairs);
+  library.add(faAngleRight, faAngleLeft, faCopy, faFileCode, faFileImage, faCrosshairs, faFileDownload);
 }
 
 export function round(v: number, precision = 100) {

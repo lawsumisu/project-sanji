@@ -1,15 +1,25 @@
 import * as React from 'react';
+import * as _ from 'lodash';
 import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 import cx from 'classnames';
-import 'src/editor/components/iconButton/styles.scss'
+import 'src/editor/components/iconButton/styles.scss';
 
-export default class Icon extends React.PureComponent<FontAwesomeIconProps & { hint?: string; }> {
+interface IconProps {
+  hint?: string;
+  disabled?: boolean;
+}
+
+export default class Icon extends React.PureComponent<FontAwesomeIconProps & IconProps> {
   public render(): React.ReactNode {
-    const { className, hint, ...rest} = this.props;
+    const { className, hint, disabled, onClick, ...rest } = this.props;
     return (
       <div title={hint}>
-        <FontAwesomeIcon className={cx('icon', className)}{...rest} />
+        <FontAwesomeIcon
+          className={cx('icon', disabled && 'mod--disabled', className)}
+          onClick={!disabled ? onClick : _.noop}
+          {...rest}
+        />
       </div>
-    )
+    );
   }
 }

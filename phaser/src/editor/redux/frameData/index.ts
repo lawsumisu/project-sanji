@@ -1,14 +1,10 @@
 import { FrameConfigTP, TextureDataTP } from 'src/assets';
-import {
-  FrameDefinitionMap,
-  getSpriteIndexFromDefinition,
-} from 'src/characters/frameData';
+import { FrameDefinitionMap, getSpriteIndexFromDefinition } from 'src/characters/frameData';
 import actionCreatorFactory, { isType } from 'typescript-fsa';
 import { Action } from 'redux';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import * as _ from 'lodash';
 import { frameDefinitionEditReducer, FrameDefinitionEditState } from 'src/editor/redux/frameData/frameDefinitionEdit';
-
 interface TextureDataMap {
   [key: string]: FrameConfigTP;
 }
@@ -61,6 +57,7 @@ interface SpriteSheetInfo {
 }
 
 export interface FrameDataState {
+  filename: string;
   definitionMap: FrameDefinitionMap['frameDef'];
   spriteSheets: { [key: string]: SpriteSheetInfo };
   selection: { key: string; frame: number } | null;
@@ -68,18 +65,19 @@ export interface FrameDataState {
 }
 
 const initialState: FrameDataState = {
+  filename: '',
   definitionMap: {},
   spriteSheets: {},
   selection: null,
-  frameDefinitionEdits: {},
+  frameDefinitionEdits: {}
 };
 
 const ACF = actionCreatorFactory('frameData');
 
 export const frameDataActionCreators = {
   select: ACF<{ key: string; frame: number }>('SELECT'),
-  loadDefinition: ACF<FrameDefinitionMap['frameDef']>('LOAD_DEFINITION'),
-  loadSpriteSheet: ACF<{ key: string; source: string; textureData: TextureDataTP }>('LOAD_SPRITE_SHEET'),
+  loadDefinition: ACF<{ definition: FrameDefinitionMap['frameDef'], name: string }>('LOAD_DEFINITION'),
+  loadSpriteSheet: ACF<{ key: string; source: string; textureData: TextureDataTP }>('LOAD_SPRITE_SHEET')
 };
 
 export function frameDataReducer(state: FrameDataState = initialState, action: Action): FrameDataState {
@@ -91,7 +89,8 @@ export function frameDataReducer(state: FrameDataState = initialState, action: A
   } else if (isType(action, frameDataActionCreators.loadDefinition)) {
     return {
       ...state,
-      definitionMap: action.payload,
+      definitionMap: action.payload.definition,
+      filename: action.payload.name,
     };
   } else if (isType(action, frameDataActionCreators.loadSpriteSheet)) {
     const { key, source, textureData } = action.payload;
@@ -108,6 +107,6 @@ export function frameDataReducer(state: FrameDataState = initialState, action: A
   }
   return {
     ...state,
-    frameDefinitionEdits: frameDefinitionEditReducer(state.frameDefinitionEdits, action),
+    frameDefinitionEdits: frameDefinitionEditReducer(state.frameDefinitionEdits, action)
   };
 }
