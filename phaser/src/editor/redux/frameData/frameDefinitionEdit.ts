@@ -13,21 +13,20 @@ export interface FrameDefinitionEditState {
 }
 
 const ACF = actionCreatorFactory('frameData');
+export type TypedBoxDefinition<T extends BoxType> = T extends BoxType.PUSH
+  ? PushboxDefinition
+  : T extends BoxType.HIT
+  ? HitboxDefinition
+  : T extends BoxType.HURT
+  ? BoxDefinition
+  : never;
 
 export function getFrameDefData<T extends BoxType>(
   frameDataState: FrameDataState,
   frameKey: string,
   frameIndex: number,
   type: T
-):
-  | (T extends BoxType.PUSH
-      ? PushboxDefinition
-      : T extends BoxType.HIT
-      ? HitboxDefinition
-      : T extends BoxType.HURT
-      ? BoxDefinition
-      : never)
-  | null {
+): TypedBoxDefinition<T> | null {
   const { definitionMap, frameDefinitionEdits } = frameDataState;
   const id = getFrameDefId(frameKey, frameIndex, type);
   const originalData = _.get(definitionMap, id, null);
