@@ -68,6 +68,7 @@ export default class AnimationRenderer extends React.PureComponent<Props, State>
   }
 
   private startAnimation = () => {
+    window.cancelAnimationFrame(this.requestId);
     const { frameRate } = this.props.frameData.definitionMap[this.props.frameKey].animDef;
     window.requestAnimationFrame(timestamp => this.animate(timestamp, frameRate, this.uniqueFrameCount));
   };

@@ -8,7 +8,7 @@ export interface FrameDefinitionEditState {
   [key: string]: {
     edits: [];
     editIndex: number;
-    data: any;
+    data: PushboxDefinition | BoxDefinition;
   };
 }
 
@@ -30,9 +30,10 @@ export function getFrameDefData<T extends BoxType>(
   const { definitionMap, frameDefinitionEdits } = frameDataState;
   const id = getFrameDefId(frameKey, frameIndex, type);
   const originalData = _.get(definitionMap, id, null);
-  const data = _.merge({}, originalData, (frameDefinitionEdits[id] || {}).data);
+  const data: any = _.merge({}, originalData, (frameDefinitionEdits[id] || {}).data);
   switch (type) {
     case BoxType.HURT:
+      return data.boxes ? data : null;
     case BoxType.HIT: {
       return data.boxes ? data : null;
     }
@@ -72,7 +73,10 @@ export function frameDefinitionEditReducer(state: FrameDefinitionEditState, acti
     const { frameKey, frameIndex, hurtboxDef } = action.payload;
     const id = getFrameDefId(frameKey, frameIndex, BoxType.HURT);
     const newState = _.merge({}, state, { [id]: {} });
-    newState[id].data = hurtboxDef;
+    newState[id].data = {
+      ...(state[id] || {}).data,
+      ...hurtboxDef,
+    };
     return newState;
   } else if (
     isType(action, frameDefinitionEditActionCreators.addHitbox) ||
@@ -81,7 +85,10 @@ export function frameDefinitionEditReducer(state: FrameDefinitionEditState, acti
     const { frameKey, frameIndex, hitboxDef } = action.payload;
     const id = getFrameDefId(frameKey, frameIndex, BoxType.PUSH);
     const newState = _.merge({}, state, { [id]: {} });
-    newState[id].data = hitboxDef;
+    newState[id].data = {
+      ...(state[id] || {}).data,
+      ...hitboxDef,
+    };
     return newState;
   } else if (
     isType(action, frameDefinitionEditActionCreators.addPushbox) ||

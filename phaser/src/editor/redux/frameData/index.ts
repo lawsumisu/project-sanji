@@ -91,6 +91,7 @@ export function frameDataReducer(state: FrameDataState = initialState, action: A
       ...state,
       definitionMap: action.payload.definition,
       filename: action.payload.name,
+      frameDefinitionEdits: {},
     };
   } else if (isType(action, frameDataActionCreators.loadSpriteSheet)) {
     const { key, source, textureData } = action.payload;
