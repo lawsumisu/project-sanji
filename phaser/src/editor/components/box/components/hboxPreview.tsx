@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import { BoxConfig, BoxType, isCircleBox } from 'src/characters/frameData';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import cx from 'classnames';
-import { round } from 'src/editor/redux/utilities';
+import { round } from 'src/editor/utilities/math.util';
 import { BoxPreviewProps, BoxPreviewState } from 'src/editor/components';
 
 interface HboxPreviewProps extends BoxPreviewProps<BoxConfig> {

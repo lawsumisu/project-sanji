@@ -3,7 +3,7 @@ import { PushboxConfig } from 'src/characters/frameData';
 import * as React from 'react';
 import * as _ from 'lodash';
 import cx from 'classnames';
-import { round } from 'src/editor/redux/utilities';
+import { round } from 'src/editor/utilities/math.util';
 import { BoxPreviewProps, BoxPreviewState } from 'src/editor/components';
 
 interface PushboxPreviewProps extends BoxPreviewProps<PushboxConfig> {}

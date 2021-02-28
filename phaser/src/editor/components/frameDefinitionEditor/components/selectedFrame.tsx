@@ -6,7 +6,7 @@ import { HboxPreview, PushboxPreview, SpriteRenderer } from 'src/editor/componen
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { TypedBoxDefinition } from 'src/editor/redux/frameData/frameDefinitionEdit';
 import { HBoxMode } from 'src/editor/components/frameDefinitionEditor';
-import { round } from 'src/editor/redux/utilities';
+import { round } from 'src/editor/utilities/math.util';
 
 interface SelectedFrameProps {
   frameKey: string;
@@ -138,7 +138,7 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
       } else if (type === BoxType.HIT) {
         this.props.onDeleteBox(BoxType.HIT, this.props.hitboxes.filter((__, i: number) => i !== index));
       } else {
-        this.props.onDeleteBox(BoxType.HIT, [])
+        this.props.onDeleteBox(BoxType.PUSH, [])
       }
     };
   }

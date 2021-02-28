@@ -48,7 +48,47 @@
       border-radius: 8px;
       .boxes--header {
         padding: 8px 16px;
+        display: flex;
+        .cn--header-btns {
+          margin-left: auto;
+          display: flex;
+          justify-content: space-between;
+          width: 50px;
+          cursor: pointer;
+          .header--btn {
+            &.mod--disabled {
+              color: #aaa;
+            }
+          }
+        }
       }
+      .boxes--info {
+        padding: 8px;
+        font-size: 12px;
+        width: 350px;
+        display: flex;
+        flex-direction: column;
+
+        .info--box {
+          margin-left: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          display: flex;
+          align-items: stretch;
+          &:hover {
+            color: dodgerblue;
+            .box--icon {
+              visibility: visible;
+            }
+          }
+          .box--icon {
+            align-self: end;
+            visibility: hidden;
+            margin-left: auto;
+          }
+        }
+      }
+
       &.mod--hit {
         border: 1px solid rgba(255, 50, 50, 0.5);
         .boxes--header {
@@ -67,12 +107,8 @@
         border: 1px solid rgba(200, 175, 50, 0.5);
         .boxes--header {
           background-color: rgba(255, 200, 45, 0.2);
-          border-bottom: 1px solid rgba(200, 175, 50, 0.5)
+          border-bottom: 1px solid rgba(200, 175, 50, 0.5);
         }
-      }
-      .boxes--info {
-        padding: 8px;
-        font-size: 12px;
       }
     }
   }

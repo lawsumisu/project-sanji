@@ -108,8 +108,11 @@ class FrameRenderer extends React.PureComponent<
     } else {
       for (let i = this.props.frameIndex - 1; i >= 0; i--) {
         const data: BoxDefinition | null = getFrameDefData(frameData, frameKey, i, type);
-        if (data && data.persistThroughFrame && data.persistThroughFrame > i) {
-          return { config: data.boxes, persistent: true };
+        if (data) {
+          if (data.persistThroughFrame && data.persistThroughFrame > this.props.frameIndex) {
+            return { config: data.boxes, persistent: true };
+          }
+          break;
         }
       }
     }
@@ -124,8 +127,11 @@ class FrameRenderer extends React.PureComponent<
     } else {
       for (let i = this.props.frameIndex - 1; i >= 0; i--) {
         const data: PushboxDefinition | null = getFrameDefData(frameData, frameKey, i, BoxType.PUSH);
-        if (data && data.persistThroughFrame && data.persistThroughFrame > i) {
-          return { config: data.box, persistent: true };
+        if (data) {
+          if (data.persistThroughFrame && data.persistThroughFrame > this.props.frameIndex) {
+            return { config: data.box, persistent: true };
+          }
+          break;
         }
       }
     }
