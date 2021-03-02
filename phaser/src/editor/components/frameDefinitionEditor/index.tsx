@@ -121,8 +121,10 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
             onDeleteBox={this.onDeleteBox}
             {...this.state}
           />
-        ) : <div className="cn--frame"/>}
-        <div>
+        ) : (
+          <div className="cn--frame" />
+        )}
+        <div className="cn--inspector">
           <div className="cn--tools">
             <Tool
               options={[
@@ -141,7 +143,14 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
             />
             <Tool options={[{ onSelect: this.getNewBoxOnSelectFn(BoxType.PUSH), name: 'Pushbox' }]} />
           </div>
-          <FrameInfo hurtboxes={this.state.hurtboxes} hitboxes={this.state.hitboxes} pushbox={this.state.pushbox} />
+          <FrameInfo
+            hurtboxes={this.state.hurtboxes}
+            hitboxes={this.state.hitboxes}
+            pushbox={this.state.pushbox}
+            onChangeHurtboxes={this.getOnChangeDataFn(BoxType.HURT)}
+            onChangeHitboxes={this.getOnChangeDataFn(BoxType.HIT)}
+            onChangePushbox={this.getOnChangeDataFn(BoxType.PUSH)}
+          />
         </div>
       </div>
     );
@@ -194,26 +203,70 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
   };
 
   private onAddBox = <T extends BoxType>(type: T, box: T extends BoxType.PUSH ? PushboxConfig : BoxConfig): void => {
-    const { frameKey, frameIndex } = this.state;
-    if (type === BoxType.HURT) {
-      this.setState({
-        hurtboxes: [...this.state.hurtboxes, box as BoxConfig],
-      }, () => {
-        this.props.onAddHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameIndex, frameKey})
-      });
-    } else if (type === BoxType.HIT){
-      this.setState({
-        hurtboxes: [...this.state.hurtboxes, box as BoxConfig],
-      }, () => {
-        this.props.onAddHitbox({ hitboxDef: { boxes: this.state.hitboxes }, frameIndex, frameKey})
-      });
-    } else {
-      this.setState({
-        pushbox: box as PushboxConfig,
-      });
-      this.props.onAddPushbox({ pushboxDef: { box: box as PushboxConfig }, frameKey, frameIndex });
+    switch(type) {
+      case BoxType.HURT: {
+        this.onSetData(type, [...this.state.hurtboxes, box] as any);
+        break;
+      }
+      case BoxType.HIT: {
+        this.onSetData(type, [...this.state.hitboxes, box] as any);
+        break;
+      }
+      case BoxType.PUSH: {
+        this.onSetData(type, box as any);
+        break;
+      }
     }
   };
+
+  private onSetData = <T extends BoxType>(
+    type: T,
+    data: T extends BoxType.PUSH ? PushboxConfig : BoxConfig[]
+  ): void => {
+    const { frameKey, frameIndex } = this.state;
+    if (type === BoxType.HURT) {
+      this.setState(
+        {
+          hurtboxes: [...(data as BoxConfig[])]
+        },
+        () => {
+          this.props.onAddHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameIndex, frameKey });
+        }
+      );
+    } else if (type === BoxType.HIT) {
+      this.setState(
+        {
+          hitboxes: [...(data as BoxConfig[])]
+        },
+        () => {
+          this.props.onAddHitbox({ hitboxDef: { boxes: this.state.hitboxes }, frameIndex, frameKey });
+        }
+      );
+    } else {
+      this.setState({
+        pushbox: data as PushboxConfig
+      });
+      this.props.onAddPushbox({ pushboxDef: { box: data as PushboxConfig }, frameKey, frameIndex });
+    }
+  };
+
+  private getOnChangeDataFn(type: BoxType.PUSH): (data: PushboxConfig) => void;
+  private getOnChangeDataFn(type: BoxType.HURT | BoxType.HIT): (data: BoxConfig[]) => void;
+  private getOnChangeDataFn(type: BoxType): any {
+    switch (type) {
+      case BoxType.HURT:
+      case BoxType.HIT: {
+        return (boxes: BoxConfig[]) => {
+          this.onSetData(type, boxes);
+        }
+      }
+      case BoxType.PUSH: {
+        return (pushbox: PushboxConfig) => {
+          this.onSetData(type, pushbox);
+        }
+      }
+    }
+  }
 
   private onCommit = <T extends BoxType>(type: T): void => {
     const { frameKey, frameIndex } = this.state;
@@ -233,28 +286,34 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
     }
   };
 
-  private onDeleteBox = <T extends BoxType>(type: T, boxes: T extends BoxType.PUSH ? never: BoxConfig[]): void => {
+  private onDeleteBox = <T extends BoxType>(type: T, boxes: T extends BoxType.PUSH ? never : BoxConfig[]): void => {
     const { frameKey, frameIndex } = this.state;
     if (type === BoxType.HURT) {
-      this.setState({
-        hurtboxes: boxes
-      }, () => {
-        if (this.state.hurtboxes.length === 0) {
-          this.props.onDeleteHurtbox({ frameIndex, frameKey })
-        } else {
-          this.props.onEditHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameKey, frameIndex });
+      this.setState(
+        {
+          hurtboxes: boxes
+        },
+        () => {
+          if (this.state.hurtboxes.length === 0) {
+            this.props.onDeleteHurtbox({ frameIndex, frameKey });
+          } else {
+            this.props.onEditHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameKey, frameIndex });
+          }
         }
-      });
+      );
     } else if (type === BoxType.HIT) {
-      this.setState({
-        hitboxes: boxes
-      }, () => {
-        if (this.state.hurtboxes.length === 0) {
-          this.props.onDeleteHitbox({ frameIndex, frameKey })
-        } else {
-          this.props.onEditHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameKey, frameIndex });
+      this.setState(
+        {
+          hitboxes: boxes
+        },
+        () => {
+          if (this.state.hurtboxes.length === 0) {
+            this.props.onDeleteHitbox({ frameIndex, frameKey });
+          } else {
+            this.props.onEditHurtbox({ hurtboxDef: { boxes: this.state.hurtboxes }, frameKey, frameIndex });
+          }
         }
-      });
+      );
     } else {
       this.setState({
         pushbox: null
@@ -264,7 +323,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
         frameIndex
       });
     }
-  }
+  };
 }
 
 export const ReduxConnectedFrameDefinitionEditor = connect(

@@ -52,6 +52,7 @@ export class Stage extends Phaser.Scene {
     this.ground = bgHeight - 32;
     this.cameras.main.setZoom(2);
     this.setupPlayers();
+    this.sound.pauseOnBlur = false;
   }
 
   public update(time: number, delta: number): void {

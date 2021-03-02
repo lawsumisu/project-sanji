@@ -9,7 +9,7 @@ import { BoxPreviewProps, BoxPreviewState } from 'src/editor/components';
 interface PushboxPreviewProps extends BoxPreviewProps<PushboxConfig> {}
 
 interface PushboxPreviewState extends BoxPreviewState<PushboxConfig> {
-  editableValues: { x: boolean; y: boolean; width: boolean; height: boolean };
+  editableValues: { x: boolean; y: boolean; };
   editMode: 'size' | 'position';
 }
 
@@ -32,7 +32,7 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
         editMode: 'size',
         dragOrigin: props.initialDragOrigin,
         originalConfig: { ...props.config },
-        editableValues: { x: false, y: false, width: true, height: true }
+        editableValues: { x: true, y: true }
       };
     } else {
       return null;
@@ -40,7 +40,7 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
   }
 
   private static defaultState: PushboxPreviewState = {
-    editableValues: { x: false, y: false, width: false, height: false },
+    editableValues: { x: false, y: false },
     editMode: 'size',
     dragOrigin: null,
     originalConfig: null
@@ -53,12 +53,12 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
   public componentDidMount(): void {
     window.addEventListener('mousemove', this.onWindowMouseMove);
     window.addEventListener('mouseup', this.onWindowMouseUp);
-    window.addEventListener('keydown', this.onWindowKeyDown);
+    window.addEventListener('keypress', this.onWindowKeyPress);
   }
   public componentWillUnmount(): void {
     window.removeEventListener('mousemove', this.onWindowMouseMove);
     window.removeEventListener('mouseup', this.onWindowMouseUp);
-    window.removeEventListener('keydown', this.onWindowKeyDown);
+    window.removeEventListener('keypress', this.onWindowKeyPress);
   }
 
   public render(): React.ReactNode {
@@ -76,8 +76,8 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
       >
         <div className="box--handle mod--vertical mod--top" onMouseDown={this.getOnMouseDownFn({ y: true })} />
         <div className="box--handle mod--horizontal mod--left" onMouseDown={this.getOnMouseDownFn({ x: true })} />
-        <div className="box--handle mod--horizontal mod--right" onMouseDown={this.getOnMouseDownFn({ width: true })} />
-        <div className="box--handle mod--vertical mod--bottom" onMouseDown={this.getOnMouseDownFn({ height: true })} />
+        <div className="box--handle mod--horizontal mod--right" onMouseDown={this.getOnMouseDownFn({ x: true })} />
+        <div className="box--handle mod--vertical mod--bottom" onMouseDown={this.getOnMouseDownFn({ y: true })} />
       </div>
     );
   }
@@ -95,23 +95,31 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
   private onWindowMouseMove = (e: MouseEvent) => {
     if (_.some(this.state.editableValues) && this.state.dragOrigin && this.state.originalConfig) {
       const { scale: s } = this.props;
-      const d = new Vector2(e.clientX, e.clientY).subtract(this.state.dragOrigin);
+      const d = new Vector2(e.clientX, e.clientY).subtract(this.state.dragOrigin).scale(1 / s);
       const newPushbox = { ...this.state.originalConfig };
       if (this.state.editableValues.x) {
-        newPushbox.x = round(newPushbox.x + d.x / s);
         if (this.state.editMode === 'size') {
-          newPushbox.width = round(newPushbox.width - d.x / s);
+          if (d.x < -this.state.originalConfig.width) {
+            newPushbox.x = round(newPushbox.x + d.x + this.state.originalConfig.width);
+            newPushbox.width = -round(d.x + this.state.originalConfig.width);
+          } else {
+            newPushbox.width = round(newPushbox.width + d.x);
+          }
+        } else {
+          newPushbox.x = round(newPushbox.x + d.x);
         }
-      } else if (this.state.editableValues.width) {
-        newPushbox.width = round(newPushbox.width + d.x / s);
       }
       if (this.state.editableValues.y) {
-        newPushbox.y = round(newPushbox.y + d.y / s);
         if (this.state.editMode === 'size') {
-          newPushbox.height = round(newPushbox.height - d.y / s);
+          if (d.y < -this.state.originalConfig.height) {
+            newPushbox.y = round(newPushbox.y + d.y + this.state.originalConfig.height);
+            newPushbox.height = -round(d.y + this.state.originalConfig.height);
+          } else {
+            newPushbox.height = round(newPushbox.height + d.y);
+          }
+        } else {
+          newPushbox.y = round(newPushbox.y + d.y);
         }
-      } else if (this.state.editableValues.height) {
-        newPushbox.height = round(newPushbox.height + d.y / s);
       }
       this.props.onChange(newPushbox);
     }
@@ -126,7 +134,7 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
     }
   };
 
-  private onWindowKeyDown = (e: KeyboardEvent): void => {
+  private onWindowKeyPress = (e: KeyboardEvent): void => {
     if (this.state.dragOrigin){
       if (e.key === 'q') {
         this.props.onDelete();
@@ -137,7 +145,7 @@ export default class PushboxPreview extends React.PureComponent<PushboxPreviewPr
   private onContainerMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     this.setState({
-      editableValues: { ...this.state.editableValues, x: true, y: true },
+      editableValues: { x: true, y: true },
       editMode: 'position',
       dragOrigin: new Vector2(e.clientX, e.clientY),
       originalConfig: { ...this.props.config }

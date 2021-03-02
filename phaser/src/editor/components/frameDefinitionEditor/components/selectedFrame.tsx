@@ -20,7 +20,7 @@ interface SelectedFrameProps {
   onAddBox<T extends BoxType>(type: T, box: T extends BoxType.PUSH ? PushboxConfig : BoxConfig): void;
   onEdit<T extends BoxType>(type: T, definition: Partial<TypedBoxDefinition<T>>): void;
   onCommit<T extends BoxType>(type: T): void;
-  onDeleteBox<T extends BoxType>(type: T, boxes: T extends BoxType.PUSH ? never : BoxConfig[]): void;
+  onDeleteBox<T extends BoxType>(type: T, boxes: T extends BoxType.PUSH ? null : BoxConfig[]): void;
 }
 
 interface State {
@@ -29,7 +29,7 @@ interface State {
 
 export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State> {
   public state: State = {
-    newBoxOrigin: null,
+    newBoxOrigin: null
   };
 
   private scale = 5;
@@ -83,15 +83,17 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
       this.setState({ newBoxOrigin });
       switch (this.props.newBoxType) {
         case BoxType.HURT:
-        case BoxType.HIT:
+        case BoxType.HIT: {
           let box: BoxConfig;
           if (this.props.mode === HBoxMode.CIRCLE) {
             box = { x: ox, y: oy, r: 10 };
           } else {
             box = { x1: ox, y1: oy, x2: ox, y2: oy, r: 10 };
           }
+          console.log(this.props.newBoxType);
           this.props.onAddBox(this.props.newBoxType, box);
           break;
+        }
         case BoxType.PUSH: {
           const pushbox = { x: ox, y: oy, width: 0, height: 0 };
           this.props.onAddBox(this.props.newBoxType, pushbox);
@@ -124,21 +126,27 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
   private getFinishEditFn(type: BoxType) {
     return () => {
       this.props.onCommit(type);
-    }
+    };
   }
 
   private onPushboxChange = (pushbox: PushboxConfig) => {
-    this.props.onEdit(BoxType.PUSH, { box: pushbox })
+    this.props.onEdit(BoxType.PUSH, { box: pushbox });
   };
 
   private getOnDeleteFn(type: BoxType, index = 0) {
     return () => {
       if (type === BoxType.HURT) {
-        this.props.onDeleteBox(BoxType.HURT, this.props.hurtboxes.filter((__, i: number) => i !== index));
+        this.props.onDeleteBox(
+          BoxType.HURT,
+          this.props.hurtboxes.filter((__, i: number) => i !== index)
+        );
       } else if (type === BoxType.HIT) {
-        this.props.onDeleteBox(BoxType.HIT, this.props.hitboxes.filter((__, i: number) => i !== index));
+        this.props.onDeleteBox(
+          BoxType.HIT,
+          this.props.hitboxes.filter((__, i: number) => i !== index)
+        );
       } else {
-        this.props.onDeleteBox(BoxType.PUSH, [])
+        this.props.onDeleteBox(BoxType.PUSH, null);
       }
     };
   }
@@ -155,7 +163,7 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
           className="editor-box"
           onChange={this.getOnHboxChangeFn(type, i)}
           onDelete={this.getOnDeleteFn(type, i)}
-          initialDragOrigin={this.state.newBoxOrigin || undefined}
+          initialDragOrigin={(i === boxes.length - 1 && this.state.newBoxOrigin) || undefined}
           onFinishEdit={this.getFinishEditFn(type)}
         />
       ))}
@@ -167,5 +175,4 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
     const config = getSpriteConfig(frameData, frameKey, frameIndex);
     return config ? getAnchorPosition(config) : Vector2.ZERO;
   }
-
 }
