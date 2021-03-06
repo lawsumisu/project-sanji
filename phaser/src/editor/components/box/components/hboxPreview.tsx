@@ -3,12 +3,12 @@ import * as _ from 'lodash';
 import { BoxConfig, BoxType, isCircleBox } from 'src/characters/frameData';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import cx from 'classnames';
-import { round } from 'src/editor/redux/utilities';
+import { round } from 'src/editor/utilities/math.util';
 import { BoxPreviewProps, BoxPreviewState } from 'src/editor/components';
 
 interface HboxPreviewProps extends BoxPreviewProps<BoxConfig> {
   type: BoxType;
-  config: BoxConfig
+  config: BoxConfig;
   onDelete: () => void;
 }
 
@@ -24,6 +24,7 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
     editable: true,
     onChange: _.noop,
     onDelete: _.noop,
+    onFinishEdit: _.noop
   };
 
   public state: HboxPreviewState = {
@@ -31,22 +32,26 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
     originalConfig: null
   };
 
+  private ref: HTMLDivElement | null = null;
+
   public componentDidMount(): void {
     window.addEventListener('mousemove', this.onWindowMouseMove);
     window.addEventListener('mouseup', this.onWindowMouseUp);
     window.addEventListener('keydown', this.onWindowKeyDown);
+    this.ref && this.ref.addEventListener('wheel', this.onContainerWheel);
     if (this.props.initialDragOrigin) {
       this.setState({
         dragOrigin: this.props.initialDragOrigin,
-        originalConfig: {...this.props.config},
-        dragHandle: isCircleBox(this.props.config) ? null : 'handle2',
-      })
+        originalConfig: { ...this.props.config },
+        dragHandle: isCircleBox(this.props.config) ? null : 'handle2'
+      });
     }
   }
   public componentWillUnmount(): void {
     window.removeEventListener('mousemove', this.onWindowMouseMove);
     window.removeEventListener('mouseup', this.onWindowMouseUp);
     window.removeEventListener('keydown', this.onWindowKeyDown);
+    this.ref && this.ref.removeEventListener('wheel', this.onContainerWheel);
   }
 
   public render(): React.ReactNode {
@@ -62,6 +67,7 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
           this.props.className
         )}
         onMouseDown={this.onContainerMouseDown}
+        ref={this.setRef}
       >
         {!isCircleBox(this.props.config) && this.props.editable && (
           <div style={{ height: handleSize }} className="cn--capsule-handles">
@@ -81,13 +87,23 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
     );
   }
 
+  private onFinishEdit = _.debounce(() => this.props.onFinishEdit(), 100);
+
   private onContainerMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     this.setState({
       dragOrigin: new Vector2(e.clientX, e.clientY),
       originalConfig: { ...this.props.config },
-      dragHandle: null,
+      dragHandle: null
     });
+  };
+
+  private onContainerWheel = (e: WheelEvent) => {
+    const { deltaY } = e;
+    e.stopPropagation();
+    e.preventDefault();
+    this.props.onChange({ ...this.props.config, r: Math.max(5, this.props.config.r - deltaY) });
+    this.onFinishEdit();
   };
 
   private onWindowMouseMove = (e: MouseEvent) => {
@@ -130,14 +146,17 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
   };
 
   private onWindowMouseUp = () => {
-    this.setState({
-      dragOrigin: null,
-      originalConfig: null
-    });
+    if (this.state.dragOrigin) {
+      this.setState({
+        dragOrigin: null,
+        originalConfig: null
+      });
+      this.props.onFinishEdit();
+    }
   };
 
   private onWindowKeyDown = (e: KeyboardEvent): void => {
-    if (this.state.dragOrigin){
+    if (this.state.dragOrigin) {
       if (e.key === 'q') {
         this.props.onDelete();
       }
@@ -149,9 +168,13 @@ export default class HboxPreview extends React.PureComponent<HboxPreviewProps, H
         delta = -s;
       }
       if (delta !== 0) {
-        this.props.onChange({ ...this.props.config, r: this.props.config.r + delta })
+        this.props.onChange({ ...this.props.config, r: this.props.config.r + delta });
       }
     }
+  };
+
+  private setRef = (ref: HTMLDivElement | null): void => {
+    this.ref = ref;
   };
 
   private getOnMouseDownFn(handle: HboxPreviewState['dragHandle']) {

@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { store } from 'src/editor/redux';
 import { Root } from 'src/editor/components';
-import { initializeFontAwesome } from 'src/editor/redux/utilities';
+import { initializeFontAwesome } from 'src/editor/utilities/fontAwesome.util';
 
 initializeFontAwesome();
 

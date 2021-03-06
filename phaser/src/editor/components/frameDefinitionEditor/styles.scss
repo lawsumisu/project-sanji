@@ -1,6 +1,11 @@
 .cn--frame-editor {
   display: flex;
   flex-direction: row;
+  flex-grow: 1;
+  .cn--inspector {
+    display: flex;
+    flex-direction: column;
+  }
   .cn--tools {
     display: flex;
     flex-direction: column;
@@ -8,7 +13,7 @@
   }
   .cn--frame {
     width: 510px;
-    height: 710px;
+    height: 100%;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -16,7 +21,7 @@
     justify-content: center;
     border: 1px solid black;
     box-sizing: border-box;
-    flex-shrink: 0;
+    flex: 1 0;
     cursor: crosshair;
 
     > div {
@@ -42,37 +47,90 @@
     }
   }
   .cn--frame-info {
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    flex-grow: 1;
+    width: 340px;
+    .frame-info--header {
+      border-top-right-radius: 8px;
+      border-top-left-radius: 8px;
+      padding: 8px 16px;
+      border-bottom: 1px solid #aaa;
+      background-color: #eee;
+    }
     .frame-info--boxes {
       white-space: pre-wrap;
-      margin: 8px 10px;
-      border-radius: 8px;
       .boxes--header {
         padding: 8px 16px;
-      }
-      &.mod--hit {
-        border: 1px solid rgba(255, 50, 50, 0.5);
-        .boxes--header {
-          background-color: rgba(255, 0, 0, 0.2);
-          border-bottom: 1px solid rgba(255, 50, 50, 0.5);
-        }
-      }
-      &.mod--hurt {
-        border: 1px solid rgba(50, 128, 255, 0.5);
-        .boxes--header {
-          background-color: rgba(0, 128, 255, 0.2);
-          border-bottom: 1px solid rgba(50, 128, 255, 0.5);
-        }
-      }
-      &.mod--push {
-        border: 1px solid rgba(200, 175, 50, 0.5);
-        .boxes--header {
-          background-color: rgba(255, 200, 45, 0.2);
-          border-bottom: 1px solid rgba(200, 175, 50, 0.5)
+        display: flex;
+        .cn--header-btns {
+          margin-left: auto;
+          display: flex;
+          .header--btn {
+            cursor: pointer;
+            padding-left: 8px;
+            &.mod--disabled {
+              cursor: not-allowed;
+              color: #aaa;
+            }
+          }
         }
       }
       .boxes--info {
         padding: 8px;
         font-size: 12px;
+        display: flex;
+        flex-direction: column;
+
+        .info--box {
+          margin-left: 8px;
+          cursor: pointer;
+          font-weight: bold;
+          display: flex;
+          align-items: stretch;
+          &:hover {
+            color: dodgerblue;
+            .box--icon {
+              visibility: visible;
+            }
+          }
+          .box--icon {
+            align-self: end;
+            visibility: hidden;
+            margin-left: auto;
+          }
+        }
+      }
+
+      &.mod--hit {
+        border-bottom: 1px solid rgba(255, 50, 50, 0.5);
+        .boxes--header {
+          background-color: rgba(255, 0, 0, 0.2);
+          border-bottom: 1px solid rgba(255, 50, 50, 0.5);
+        }
+        .boxes--info {
+          background-color: rgba(255, 0, 0, 0.1);
+        }
+      }
+      &.mod--hurt {
+        border-bottom: 1px solid rgba(50, 128, 255, 0.5);
+        .boxes--header {
+          background-color: rgba(0, 128, 255, 0.2);
+          border-bottom: 1px solid rgba(50, 128, 255, 0.5);
+        }
+        .boxes--info {
+          background-color: rgba(0, 128, 255, 0.1);
+        }
+      }
+      &.mod--push {
+        border-bottom: 1px solid rgba(200, 175, 50, 0.5);
+        .boxes--header {
+          background-color: rgba(255, 200, 45, 0.3);
+          border-bottom: 1px solid rgba(200, 175, 50, 0.5);
+        }
+        .boxes--info {
+          background-color: rgba(255, 200, 45, 0.1);
+        }
       }
     }
   }

@@ -13,8 +13,8 @@ interface Props {
 
 interface DispatchMappedProps {
   actions: {
-    loadDefinition: typeof frameDataActionCreators.loadDefinition,
-  }
+    loadDefinition: typeof frameDataActionCreators.loadDefinition;
+  };
 }
 
 class DefinitionLoader extends React.PureComponent<Props & DispatchMappedProps> {
@@ -22,29 +22,41 @@ class DefinitionLoader extends React.PureComponent<Props & DispatchMappedProps> 
 
   public static mapDispatchToProps(dispatch: Dispatch): DispatchMappedProps {
     return {
-      actions: bindActionCreators({
-        loadDefinition: frameDataActionCreators.loadDefinition,
-      }, dispatch)
-    }
+      actions: bindActionCreators(
+        {
+          loadDefinition: frameDataActionCreators.loadDefinition
+        },
+        dispatch
+      )
+    };
   }
 
   public render(): React.ReactNode {
     return (
       <React.Fragment>
-        <Icon className={cx('icon', this.props.className)} icon="file-code" size="lg" onClick={this.onClick} hint="Load Config File"/>
-        <input ref={this.setRef} type="file" accept=".json" onChange={this.onChange} onClick={this.clear}/>
+        <Icon
+          className={cx('icon', this.props.className)}
+          icon="file-code"
+          size="lg"
+          onClick={this.onClick}
+          hint="Load Config File"
+        />
+        <input ref={this.setRef} type="file" accept=".json" onChange={this.onChange} onClick={this.clear} />
       </React.Fragment>
-    )
+    );
   }
 
   private onChange = ({ target }: { target: HTMLInputElement }) => {
     const fileReader = new FileReader();
-    fileReader.onload = (e => {
+    fileReader.onload = e => {
       if (e.target && e.target.result) {
-        this.props.actions.loadDefinition((JSON.parse(e.target.result as string).frameDef) as FrameDefinitionMap['frameDef']);
+        this.props.actions.loadDefinition({
+          definition: JSON.parse(e.target.result as string).frameDef as FrameDefinitionMap['frameDef'],
+          name: target.files![0].name
+        });
       }
-    });
-    fileReader.readAsText(target.files![0])
+    };
+    fileReader.readAsText(target.files![0]);
   };
 
   private clear = () => {
@@ -59,8 +71,7 @@ class DefinitionLoader extends React.PureComponent<Props & DispatchMappedProps> 
 
   private onClick = (): void => {
     this.ref && this.ref.click();
-  }
-
+  };
 }
 
 export const ReduxConnectedDefinitionLoader = connect(null, DefinitionLoader.mapDispatchToProps)(DefinitionLoader);

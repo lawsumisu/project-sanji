@@ -2,9 +2,14 @@
   cursor: pointer;
   padding: 5px 10px;
   border-radius: 5px;
-  color: #aaa;
+  color: #777;
   &:hover {
     color: #222;
     background-color: #ccc;
+  }
+  &.mod--disabled {
+    color: #bbb;
+    background-color: transparent;
+    cursor: not-allowed;
   }
 }
