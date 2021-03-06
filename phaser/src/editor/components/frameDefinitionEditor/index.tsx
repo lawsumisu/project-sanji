@@ -144,6 +144,7 @@ class FrameDefinitionEditor extends React.PureComponent<StateMappedProps & Dispa
             <Tool options={[{ onSelect: this.getNewBoxOnSelectFn(BoxType.PUSH), name: 'Pushbox' }]} />
           </div>
           <FrameInfo
+            key={this.props.frameData.filename}
             hurtboxes={this.state.hurtboxes}
             hitboxes={this.state.hitboxes}
             pushbox={this.state.pushbox}

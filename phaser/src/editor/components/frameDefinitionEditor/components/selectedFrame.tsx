@@ -25,15 +25,25 @@ interface SelectedFrameProps {
 
 interface State {
   newBoxOrigin: Vector2 | null;
+  scale: number;
 }
 
 export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State> {
   public state: State = {
-    newBoxOrigin: null
+    newBoxOrigin: null,
+    scale: 5
   };
 
-  private scale = 5;
   private ref: HTMLDivElement | null;
+  private containerRef: HTMLDivElement | null;
+
+  public componentDidMount(): void {
+    this.containerRef && this.containerRef.addEventListener('wheel', this.onWheel);
+  }
+
+  public componentWillUnmount(): void {
+    this.containerRef && this.containerRef.removeEventListener('wheel', this.onWheel);
+  }
 
   public render(): React.ReactNode {
     const { frameKey, frameIndex } = this.props;
@@ -41,16 +51,22 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
     const config = source && getSpriteConfig(this.props.frameData, frameKey, frameIndex);
     const origin = this.origin;
     return (
-      <div className="cn--frame" tabIndex={0} onMouseUp={this.onMouseUp} onMouseDown={this.onMouseDown}>
+      <div
+        className="cn--frame"
+        ref={this.setContainerRef}
+        tabIndex={0}
+        onMouseUp={this.onMouseUp}
+        onMouseDown={this.onMouseDown}
+      >
         <div ref={this.setRef}>
-          {config && source && <SpriteRenderer source={source} config={config} scale={this.scale} />}
+          {config && source && <SpriteRenderer source={source} config={config} scale={this.state.scale} />}
           {this.HBoxesPreview({ origin, type: BoxType.HURT, boxes: this.props.hurtboxes })}
           {this.HBoxesPreview({ origin, type: BoxType.HIT, boxes: this.props.hitboxes })}
           {this.props.pushbox && (
             <PushboxPreview
               origin={origin}
               config={this.props.pushbox}
-              scale={this.scale}
+              scale={this.state.scale}
               onChange={this.onPushboxChange}
               onDelete={this.getOnDeleteFn(BoxType.PUSH)}
               initialDragOrigin={(this.props.newBoxType === BoxType.PUSH && this.state.newBoxOrigin) || undefined}
@@ -58,7 +74,7 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
             />
           )}
           <FontAwesomeIcon
-            style={{ left: origin.x * this.scale, top: origin.y * this.scale }}
+            style={{ left: origin.x * this.state.scale, top: origin.y * this.state.scale }}
             className="origin"
             icon="crosshairs"
           />
@@ -71,11 +87,15 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
     this.ref = ref;
   };
 
+  private setContainerRef = (ref: HTMLDivElement | null): void => {
+    this.containerRef = ref;
+  };
+
   private onMouseDown = (e: React.MouseEvent): void => {
     if (this.ref) {
       const o = new Vector2(e.clientX, e.clientY)
         .subtract(new Vector2(this.ref.offsetLeft, this.ref.offsetTop))
-        .scale(1 / this.scale)
+        .scale(1 / this.state.scale)
         .subtract(this.origin);
       const ox = round(o.x);
       const oy = round(o.y);
@@ -107,6 +127,14 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
     this.setState({
       newBoxOrigin: null
     });
+  };
+
+  private onWheel = (e: WheelEvent): void => {
+    const { deltaY } = e;
+    e.preventDefault();
+    this.setState(state => ({
+      scale: state.scale - deltaY / 100
+    }));
   };
 
   private getOnHboxChangeFn(type: BoxType, index: number) {
@@ -159,7 +187,7 @@ export class SelectedFrame extends React.PureComponent<SelectedFrameProps, State
           config={box}
           type={type}
           origin={origin}
-          scale={this.scale}
+          scale={this.state.scale}
           className="editor-box"
           onChange={this.getOnHboxChangeFn(type, i)}
           onDelete={this.getOnDeleteFn(type, i)}
