@@ -108,7 +108,7 @@ export class InputHistory {
    */
   public isInputDown(input: GameInput, i = 0): boolean {
     return this.inputHistory.at(-(i + 1)).has(input);
-  };
+  }
 
   public getInputs(i = 0): Set<GameInput> {
     return new Set(this.inputHistory.at(-(i + 1)));
@@ -132,14 +132,14 @@ export class InputHistory {
     if (gamepad) {
       // Check for analog directional inputs
       const [x, y] = gamepad.axes.map((axis: Phaser.Input.Gamepad.Axis) => axis.getValue());
-      if (x >= .5) {
+      if (x >= 0.5) {
         inputsThisFrame.add(GameInput.RIGHT);
-      } else if (x <= -.5) {
+      } else if (x <= -0.5) {
         inputsThisFrame.add(GameInput.LEFT);
       }
-      if (y >= .5) {
+      if (y >= 0.5) {
         inputsThisFrame.add(GameInput.DOWN);
-      } else if (y <= -.5) {
+      } else if (y <= -0.5) {
         inputsThisFrame.add(GameInput.UP);
       }
     }
@@ -185,29 +185,44 @@ export class InputHistory {
     this.clear();
     inputs.forEach((input: Set<GameInput>) => {
       this.inputHistory.push(new Set(input));
-    })
+    });
   }
 }
 /**
  * A plugin that allows mapping between device inputs and relevant game inputs.
  */
 export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
-  public static defaultInputs = {
-    [GameInput.DOWN]: [getKeyboardConfig(keyCodes.DOWN), getGamepadConfig('down')],
-    [GameInput.UP]: [getKeyboardConfig(keyCodes.UP), getGamepadConfig('up')],
-    [GameInput.RIGHT]: [getKeyboardConfig(keyCodes.RIGHT), getGamepadConfig('right')],
-    [GameInput.LEFT]: [getKeyboardConfig(keyCodes.LEFT), getGamepadConfig('left')],
-    [GameInput.INPUT1]: [getKeyboardConfig(keyCodes.A), getGamepadConfig('A')],
-    [GameInput.INPUT2]: [getKeyboardConfig(keyCodes.S), getGamepadConfig('B')],
-    [GameInput.INPUT3]: [getKeyboardConfig(keyCodes.W), getGamepadConfig('X')],
-    [GameInput.INPUT4]: [getKeyboardConfig(keyCodes.E), getGamepadConfig('Y')],
-    [GameInput.INPUT5]: [getKeyboardConfig(keyCodes.Q), getGamepadConfig('L1')],
+  public static defaultGamePadInputs = {
+    [GameInput.DOWN]: [getGamepadConfig('down')],
+    [GameInput.UP]: [getGamepadConfig('up')],
+    [GameInput.RIGHT]: [getGamepadConfig('right')],
+    [GameInput.LEFT]: [getGamepadConfig('left')],
+    [GameInput.INPUT1]: [getGamepadConfig('A')],
+    [GameInput.INPUT2]: [getGamepadConfig('B')],
+    [GameInput.INPUT3]: [getGamepadConfig('X')],
+    [GameInput.INPUT4]: [getGamepadConfig('Y')],
+    [GameInput.INPUT5]: [getGamepadConfig('L1')],
+    [GameInput.INPUT6]: []
+  };
+
+  public static defaultKeyboardInputs = {
+    [GameInput.DOWN]: [getKeyboardConfig(keyCodes.DOWN)],
+    [GameInput.UP]: [getKeyboardConfig(keyCodes.UP)],
+    [GameInput.RIGHT]: [getKeyboardConfig(keyCodes.RIGHT)],
+    [GameInput.LEFT]: [getKeyboardConfig(keyCodes.LEFT)],
+    [GameInput.INPUT1]: [getKeyboardConfig(keyCodes.A)],
+    [GameInput.INPUT2]: [getKeyboardConfig(keyCodes.S)],
+    [GameInput.INPUT3]: [getKeyboardConfig(keyCodes.W)],
+    [GameInput.INPUT4]: [getKeyboardConfig(keyCodes.E)],
+    [GameInput.INPUT5]: [getKeyboardConfig(keyCodes.Q)],
     [GameInput.INPUT6]: []
   };
 
   private histories: InputHistory[] = [
-    new InputHistory(GameInputPlugin.defaultInputs, { pad: 'pad1'}),
-    new InputHistory(GameInputPlugin.defaultInputs, { pad: 'pad2'})
+    new InputHistory(_.merge({}, GameInputPlugin.defaultGamePadInputs, GameInputPlugin.defaultKeyboardInputs), {
+      pad: 'pad1'
+    }),
+    new InputHistory(GameInputPlugin.defaultGamePadInputs, { pad: 'pad2' })
   ];
 
   public boot(): void {
@@ -233,6 +248,6 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   };
 
   private onSceneDestroy = (): void => {
-    this.histories.forEach((history: InputHistory) => history.clear())
+    this.histories.forEach((history: InputHistory) => history.clear());
   };
 }
