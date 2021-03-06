@@ -83,7 +83,7 @@ export function frameDefinitionEditReducer(state: FrameDefinitionEditState, acti
     isType(action, frameDefinitionEditActionCreators.editHitbox)
   ) {
     const { frameKey, frameIndex, hitboxDef } = action.payload;
-    const id = getFrameDefId(frameKey, frameIndex, BoxType.PUSH);
+    const id = getFrameDefId(frameKey, frameIndex, BoxType.HIT);
     const newState = _.merge({}, state, { [id]: {} });
     newState[id].data = {
       ...(state[id] || {}).data,
