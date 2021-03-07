@@ -16,12 +16,10 @@ import { Vfx } from 'src/vfx';
 import paletteFragShader from 'src/shaders/palette.frag';
 
 
-class ColorSwapPipeline extends Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline {
+class ColorSwapPipeline extends Phaser.Renderer.WebGL.Pipelines.SinglePipeline {
   constructor(game: Phaser.Game) {
     super({
       game: game,
-      renderer: game.renderer,
-      gl: (game.renderer as Phaser.Renderer.WebGL.WebGLRenderer).gl,
       fragShader: paletteFragShader
     });
   }
@@ -101,7 +99,9 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
       const p2 = b.priority || 0;
       return p2 - p1;
     });
-    this.setupPalette(this.paletteIndex);
+    if (this.paletteIndex >= 0) {
+      this.setupPalette(this.paletteIndex);
+    }
   }
 
   public applyHitToSelf(hit: Hit, hitBy: StageObject): void {
@@ -192,13 +192,13 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     const swapPaletteName = [this.paletteName, paletteIndex].join('-');
     const { game } = PS.stage;
     if (game.textures.exists(this.paletteName) && !game.textures.exists(swapPaletteName)) {
-      (game.renderer as Phaser.Renderer.WebGL.WebGLRenderer).addPipeline(
+      (game.renderer as Phaser.Renderer.WebGL.WebGLRenderer).pipelines.add(
         swapPaletteName,
         new ColorSwapPipeline(game)
       );
 
       this.sprite.setPipeline(swapPaletteName);
-      const canvasTexture = game.textures.createCanvas('temp', 256, 256);
+      const canvasTexture = game.textures.createCanvas(swapPaletteName, 256, 256);
       const canvas = canvasTexture.getSourceImage() as HTMLCanvasElement;
       const context = canvas.getContext('2d') as CanvasRenderingContext2D;
       const { width, height } = game.textures.get(this.paletteName).getSourceImage();
@@ -217,27 +217,24 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
         imageData.data[index + 3] = alpha;
       }
 
-      for (let x = 0; x < width; x += 2) {
-        for (let y = 0; y < h; y += 2) {
+      for (let x = 0; x < width; x += swatchSize) {
+        for (let y = 0; y < h; y += swatchSize) {
           const originalColor = game.textures.getPixel(x, y, this.paletteName);
           const paletteColor = game.textures.getPixel(x, y + h * paletteIndex, this.paletteName);
           const { red, blue } = originalColor;
-          // Get image data from the new sheet.
           drawPixel(blue, red, paletteColor);
         }
       }
-      // drawPixel(0, 0, new Phaser.Display.Color(0, 255, 255, 255));
-      // Put our modified pixel data back into the context.
+      // Put modified pixel data back into the context.
       context.putImageData(imageData, 0, 0);
-      const pipeline = this.sprite.pipeline;
-      const texture = new Phaser.Textures.CanvasTexture(PS.stage.textures, swapPaletteName, canvas, 100, 100);
-      pipeline.setInt1('uPaletteTexture', 1);
-      pipeline.renderer.setTexture2D(texture.source[0].glTexture, this.paletteIndex + 1);
-      console.log(pipeline.renderer.currentTextures)
+      const { pipeline } = this.sprite;
+      const texture = game.textures.addCanvas('', canvas, true);
+      pipeline.set1i('uPaletteTexture', pipeline.renderer.currentActiveTexture);
+      pipeline.renderer.setTexture2D(texture.source[0].glTexture);
       const { gl } = pipeline.renderer;
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      canvasTexture.destroy();
+
     } else if (!game.textures.exists(this.paletteName)) {
       console.warn(`Palette not found for ${this.paletteName.split('-')[0]}.`);
     }

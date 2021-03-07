@@ -30,7 +30,7 @@ export class Stage extends Phaser.Scene {
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
-    this.p1 = new Aero(0, 0);
+    this.p1 = new Aero(0, 1);
     this.p2 = new Jack(1);
     this.addStageObject(this.p1);
     this.addStageObject(this.p2);

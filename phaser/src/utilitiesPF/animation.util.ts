@@ -51,7 +51,7 @@ export function addAnimationByFrames(
 
 export function playAnimation(sprite: Phaser.GameObjects.Sprite, key: string, params: { force?: boolean, startFrame?: number } = {}): void {
   const { force = false, startFrame = 0} = params;
-  if (sprite.anims.animationManager.exists(key) && (sprite.anims.getCurrentKey() !== key || force)) {
-    sprite.anims.play(key, !force, startFrame);
+  if (sprite.anims.animationManager.exists(key) && (sprite.anims.getName() !== key || force)) {
+    sprite.anims.play({ key, startFrame}, !force );
   }
 }
