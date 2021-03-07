@@ -7,10 +7,13 @@ import { KeyboardPluginPS } from 'src/plugins/keyboard.plugin';
 
 const config = PS.config;
 const gameConfig: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
+  type: Phaser.WEBGL,
   // parent: 'phaser-example',
   width: config.width,
   height: config.height,
+  render: {
+    antialias: false,
+  },
   scene: Stage,
   input: {
     gamepad: true,

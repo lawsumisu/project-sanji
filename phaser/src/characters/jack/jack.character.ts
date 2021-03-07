@@ -4,7 +4,7 @@ import { PS } from 'src/global';
 
 export default class Jack extends CommonCharacter<never, {}> {
   constructor(playerIndex = 0) {
-    super(playerIndex, jack);
+    super(playerIndex, 0, jack);
   }
 
   public preload(): void {

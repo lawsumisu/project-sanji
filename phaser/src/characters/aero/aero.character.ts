@@ -229,8 +229,9 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
             this.playAnimation('ROLL_RECOVERY');
           }
         }
-        const rollCondition = (['ROLL_1', 'ROLL_2'].includes(this.currentAnimation) &&
-          [3, 4, 5].includes(this.sprite.anims.currentFrame.index)) ||
+        const rollCondition =
+          (['ROLL_1', 'ROLL_2'].includes(this.currentAnimation) &&
+            [3, 4, 5].includes(this.sprite.anims.currentFrame.index)) ||
           this.currentAnimation === 'ROLL_RECOVERY';
         this.freeChainFlag = rollCondition && this.shadow.canCancel(4) && this.nextStates.length === 0;
       },
@@ -399,8 +400,8 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
 
   private shadowStates: Array<{ command: Command; state: AeroShadowState }>;
 
-  constructor(playerIndex = 0) {
-    super(playerIndex, aero);
+  constructor(playerIndex = 0, paletteIndex = 0, ) {
+    super(playerIndex, paletteIndex, aero);
     this.shadow = new AeroShadow(this, aero);
   }
 
@@ -617,6 +618,7 @@ export default class Aero extends CommonCharacter<AeroState, AeroStateConfig> {
     super.preload();
     PS.stage.load.multiatlas('vanessa', 'characters/aero/sprites/vanessa.json', 'characters/aero/sprites');
     PS.stage.load.multiatlas('rock', 'characters/aero/sprites/rock.json', 'characters/aero/sprites');
+    PS.stage.load.image(this.paletteName, 'characters/aero/sprites/palette.png');
     this.shadow.preload();
   }
 

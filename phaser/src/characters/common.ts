@@ -272,8 +272,8 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
   };
   private commonAudioKeys: AudioKey[] = ['land', 'landHeavy'];
 
-  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
-    super(playerIndex, frameDefinitionMap);
+  constructor(playerIndex = 0, paletteIndex = 0,frameDefinitionMap: FrameDefinitionMap) {
+    super(playerIndex, paletteIndex, frameDefinitionMap);
     this.defaultState = CommonState.STAND;
     this.commandList = this.getCommandList();
   }

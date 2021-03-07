@@ -13,6 +13,19 @@ import { playAnimation } from 'src/utilitiesPF/animation.util';
 import { ColliderManager, FrameDefinitionColliderManager } from 'src/collider/manager';
 import { AudioKey } from 'src/assets/audio';
 import { Vfx } from 'src/vfx';
+import paletteFragShader from 'src/shaders/palette.frag';
+
+
+class ColorSwapPipeline extends Phaser.Renderer.WebGL.Pipelines.TextureTintPipeline {
+  constructor(game: Phaser.Game) {
+    super({
+      game: game,
+      renderer: game.renderer,
+      gl: (game.renderer as Phaser.Renderer.WebGL.WebGLRenderer).gl,
+      fragShader: paletteFragShader
+    });
+  }
+}
 
 export interface CommandTrigger<S extends string> {
   command: Command;
@@ -20,6 +33,14 @@ export interface CommandTrigger<S extends string> {
   state: S;
   stateParams?: { [key: string]: unknown };
   priority?: number;
+}
+
+export interface CharacterConfig {
+  playerIndex: number;
+  palette: {
+    name: string;
+    index: number;
+  };
 }
 
 export class BaseCharacter<S extends string = string, D extends StateDefinition = StateDefinition> extends StageObject {
@@ -36,6 +57,8 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected gravity = 450;
 
   public readonly playerIndex: number;
+  public readonly paletteIndex: number;
+  public readonly paletteName: string;
   protected target: StageObject;
 
   protected commandList: Array<CommandTrigger<S>> = [];
@@ -44,10 +67,13 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
   protected audioKeys: AudioKey[] = [];
   protected playedAnimationSounds = new Set();
 
-  constructor(playerIndex = 0) {
+  constructor(config: Partial<CharacterConfig> = {}) {
     super();
+    const { playerIndex = 0, palette = { name: '', index: 0 } } = config;
     this.colliderManager = new ColliderManager();
     this.playerIndex = playerIndex;
+    this.paletteIndex = palette.index;
+    this.paletteName = [palette.name, 'palette'].join('-');
     this.stateManager = new StateManager<S, D>();
     this.stateManager.onBeforeTransition((key: S) => this.beforeStateTransition(key));
     this.stateManager.onAfterTransition((config, params) => this.afterStateTransition(config, params));
@@ -75,6 +101,7 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
       const p2 = b.priority || 0;
       return p2 - p1;
     });
+    this.setupPalette(this.paletteIndex);
   }
 
   public applyHitToSelf(hit: Hit, hitBy: StageObject): void {
@@ -160,6 +187,62 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
     this.sprite.depth = 20;
   }
 
+  protected setupPalette(paletteIndex: number): void {
+    const swatchSize = 2;
+    const swapPaletteName = [this.paletteName, paletteIndex].join('-');
+    const { game } = PS.stage;
+    if (game.textures.exists(this.paletteName) && !game.textures.exists(swapPaletteName)) {
+      (game.renderer as Phaser.Renderer.WebGL.WebGLRenderer).addPipeline(
+        swapPaletteName,
+        new ColorSwapPipeline(game)
+      );
+
+      this.sprite.setPipeline(swapPaletteName);
+      const canvasTexture = game.textures.createCanvas('temp', 256, 256);
+      const canvas = canvasTexture.getSourceImage() as HTMLCanvasElement;
+      const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+      const { width, height } = game.textures.get(this.paletteName).getSourceImage();
+
+      const numPalettes = height / swatchSize;
+
+      const h = height / numPalettes;
+      const imageData = context.getImageData(0, 0, 256, 256);
+
+      function drawPixel(x: number, y: number, color: Phaser.Display.Color) {
+        let index = (x + y * 256) * 4;
+        const { red, green, blue, alpha } = color;
+        imageData.data[index] = red;
+        imageData.data[index + 1] = green;
+        imageData.data[index + 2] = blue;
+        imageData.data[index + 3] = alpha;
+      }
+
+      for (let x = 0; x < width; x += 2) {
+        for (let y = 0; y < h; y += 2) {
+          const originalColor = game.textures.getPixel(x, y, this.paletteName);
+          const paletteColor = game.textures.getPixel(x, y + h * paletteIndex, this.paletteName);
+          const { red, blue } = originalColor;
+          // Get image data from the new sheet.
+          drawPixel(blue, red, paletteColor);
+        }
+      }
+      // drawPixel(0, 0, new Phaser.Display.Color(0, 255, 255, 255));
+      // Put our modified pixel data back into the context.
+      context.putImageData(imageData, 0, 0);
+      const pipeline = this.sprite.pipeline;
+      const texture = new Phaser.Textures.CanvasTexture(PS.stage.textures, swapPaletteName, canvas, 100, 100);
+      pipeline.setInt1('uPaletteTexture', 1);
+      pipeline.renderer.setTexture2D(texture.source[0].glTexture, this.paletteIndex + 1);
+      console.log(pipeline.renderer.currentTextures)
+      const { gl } = pipeline.renderer;
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      canvasTexture.destroy();
+    } else if (!game.textures.exists(this.paletteName)) {
+      console.warn(`Palette not found for ${this.paletteName.split('-')[0]}.`);
+    }
+  }
+
   protected isNextStateBuffered(state: S): boolean {
     return !!this.nextStates.find(nextState => nextState.state === state);
   }
@@ -242,8 +325,9 @@ export class BaseCharacterWithFrameDefinition<
   protected frameDefinitionMap: FrameDefinitionMap;
   protected colliderManager: FrameDefinitionColliderManager;
 
-  constructor(playerIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
-    super(playerIndex);
+  constructor(playerIndex = 0, paletteIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
+    super({ playerIndex, palette: { name: frameDefinitionMap.name, index: paletteIndex } });
+    console.log(paletteIndex, frameDefinitionMap.name);
     this.frameDefinitionMap = frameDefinitionMap;
     this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
       const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;

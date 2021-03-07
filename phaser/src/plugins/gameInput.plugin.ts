@@ -242,9 +242,7 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   };
 
   private onSceneUpdate = (): void => {
-    if (this.game.hasFocus) {
-      this.histories.forEach((history: InputHistory) => history.update(this.scene.input));
-    }
+    this.histories.forEach((history: InputHistory) => history.update(this.scene.input));
   };
 
   private onSceneDestroy = (): void => {
