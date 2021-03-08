@@ -324,7 +324,6 @@ export class BaseCharacterWithFrameDefinition<
 
   constructor(playerIndex = 0, paletteIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
     super({ playerIndex, palette: { name: frameDefinitionMap.name, index: paletteIndex } });
-    console.log(paletteIndex, frameDefinitionMap.name);
     this.frameDefinitionMap = frameDefinitionMap;
     this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
       const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
