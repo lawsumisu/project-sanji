@@ -372,10 +372,9 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     if (pushbox.left < PS.stage.left) {
       const positionCorrection = PS.stage.left - pushbox.left;
       if (this.hitstun && this.lastHitBy && this.lastHitBy.pushable) {
-        this.lastHitBy.position.x -= positionCorrection;
-      } else {
-        this.position.x -= positionCorrection;
+        this.lastHitBy.position.x += positionCorrection;
       }
+      this.position.x += positionCorrection;
     } else if (pushbox.right > PS.stage.right) {
       const positionCorrection = pushbox.right - PS.stage.right;
       if (this.hitstun && this.lastHitBy && this.lastHitBy.pushable) {
