@@ -30,7 +30,7 @@ export class Stage extends Phaser.Scene {
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
-    this.p1 = new Aero(0);
+    this.p1 = new Aero(0, 1);
     this.p2 = new Jack(1);
     this.addStageObject(this.p1);
     this.addStageObject(this.p2);
@@ -166,7 +166,7 @@ export class Stage extends Phaser.Scene {
       const rightPlayer = this.p1.position.x <= this.p2.position.x ? this.p2 : this.p1;
       let d1 = Math.min(intersection.width / 2, leftPlayer.pushbox.left - this.bounds.left);
       let d2 = Math.min(intersection.width / 2, this.bounds.right - rightPlayer.pushbox.right);
-      if (d1 < intersection.width /2 ) {
+      if (d1 < intersection.width / 2) {
         d2 = intersection.width - d1;
       } else if (d2 < intersection.width) {
         d1 = intersection.width - d2;

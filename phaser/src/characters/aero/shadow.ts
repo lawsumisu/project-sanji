@@ -125,7 +125,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     }
   };
   constructor(aero: Aero, frameDefinitionMap: FrameDefinitionMap) {
-    super(aero.playerIndex, frameDefinitionMap);
+    super(aero.playerIndex, 0, frameDefinitionMap);
     this.aero = aero;
     // this.onHit = onHit;
     this._pushable = false;
