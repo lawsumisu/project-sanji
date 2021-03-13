@@ -205,7 +205,7 @@ export class AeroShadow extends BaseCharacterWithFrameDefinition<AeroShadowState
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, [this.frameDefinitionMap.name,startAnimation].join('-'), { force: true, startFrame: params.startFrame });
+      playAnimation(this.sprite, startAnimation, { force: true, startFrame: params.startFrame });
     }
     this.cancelLock = config.cancelLock;
     this.colliderManager.clearHitboxData();

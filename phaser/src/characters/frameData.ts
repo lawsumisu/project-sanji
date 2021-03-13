@@ -105,14 +105,13 @@ export type FrameDefinitionMap = {
 };
 
 export function addAnimationsByDefinition(sprite: Phaser.GameObjects.Sprite, definitionMap: FrameDefinitionMap): void {
-  const { name, frameDef } = definitionMap;
+  const { frameDef } = definitionMap;
   _.forEach(frameDef, (definition, key: string) => {
     const { frames, prefix, frameRate, repeat = 0, assetKey } = definition.animDef;
-    const animKey = [name, key].join('-');
     if (_.isNumber(frames)) {
-      addAnimation(sprite, animKey, assetKey, frames, prefix, frameRate, repeat);
+      addAnimation(sprite, key, assetKey, frames, prefix, frameRate, repeat);
     } else {
-      addAnimationByFrames(sprite, animKey, assetKey, frames, prefix, frameRate, repeat);
+      addAnimationByFrames(sprite, key, assetKey, frames, prefix, frameRate, repeat);
     }
   });
 }

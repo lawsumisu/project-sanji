@@ -4,7 +4,6 @@ import {
   Collider,
   CollisionData,
   CollisionDataMap,
-  Direction,
   Hitbox,
   HitboxData,
   Hurtbox,
@@ -14,32 +13,34 @@ import {
 import {
   BoxConfig,
   BoxDefinition,
-  BoxType, defaultHit,
+  BoxType,
+  defaultHit,
   FrameDefinitionMap,
+  getFrameIndexFromSpriteIndex,
   HitboxDefinition,
   isCircleBox
 } from 'src/characters/frameData';
 import { StageObject } from 'src/stage/stageObject';
 import { Vector2 } from '@lawsumisu/common-utilities';
 
-export type HitboxDataGenerator = (hitboxData: HitboxData) => HitboxData | null;
-export type HurtboxDataGenerator = (hurtboxData: HurtboxData) => HurtboxData | null;
-export type PushboxDataGenerator = (pushboxData: PushboxData) => PushboxData | null;
+export type HitboxDataGenerator<T> = (hitboxData: HitboxData, params: T) => HitboxData | null;
+export type HurtboxDataGenerator<T> = (hurtboxData: HurtboxData, params: T) => HurtboxData | null;
+export type PushboxDataGenerator<T> = (pushboxData: PushboxData, params: T) => PushboxData | null;
 
-export class ColliderManager {
+export class ColliderManager<T = any> {
   private collisionData: CollisionDataMap = {
     hitData: HitboxData.EMPTY,
     hurtData: HurtboxData.EMPTY,
     pushboxData: PushboxData.EMPTY
   };
-  protected hurtboxDataGenerator: HurtboxDataGenerator;
-  protected hitboxDataGenerator: HitboxDataGenerator;
-  protected pushboxDataGenerator: PushboxDataGenerator;
+  protected hurtboxDataGenerator: HurtboxDataGenerator<T>;
+  protected hitboxDataGenerator: HitboxDataGenerator<T>;
+  protected pushboxDataGenerator: PushboxDataGenerator<T>;
 
   public constructor(
-    hurtDefinition: HurtboxDataGenerator = () => null,
-    hitDefinition: HitboxDataGenerator = () => null,
-    pushboxDataGenerator: PushboxDataGenerator = () => null
+    hurtDefinition: HurtboxDataGenerator<T> = () => null,
+    hitDefinition: HitboxDataGenerator<T> = () => null,
+    pushboxDataGenerator: PushboxDataGenerator<T> = () => null
   ) {
     this.hitboxDataGenerator = hitDefinition;
     this.hurtboxDataGenerator = hurtDefinition;
@@ -47,24 +48,24 @@ export class ColliderManager {
   }
 
   // TODO pass in updateParams rather than relying on functions like getAnimInfo
-  public update(): void {
+  public update(params: T): void {
     // Update hurt data
     const prevHurtData = this.collisionData.hurtData;
-    const hurtData = this.hurtboxDataGenerator(prevHurtData);
+    const hurtData = this.hurtboxDataGenerator(prevHurtData, params);
     const persistHurtboxes = _.isFunction(prevHurtData.persist) ? prevHurtData.persist() : prevHurtData.persist;
     if (!_.isNil(hurtData) || !persistHurtboxes) {
       this.setHurtData(hurtData);
     }
     // Update hitData
     const prevHitData = this.collisionData.hitData;
-    const hitData = this.hitboxDataGenerator(prevHitData);
+    const hitData = this.hitboxDataGenerator(prevHitData, params);
     const persistHitboxes = _.isFunction(prevHitData.persist) ? prevHitData.persist() : prevHitData.persist;
     if (!_.isNil(hitData) || !persistHitboxes) {
       this.setHitData(hitData ? hitData : HitboxData.EMPTY);
     }
     // Update pushboxData
     const prevPushboxData = this.collisionData.pushboxData;
-    const pushboxData = this.pushboxDataGenerator(prevPushboxData);
+    const pushboxData = this.pushboxDataGenerator(prevPushboxData, params);
     const persistPushbox = _.isFunction(prevPushboxData.persist) ? prevPushboxData.persist() : prevPushboxData.persist;
     if (!_.isNil(pushboxData) && !persistPushbox) {
       this.collisionData.pushboxData = pushboxData ? pushboxData : PushboxData.EMPTY;
@@ -94,29 +95,17 @@ export class ColliderManager {
   }
 }
 
-export interface AnimInfo {
-  direction: Direction;
-  index: number;
-  frameKey: string;
-}
-
-export class FrameDefinitionColliderManager extends ColliderManager {
+export class FrameDefinitionColliderManager extends ColliderManager<Phaser.GameObjects.Sprite> {
   private stageObject: StageObject;
   private readonly frameDefinitionMap: FrameDefinitionMap;
-  private readonly getAnimInfo: () => AnimInfo | null;
   private ignoreCollisionTags: Set<string>;
 
-  public constructor(
-    stageObject: StageObject,
-    frameDefinitionMap: FrameDefinitionMap,
-    getAnimInfo: () => AnimInfo | null
-  ) {
+  public constructor(stageObject: StageObject, frameDefinitionMap: FrameDefinitionMap) {
     super();
     this.stageObject = stageObject;
     this.hitboxDataGenerator = this.generateHitboxData;
     this.hurtboxDataGenerator = this.generateHurtboxData;
     this.frameDefinitionMap = frameDefinitionMap;
-    this.getAnimInfo = getAnimInfo;
     this.ignoreCollisionsWith();
     this.pushboxDataGenerator = this.generatePushboxData;
   }
@@ -126,8 +115,8 @@ export class FrameDefinitionColliderManager extends ColliderManager {
     this.ignoreCollisionTags.add(this.stageObject.tag);
   }
 
-  private generateHurtboxData(hurtboxData: HurtboxData): HurtboxData | null {
-    const boxDefinitionData = this.generateBoxDefinitionData(hurtboxData, BoxType.HURT);
+  private generateHurtboxData(hurtboxData: HurtboxData, sprite: Phaser.GameObjects.Sprite): HurtboxData | null {
+    const boxDefinitionData = this.generateBoxDefinitionData(hurtboxData, BoxType.HURT, sprite);
     if (!_.isNil(boxDefinitionData)) {
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
       return new HurtboxData(
@@ -148,11 +137,10 @@ export class FrameDefinitionColliderManager extends ColliderManager {
     }
   }
 
-  private generateHitboxData(hitboxData: HitboxData): HitboxData | null {
-    const boxDefinitionData = this.generateBoxDefinitionData(hitboxData, BoxType.HIT);
-    const animInfo = this.getAnimInfo();
-    if (animInfo && !_.isNil(boxDefinitionData)) {
-      const { frameKey } = animInfo;
+  private generateHitboxData(hitboxData: HitboxData, sprite: Phaser.GameObjects.Sprite): HitboxData | null {
+    const boxDefinitionData = this.generateBoxDefinitionData(hitboxData, BoxType.HIT, sprite);
+    if (!_.isNil(boxDefinitionData)) {
+      const { frameKey } = this.getParamsFromSprite(sprite);
       const { persist, tag, frameBoxDef, index } = boxDefinitionData;
       const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
       // TODO allow hitbox data to be overwritten at runtime
@@ -179,26 +167,23 @@ export class FrameDefinitionColliderManager extends ColliderManager {
     }
   }
 
-  private generatePushboxData(pushboxData: PushboxData): PushboxData | null {
-    const animInfo = this.getAnimInfo();
-    if (animInfo) {
-      const { index, frameKey } = animInfo;
-      const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
-      if (
-        frameDefinition &&
-        frameDefinition.pushboxDef &&
-        frameDefinition.pushboxDef[index] &&
-        (pushboxData.index !== index || pushboxData.isEmpty)
-      ) {
-        const pushboxDef = frameDefinition.pushboxDef[index];
-        const persist = (): boolean => {
-          const { index: i, frameKey: currentFrameKey } = this.getAnimInfo()!;
-          const { persistThroughFrame = index + 1 } = pushboxDef;
-          return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
-        };
-        const { x, y, width, height } = pushboxDef.box;
-        return new PushboxData(new Phaser.Geom.Rectangle(x, y, width, height), index, { persist })
-      }
+  private generatePushboxData(pushboxData: PushboxData, sprite: Phaser.GameObjects.Sprite): PushboxData | null {
+    const { index, frameKey } = this.getParamsFromSprite(sprite);
+    const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
+    if (
+      frameDefinition &&
+      frameDefinition.pushboxDef &&
+      frameDefinition.pushboxDef[index] &&
+      (pushboxData.index !== index || pushboxData.isEmpty)
+    ) {
+      const pushboxDef = frameDefinition.pushboxDef[index];
+      const persist = (): boolean => {
+        const { index: i, frameKey: currentFrameKey } = this.getParamsFromSprite(sprite);
+        const { persistThroughFrame = index + 1 } = pushboxDef;
+        return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
+      };
+      const { x, y, width, height } = pushboxDef.box;
+      return new PushboxData(new Phaser.Geom.Rectangle(x, y, width, height), index, { persist });
     }
     const { x, y, width, height } = this.frameDefinitionMap.tempPushbox;
     return new PushboxData(new Phaser.Geom.Rectangle(x, y, width, height), -1);
@@ -206,34 +191,42 @@ export class FrameDefinitionColliderManager extends ColliderManager {
 
   private generateBoxDefinitionData<T extends CollisionData<Collider>>(
     data: T,
-    boxType: T extends HitboxData ? BoxType.HIT : BoxType.HURT
+    boxType: T extends HitboxData ? BoxType.HIT : BoxType.HURT,
+    sprite: Phaser.GameObjects.Sprite
   ): {
     persist: () => boolean;
     tag: string;
     frameBoxDef: T extends HitboxData ? HitboxDefinition : BoxDefinition;
     index: number;
   } | null {
-    const animInfo = this.getAnimInfo();
-    if (animInfo) {
-      const { index, frameKey } = animInfo;
-      const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
-      const key = boxType === BoxType.HIT ? 'hitboxDef' : 'hurtboxDef';
-      if (
-        frameDefinition &&
-        frameDefinition[key] &&
-        frameDefinition[key]![index] &&
-        (data.index !== index || data.isEmpty)
-      ) {
-        const frameBoxDef = frameDefinition[key]![index] as T extends HitboxData ? HitboxDefinition : BoxDefinition;
-        const persist = (): boolean => {
-          const { index: i, frameKey: currentFrameKey } = this.getAnimInfo()!;
-          const { persistThroughFrame = index + 1 } = frameBoxDef;
-          return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
-        };
-        const tag = frameBoxDef.tag ? [frameKey, frameBoxDef.tag].join('-') : frameKey;
-        return { persist, tag, frameBoxDef, index };
-      }
+    const { index, frameKey } = this.getParamsFromSprite(sprite);
+    const frameDefinition = this.frameDefinitionMap.frameDef[frameKey];
+    const key = boxType === BoxType.HIT ? 'hitboxDef' : 'hurtboxDef';
+    if (
+      frameDefinition &&
+      frameDefinition[key] &&
+      frameDefinition[key]![index] &&
+      (data.index !== index || data.isEmpty)
+    ) {
+      const frameBoxDef = frameDefinition[key]![index] as T extends HitboxData ? HitboxDefinition : BoxDefinition;
+      const persist = (): boolean => {
+        const { index: i, frameKey: currentFrameKey } = this.getParamsFromSprite(sprite);
+        const { persistThroughFrame = index + 1 } = frameBoxDef;
+        return frameKey === currentFrameKey && (i === index || i <= persistThroughFrame);
+      };
+      const tag = frameBoxDef.tag ? [frameKey, frameBoxDef.tag].join('-') : frameKey;
+      return { persist, tag, frameBoxDef, index };
+    } else {
+      return null;
     }
-    return null;
+  }
+
+  private getParamsFromSprite(sprite: Phaser.GameObjects.Sprite) {
+    const { currentFrame: frame, currentAnim: anim } = sprite.anims;
+    return {
+      index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap.frameDef[anim.key].animDef, frame.index),
+      direction: { x: !sprite.flipX, y: true },
+      frameKey: anim.key
+    };
   }
 }

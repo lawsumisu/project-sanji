@@ -18,7 +18,7 @@ export function addAnimation(
     prefix: `${prefix}/`,
     suffix: '.png'
   });
-  sprite.anims.animationManager.create({ key, frames, frameRate, repeat });
+  sprite.anims.create({ key, frames, frameRate, repeat });
 }
 
 export function addAnimationByFrames(
@@ -46,12 +46,12 @@ export function addAnimationByFrames(
     })
     .flatten()
     .value();
-  sprite.anims.animationManager.create({ key, frames, frameRate, repeat });
+  sprite.anims.create({ key, frames, frameRate, repeat});
 }
 
 export function playAnimation(sprite: Phaser.GameObjects.Sprite, key: string, params: { force?: boolean, startFrame?: number } = {}): void {
   const { force = false, startFrame = 0} = params;
-  if (sprite.anims.animationManager.exists(key) && (sprite.anims.getName() !== key || force)) {
+  if (sprite.anims.exists(key) && (sprite.anims.getName() !== key || force)) {
     sprite.anims.play({ key, startFrame}, !force );
   }
 }

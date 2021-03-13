@@ -2,7 +2,7 @@ import { StateDefinition, StateManager } from 'src/state';
 import { Vector2 } from '@lawsumisu/common-utilities';
 import { InputHistory } from 'src/plugins/gameInput.plugin';
 import * as _ from 'lodash';
-import { addAnimationsByDefinition, FrameDefinitionMap, getFrameIndexFromSpriteIndex } from 'src/characters/frameData';
+import { addAnimationsByDefinition, FrameDefinitionMap } from 'src/characters/frameData';
 import { Command } from 'src/command/';
 import { PS } from 'src/global';
 import { StageObject, UpdateParams } from 'src/stage/stageObject';
@@ -10,7 +10,10 @@ import { Hit } from 'src/collider';
 import { Unit } from 'src/unit';
 import * as Phaser from 'phaser';
 import { playAnimation } from 'src/utilitiesPF/animation.util';
-import { ColliderManager, FrameDefinitionColliderManager } from 'src/collider/manager';
+import {
+  ColliderManager,
+  FrameDefinitionColliderManager,
+} from 'src/collider/manager';
 import { AudioKey } from 'src/assets/audio';
 import { Vfx } from 'src/vfx';
 import paletteFragShader from 'src/shaders/palette.frag';
@@ -136,9 +139,14 @@ export class BaseCharacter<S extends string = string, D extends StateDefinition 
       this.sprite.anims.resume();
       this.goToNextState();
       this.stateManager.update();
-      this.colliderManager.update();
+      this.updateCollider();
     }
   }
+
+  protected updateCollider(): void {
+    this.colliderManager.update({});
+  }
+
 
   protected updateSprite(): void {
     this.sprite.x = this.position.x;
@@ -325,19 +333,7 @@ export class BaseCharacterWithFrameDefinition<
   constructor(playerIndex = 0, paletteIndex = 0, frameDefinitionMap: FrameDefinitionMap) {
     super({ playerIndex, palette: { name: frameDefinitionMap.name, index: paletteIndex } });
     this.frameDefinitionMap = frameDefinitionMap;
-    this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap, () => {
-      const { currentFrame: frame, currentAnim: anim } = this.sprite.anims;
-      const animKey = anim.key.split('-')[1];
-      if (this.frameDefinitionMap.frameDef[animKey]) {
-        return {
-          index: getFrameIndexFromSpriteIndex(this.frameDefinitionMap.frameDef[animKey].animDef, frame.index),
-          direction: { x: !this.sprite.flipX, y: true },
-          frameKey: animKey
-        };
-      } else {
-        return null;
-      }
-    });
+    this.colliderManager = new FrameDefinitionColliderManager(this, this.frameDefinitionMap);
   }
 
   protected updateSprite(): void {
@@ -354,16 +350,20 @@ export class BaseCharacterWithFrameDefinition<
     }
   }
 
+  protected updateCollider(): void {
+    this.colliderManager.update(this.sprite);
+  }
+
   protected setupSprite(): void {
     super.setupSprite();
     addAnimationsByDefinition(this.sprite, this.frameDefinitionMap);
   }
 
   protected playAnimation(key: string, params: { force?: boolean; startFrame?: number } = {}) {
-    playAnimation(this.sprite, [this.frameDefinitionMap.name, key].join('-'), params);
+    playAnimation(this.sprite, key, params);
   }
 
   protected get currentAnimation(): string {
-    return this.sprite.anims.currentAnim.key.split('-')[1];
+    return this.sprite.anims.currentAnim.key;
   }
 }

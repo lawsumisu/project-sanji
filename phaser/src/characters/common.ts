@@ -416,7 +416,7 @@ export class CommonCharacter<S extends string, D> extends BaseCharacterWithFrame
     super.afterStateTransition(config, params);
     const { startAnimation } = config;
     if (startAnimation) {
-      playAnimation(this.sprite, [this.frameDefinitionMap.name, startAnimation].join('-'), {
+      playAnimation(this.sprite, startAnimation, {
         force: true,
         startFrame: params.startFrame
       });
