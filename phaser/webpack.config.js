@@ -24,10 +24,6 @@ module.exports = {
         test: /\.(gif|png|jpe?g|svg|xml)$/i,
         use: "file-loader"
       },
-      {
-        test: /\.shader$/i,
-        use: 'raw-loader',
-      },
     ]
   },
   devServer: {
