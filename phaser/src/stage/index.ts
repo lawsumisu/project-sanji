@@ -79,10 +79,14 @@ export class Stage extends Phaser.Scene {
   }
 
   private updateBounds(): void {
-    const margin = new Vector2(25, 0);
+    const margin = new Vector2(10, 0);
     this.bounds = new Phaser.Geom.Rectangle(0, 0, 386 - margin.x * 2, 200);
+    const p1Pushbox = this.p1.pushbox;
+    const p2Pushbox = this.p2.pushbox;
+    const minX = Math.min(p1Pushbox.left, p2Pushbox.left);
+    const maxX = Math.max(p1Pushbox.right, p2Pushbox.right);
     const c = this.p1.position.add(this.p2.position).scale(0.5);
-    this.bounds.centerX = c.x;
+    this.bounds.centerX = (minX + maxX) / 2;
     this.bounds.centerY = c.y;
     const cameraBounds = this.cameras.main.getBounds();
     this.bounds.right = Math.min(this.bounds.right, cameraBounds.right - margin.x);
@@ -93,14 +97,15 @@ export class Stage extends Phaser.Scene {
     const offset = new Vector2(0, -40);
     const padding = new Vector2(50, 0);
     const camera = this.cameras.main;
-    const { x: x1 } = this.p1.position;
-    const { x: x2 } = this.p2.position;
-    const minX = Math.min(x1, x2);
-    const maxX = Math.max(x1, x2);
+    const p1Pushbox = this.p1.pushbox;
+    const p2Pushbox = this.p2.pushbox;
+    const minX = Math.min(p1Pushbox.left, p2Pushbox.left);
+    const maxX = Math.max(p1Pushbox.right, p2Pushbox.right);
     const distance = maxX - minX;
-    const p = this.p1.position.add(this.p2.position).scale(0.5);
+    const x = (minX + maxX) / 2;
+    const y = (this.p1.position.y + this.p2.position.y) / 2;
     if (distance >= 386 - padding.x * 2) {
-      camera.scrollX = p.x - camera.width / 2 + offset.x;
+      camera.scrollX = x - camera.width / 2 + offset.x;
     } else {
       if (minX <= camera.worldView.left + padding.x) {
         camera.scrollX += minX - camera.worldView.left - padding.x;
@@ -108,7 +113,7 @@ export class Stage extends Phaser.Scene {
         camera.scrollX += maxX - camera.worldView.right + padding.x;
       }
     }
-    camera.scrollY = p.y - camera.height / 2 + offset.y;
+    camera.scrollY = y - camera.height / 2 + offset.y;
   }
 
   private updateDebugSettings(): void {
