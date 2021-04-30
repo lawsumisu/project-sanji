@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack",
-    "editor": "webpack-dev-server --open --config editor.webpack.config.js",
-    "start": "webpack-dev-server --open",
+    "start": "webpack serve",
     "lint": "tsc --noEmit && tslint -p .",
     "test": "karma start"
   },
