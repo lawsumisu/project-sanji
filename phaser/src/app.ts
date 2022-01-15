@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
+import { DebugDrawPlugin } from '@lawsumisu/phaser';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
 import { Stage } from 'src/stage';
 import { PS } from 'src/global';
